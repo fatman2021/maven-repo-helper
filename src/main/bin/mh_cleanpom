@@ -1,0 +1,39 @@
+#!/bin/bash
+
+CLEAN_ARGS=''
+if [ "$1" = "-d" ]; then
+    CLEAN_ARGS=$1
+    shift
+fi
+if [ "$1" = "--debian-parent" ]; then
+    CLEAN_ARGS=$1
+    shift
+fi
+POM=$1
+TARGET=$2
+POM_PROPS=$3
+VERSIONS_PROPS=$4
+SPEC=$5
+if [ -z "$POM" ]; then
+    if [ -f debian/pom.xml ]; then
+        POM="debian/pom.xml"
+    else
+        POM="pom.xml"
+    fi
+fi
+if [ -z "$TARGET" ]; then
+        TARGET="debian/tmp/pom.xml"
+fi
+if [ -z "$POM_PROPS" ]; then
+        POM_PROPS="debian/tmp/pom.properties"
+fi
+if [ -z "$VERSIONS_PROPS" ]; then
+        VERSIONS_PROPS="debian/tmp/versions.properties"
+fi
+if [ -z "$SPEC" ]; then
+    if [ -f debian/maven.spec ]; then
+        SPEC="debian/maven.spec"
+    fi
+fi
+
+java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS $VERSIONS_PROPS $SPEC

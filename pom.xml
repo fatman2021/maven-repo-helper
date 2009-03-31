@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.debian</groupId>
+    <artifactId>maven-repo-helper</artifactId>
+    <name>Maven Repo helper</name>
+    <packaging>jar</packaging>
+    <version>0.1</version>
+    <description>
+        Provides support for managing the Maven repository in a Debian distribution.
+    </description>
+
+    <inceptionYear>2001</inceptionYear>
+    <url>https://code.launchpad.net/maven-packaging-support/</url>
+    <licenses>
+        <license>
+            <name>BSD</name>
+            <url>http://opensource.org/licenses/bsd-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Ludovic Claude</name>
+            <email>ludovic.claude@laposte.net</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+0</timezone>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>launchpad</system>
+        <url>https://bugs.launchpad.net/maven-packaging-support</url>
+    </issueManagement>
+    <scm>
+        <connection>scm:bzr:lp:~ludovicc/maven-packaging-support/maven-repo-helper</connection>
+        <developerConnection>scm:bzr:lp:~ludovicc/maven-packaging-support/maven-repo-helper</developerConnection>
+        <url>http://bazaar.launchpad.net/~ludovicc/maven-packaging-support/maven-repo-helper/files</url>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>xmlunit</groupId>
+            <artifactId>xmlunit</artifactId>
+            <version>1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.4</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

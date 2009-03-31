@@ -1,0 +1,56 @@
+#!/bin/bash
+
+set -e
+
+CLEAN_ARGS=''
+SPEC=''
+
+if [ "$1" = "-d" ]; then
+    CLEAN_ARGS=$1
+    shift
+fi
+if [ "$1" = "--debian-parent" ]; then
+    CLEAN_ARGS=$1
+    shift
+fi
+if [ "$1" = "-s" ]; then
+    shift
+    SPEC=$1
+    shift
+fi
+if [ "$1" = "--spec" ]; then
+    shift
+    SPEC=$1
+    shift
+fi
+
+PACKAGE=$1
+
+if [ ! -z "${PACKAGE##-p}" ]; then
+    PACKAGE=${PACKAGE##-p}
+fi
+
+POM=$2
+JAR=$3
+
+if [ -z "$SPEC" ]; then
+    if [ -f debian/maven.spec ]; then
+        SPEC="debian/maven.spec"
+    fi
+fi
+
+mkdir -p debian/tmp 2> /dev/null
+mh_cleanpom $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties debian/tmp/notused.properties $SPEC
+source debian/tmp/pom.properties
+
+GROUP_PATH=$(echo $GROUP_ID | tr . / )
+cp $JAR debian/tmp/${ARTIFACT_ID}-${VERSION}.jar
+dh_install -p${PACKAGE} --sourcedir=debian/tmp ${ARTIFACT_ID}-${VERSION}.jar \
+	usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}
+
+while [ ! -z "$4" ]; do
+    LINK_JAR=$4
+    shift
+	dh_link -p${PACKAGE} usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar \
+        $LINK_JAR;
+done

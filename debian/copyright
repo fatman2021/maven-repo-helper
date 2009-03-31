@@ -1,0 +1,16 @@
+Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat?action=recall&rev=437
+Upstream-Name: Maven Repo support
+Upstream-Maintainer: Ludovic Claude
+Upstream-Source: https://launchpad.net/maven-packaging-support/
+
+Files: *
+Copyright: Copyright 2009, Ludovic Claude  <ludovic.claude@laposte.net>
+License: BSD
+  On Debian GNU/Linux system you can find the complete text of the
+  BSD license in '/usr/share/common-licenses/BSD'
+
+Files: debian/*
+Copyright: Copyright (C) 2009, Ludovic Claude <ludovic.claude@laposte.net>
+License: BSD
+  On Debian GNU/Linux system you can find the complete text of the
+  BSD license in '/usr/share/common-licenses/BSD'

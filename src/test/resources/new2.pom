@@ -1,0 +1,12 @@
+
+<project>
+    <groupId>org.debian</groupId>
+    <artifactId>debian-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <properties>
+        <library.jar.debian.package>libtest-java</library.jar.debian.package>
+        <library.jar.debian.version>1.0</library.jar.debian.version>
+        <library2.jar.debian.package>libother-java</library2.jar.debian.package>
+        <library2.jar.debian.version>3.0</library2.jar.debian.version>
+    </properties>
+</project>

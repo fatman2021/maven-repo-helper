@@ -1,0 +1,16 @@
+Source: maven-repo-helper
+Section: java
+Priority: optional
+Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
+Uploaders: Ludovic Claude <ludovic.claude@laposte.net>
+Build-Depends: debhelper (>= 5), cdbs, default-jdk, ant, maven-ant-helper
+Standards-Version: 3.8.1
+Vcs-Bzr: lp:~ludovicc/maven-packaging-support/maven-repo-helper
+Vcs-Browser: http://bazaar.launchpad.net/~ludovicc/maven-packaging-support/maven-repo-helper/files
+Homepage: https://code.launchpad.net/maven-packaging-support/
+
+Package: maven-repo-helper
+Architecture: all
+Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless
+Description: Provides support for managing the Maven repository in a Debian distribution.
+ .

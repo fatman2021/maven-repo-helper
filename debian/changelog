@@ -1,0 +1,5 @@
+maven-repo-helper (0.1-0ubuntu1~ppa9) jaunty; urgency=low
+
+  * Initial release. (Closes: #521947)
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 12 Mar 2009 20:46:36 +0000

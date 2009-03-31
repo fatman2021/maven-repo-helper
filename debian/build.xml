@@ -1,0 +1,19 @@
+<project name="pkg-java" default="package" basedir="..">
+
+    <property file="debian/build.properties"/>
+    <property name="maven.test.skip" value="true"/>
+    <property name="maven.build.xml" value="/usr/share/maven-ant-helper/maven-build.xml"/>
+    <property file="/usr/share/maven-ant-helper/maven-defaults.properties"/>
+
+    <target name="clean">
+        <ant target="clean" antfile="${maven.build.xml}" dir="."/>
+    </target>
+
+    <target name="package">
+        <ant target="package" antfile="${maven.build.xml}" dir=".">
+            <property name="artifactId" value="${package}"/>
+        </ant>
+    </target>
+
+</project>
+
