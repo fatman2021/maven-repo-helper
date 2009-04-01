@@ -1,5 +1,7 @@
 DEBIAN_POM="/usr/share/maven-repo/org/debian/debian-parent/1.0-SNAPSHOT/debian-parent-1.0-SNAPSHOT.pom"
 
+LIBRARIES="#LIBRARIES#"
+
 remove_repo_property() {
     VERSION_PROPERTY=$1
     cat $DEBIAN_POM | grep -v "<$VERSION_PROPERTY" > pom.tmp
@@ -30,4 +32,3 @@ if [ "$1" = "remove" ]; then
     fi
 fi
 
-#DEBHELPER#

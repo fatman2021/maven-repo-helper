@@ -16,4 +16,7 @@ binary-post-install/$(PACKAGE)::
 	dh_install -p$(PACKAGE) src/main/bin /usr
 	dh_install -p$(PACKAGE) src/main/share/* /usr/share/$(PACKAGE)
 	dh_link -p$(PACKAGE) /usr/share/java/$(PACKAGE)-$(VERSION).jar /usr/share/java/$(PACKAGE).jar
+	dh_link -p$(PACKAGE) /usr/share/$(PACKAGE)/postinst.tmpl /usr/share/debhelper/autoscripts/postinst-maven-repo
+	dh_link -p$(PACKAGE) /usr/share/$(PACKAGE)/postrm.tmpl /usr/share/debhelper/autoscripts/postrm-maven-repo
+
 

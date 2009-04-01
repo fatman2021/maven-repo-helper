@@ -1,5 +1,8 @@
 DEBIAN_POM="/usr/share/maven-repo/org/debian/debian-parent/1.0-SNAPSHOT/debian-parent-1.0-SNAPSHOT.pom"
 
+LIBRARIES="#LIBRARIES#"
+PACKAGE="#PACKAGE#"
+
 if [ ! -f $DEBIAN_POM ]; then
     mkdir -p $(dirname $DEBIAN_POM)
     echo "<?xml version="1.0" encoding="UTF-8"?>" > $DEBIAN_POM
@@ -37,4 +40,3 @@ if [ "$1" = "configure" ]; then
     done
 fi
 
-#DEBHELPER#

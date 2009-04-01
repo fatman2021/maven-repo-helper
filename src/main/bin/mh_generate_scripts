@@ -20,22 +20,24 @@ if [ -z "$VERSION_PROPERTIES_FILE" ]; then
     VERSION_PROPERTIES_FILE="debian/tmp/versions.properties"
 fi
 
+mh_lspoms $PACKAGE > /dev/null
+
 # Automatic execution of mh_cleanpom to fill versions.properties
 if [ ! -f "$VERSION_PROPERTIES_FILE" ]; then
     echo "$VERSION_PROPERTIES_FILE not found, trying to generate it by executing"
     echo "mh_cleanpom on all pom.xml files"
-    find_poms | while read POM; do
+    cat debian/$PACKAGE.poms | while read POM OPTS; do
         echo "mh_cleanpom $POM"
-        mh_cleanpom $POM
+        mh_cleanpom $OPTS $POM
     done
 fi
 
 echo_script() {
     echo "#!/bin/sh"
     echo "set -e"
-    echo "LIBRARIES=\"$(cat $VERSION_PROPERTIES_FILE | grep -v ^#.* | sed s/\.version=/' '/ | tr '\n' ',')\""
-    echo "PACKAGE=\"$PACKAGE\""
-    cat /usr/share/maven-repo-helper/post$DO.tmpl
+    LIBRARIES=$(cat $VERSION_PROPERTIES_FILE | grep -v ^#.* | sed s/\.version=/' '/ | tr '\n' ',')
+    cat /usr/share/maven-repo-helper/post$DO.tmpl | sed s/"#PACKAGE#"/"$PACKAGE"/g | sed sed s/"#LIBRARIES#"/"$LIBRARIES"/g
+    echo "#DEBHELPER#"
 }
 
 DO="inst"
@@ -65,13 +67,13 @@ echo "binary-post-install/$BIN_PACKAGE::"
 if [ -f debian/tmp/pom.properties ]; then
     source debian/tmp/pom.properties
 fi
-find_poms | while read POM; do
+cat debian/$PACKAGE.poms | while read POM OPTS; do
     if [[ "$POM" = "pom.xml" || "$POM" = "debian/pom.xml" ]]; then
-        echo "    mh_installpom --debian-parent -p$BIN_PACKAGE $POM"
+        echo "    mh_installpom $OPTS -p$BIN_PACKAGE $POM"
         echo "    mh_installjar -p$BIN_PACKAGE $POM build/\$(PACKAGE)-\$(VERSION).jar usr/share/java/\$(PACKAGE)-\$(VERSION).jar usr/share/java/\$(PACKAGE).jar"
     elif [ ! -z "$POM" ]; then
         BASENAME=$(basename $(dirname $POM))
-        echo "    mh_installpom -p$BIN_PACKAGE $POM"
+        echo "    mh_installpom $OPTS -p$BIN_PACKAGE $POM"
         echo "    mh_installjar -p$BIN_PACKAGE $POM build/\$(PACKAGE)-\$(VERSION).jar usr/share/java/$BASENAME-\$(VERSION).jar usr/share/java/\$(PACKAGE).jar"
     fi
 done

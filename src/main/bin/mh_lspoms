@@ -1,0 +1,25 @@
+QUIET=false
+if [ "$1" = "-q" ]; then
+    QUIET=true
+    shift
+fi
+
+PACKAGE=$1
+
+if [ -z "$PACKAGE" ]; then
+    echo "Syntax:"
+    echo "mh_lspoms <binary package>"
+    exit 1
+fi
+
+if [ -e debian/$PACKAGE.poms ]; then
+  if [ "$QUIET" = "false" ]; then
+    echo debian/$PACKAGE.poms already exist. Please delete it if you want to regenerate it.
+  fi
+else
+  find . -path '*/.*' -prune -o -type f -print | grep -e /pom\.xml$ | grep -v "debian/tmp" | sed s,./,, | sed -e's,^\(debian/pom\.xml\|pom\.xml\),\1 --debian-parent,' > debian/$PACKAGE.poms
+  if [ "$QUIET" = "false" ]; then
+    echo The list of POM files is now in debian/$PACKAGE.poms
+  fi
+fi
+

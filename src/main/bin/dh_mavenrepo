@@ -12,7 +12,7 @@ use Debian::Debhelper::Dh_Lib;
 
 =head1 SYNOPSIS
 
-B<dh_mavenrepo> [S<I<debhelper options>>] [B<-n>] [B<-X>I<item>] [B<-V> I<version>] [S<I<module dirs ...>>]
+B<dh_mavenrepo> [S<I<debhelper options>>] [B<-n>]
 
 =head1 DESCRIPTION
 
@@ -21,55 +21,82 @@ POM files and generate installation scripts to keep the Debian parent POM
 in the Maven repository updated with the current list of libraries and their
 versions.
 
-dh_pycentral will also generate substitution variables: the
-${python:Provides} variable will contain versioned provides of the package
-(if the package's name starts with "python-"). A python-foo package could
-provide "python2.3-foo" and "python2.4-foo" at the same time. Python
-extensions have to provide those whereas it's only option for pure python
-modules.
-
-The ${python:Versions} variable should be used to provide the required
-XB-Python-Version field listing the python versions supported by the
-package.
-
 =head1 OPTIONS
 
 =over 4
-
-=item I<module dirs>
-
-If your package installs python modules in non-standard directories, you
-can make dh_pycentral check those directories by passing their names on the
-command line. By default, it will check /usr/lib/$PACKAGE, /usr/share/$PACKAGE, /usr/lib/games/$PACKAGE,
-/usr/share/games/$PACKAGE and /usr/lib/python?.?/site-packages.
-
-Note: only /usr/lib/python?.?/site-packages and the
-extra names on the command line are searched for binary (.so) modules.
-
-=item B<-V> I<version>
-
-If the .py files your package ships are meant to be used by a specific
-pythonX.Y version, you can use this option to specify the desired version,
-such as 2.3. Do not use if you ship modules in /usr/lib/site-python.
-
-With the new policy, this option is mostly deprecated. Use the
-XS-Python-Field to indicate that you're using a specific python version.
 
 =item B<-n>, B<--noscripts>
 
 Do not modify postinst/postrm scripts.
 
-=item B<-X>I<item>, B<--exclude=>I<item>
-
-Exclude files that contain "item" anywhere in their filename from being
-taken into account to generate the python dependency. You may use this
-option multiple times to build up a list of things to exclude.
-
 =back
 
 =head1 CONFORMS TO
 
-Python policy, version 0.4.1 (2006-06-20)
+Java policy, version TODO
 
 =cut
 
+init();
+
+my $versionPropertiesFile = "debian/tmp/versions.properties";
+
+if (! $dh{NOSCRIPTS}) {
+    foreach my $package (@{$dh{DOPACKAGES}}) {
+    	doit(("rm","-rf","debian/tmp"));
+        if ( -e "debian/$package.poms" ) {
+            cleanpoms("debian/$package.poms");
+            my $libraries = readLibraries();
+			autoscript($package,"postinst","postinst-maven-repo","s%#PACKAGE#%$package%;s%#LIBRARIES#%$libraries%");
+			autoscript($package,"postrm","postrm-maven-repo","s%#LIBRARIES#%$libraries%");
+        }
+    }
+}
+
+sub cleanpoms {
+    my $pomsFile = shift;
+	open(POMS, $pomsFile) ||
+	    error("Can't open $pomsFile: $!");
+	foreach my $line (<POMS>) {
+        chomp($line);
+		if ($line ne '') {
+            my $pom='';
+            my $opts='';
+            my @elems=split(' ',$line);
+            push(@elems, '');
+            ($pom,$opts)=@elems;
+			doit("mh_cleanpom $opts $pom");
+		}
+	}
+	close(POMS);
+}
+
+sub readLibraries {
+   	open(VERSIONS, $versionPropertiesFile) ||
+        error("Can't open $versionPropertiesFile: $!");
+    my $libraries = '';
+	foreach my $line (<VERSIONS>) {
+        chomp($line);
+        $_=$line;
+		if (! ($line eq '') && ! (substr($line,0,1) eq '#')) {
+            s/\.version=/ /g;
+            $libraries .= $_ . ",";
+        }
+    }
+    close(VERSIONS);
+    return $libraries;
+}
+
+=head1 SEE ALSO
+
+L<debhelper(7)>
+
+This program is a part of maven-repo-helper but is made to work with debhelper.
+
+=head1 AUTHORS
+
+Ludovic Claude <ludovic.claude@laposte.net>
+
+Also includes bits of the dh_pycentral written by Raphael Hertzog <hertzog@debian.org>.
+
+=cut
