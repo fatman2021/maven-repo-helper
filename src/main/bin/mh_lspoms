@@ -1,6 +1,8 @@
-QUIET=false
+#!/bin/bash
+
+VERBOSE=true
 if [ "$1" = "-q" ]; then
-    QUIET=true
+    VERBOSE=false
     shift
 fi
 
@@ -12,13 +14,18 @@ if [ -z "$PACKAGE" ]; then
     exit 1
 fi
 
+if [ ! -z "${PACKAGE##-p}" ]; then
+    PACKAGE=${PACKAGE##-p}
+fi
+
 if [ -e debian/$PACKAGE.poms ]; then
-  if [ "$QUIET" = "false" ]; then
+  if $VERBOSE ; then
     echo debian/$PACKAGE.poms already exist. Please delete it if you want to regenerate it.
   fi
 else
-  find . -path '*/.*' -prune -o -type f -print | grep -e /pom\.xml$ | grep -v "debian/tmp" | sed s,./,, | sed -e's,^\(debian/pom\.xml\|pom\.xml\),\1 --debian-parent,' > debian/$PACKAGE.poms
-  if [ "$QUIET" = "false" ]; then
+  mkdir -p debian
+  find . -path '*/.*' -prune -o -path './debian/tmp' -prune -o -type f -name 'pom.xml' -print | sed s,./,, | sed -e's,^\(debian/pom\.xml\|pom\.xml\),\1 --debian-parent,' > debian/$PACKAGE.poms
+  if $VERBOSE ; then
     echo The list of POM files is now in debian/$PACKAGE.poms
   fi
 fi

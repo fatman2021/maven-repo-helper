@@ -1,0 +1,102 @@
+#!/usr/bin/perl -w
+
+=head1 NAME
+
+mh_mavenrepo - manage the Maven repository when installing Java libraries
+
+=cut
+
+use strict;
+use File::Find;
+use Debian::Debhelper::Dh_Lib;
+
+=head1 SYNOPSIS
+
+B<mh_mavenrepo> [S<I<debhelper options>>] [B<-n>]
+
+=head1 DESCRIPTION
+
+mh_mavenrepo is a debhelper program that will scan your package for Maven
+POM files and generate installation scripts to keep the Debian parent POM
+in the Maven repository updated with the current list of libraries and their
+versions.
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<-n>, B<--noscripts>
+
+Do not modify postinst/postrm scripts.
+
+=back
+
+=head1 CONFORMS TO
+
+Java policy, version TODO
+
+=cut
+
+init();
+
+my $versionPropertiesFile = "debian/tmp/versions.properties";
+
+if (! $dh{NOSCRIPTS}) {
+    foreach my $package (@{$dh{DOPACKAGES}}) {
+    	doit(("rm","-rf","debian/tmp"));
+        if ( -e "debian/$package.poms" ) {
+            cleanpoms("debian/$package.poms");
+            my $libraries = readLibraries();
+			autoscript($package,"postinst","postinst-maven-repo","s%#PACKAGE#%$package%;s%#LIBRARIES#%$libraries%");
+			autoscript($package,"postrm","postrm-maven-repo","s%#LIBRARIES#%$libraries%");
+        }
+    }
+}
+
+sub cleanpoms {
+    my $pomsFile = shift;
+	open(POMS, $pomsFile) ||
+	    error("Can't open $pomsFile: $!");
+	foreach my $line (<POMS>) {
+        chomp($line);
+		if ($line ne '') {
+            my $pom='';
+            my $opts='';
+            my @elems=split(' ',$line);
+            push(@elems, '');
+            ($pom,$opts)=@elems;
+			doit("mh_cleanpom $opts $pom");
+		}
+	}
+	close(POMS);
+}
+
+sub readLibraries {
+   	open(VERSIONS, $versionPropertiesFile) ||
+        error("Can't open $versionPropertiesFile: $!");
+    my $libraries = '';
+	foreach my $line (<VERSIONS>) {
+        chomp($line);
+        $_=$line;
+		if (! ($line eq '') && ! (substr($line,0,1) eq '#')) {
+            s/\.version=/ /g;
+            $libraries .= $_ . ",";
+        }
+    }
+    close(VERSIONS);
+    return $libraries;
+}
+
+=head1 SEE ALSO
+
+L<debhelper(7)>
+
+This program is a part of maven-repo-helper but is made to work with debhelper.
+
+=head1 AUTHORS
+
+Ludovic Claude <ludovic.claude@laposte.net>
+
+Also includes bits of the dh_pycentral written by Raphael Hertzog <hertzog@debian.org>.
+
+=cut

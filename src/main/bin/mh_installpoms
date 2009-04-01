@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+PACKAGE=$1
+
+if [ ! -z "${PACKAGE##-p}" ]; then
+    PACKAGE=${PACKAGE##-p}
+fi
+
+cat debian/$PACKAGE.poms | while read POM OPTS; do
+    if [ ! -z "$POM" ]; then
+        mh_installpom $OPTS -p$BIN_PACKAGE $POM
+    fi
+done

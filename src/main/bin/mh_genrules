@@ -1,0 +1,100 @@
+#!/bin/bash
+# Generate some of the build and installation scripts
+
+USE_ANT=false
+if [ "$1" = "-a" ]; then
+    USE_ANT=true
+    shift
+fi
+if [ "$1" = "--use-ant" ]; then
+    USE_ANT=true
+    shift
+fi
+
+PACKAGE=$1
+
+if [ -z "$PACKAGE" ]; then
+    echo "Syntax:"
+    echo "mh_genrules <binary package>"
+    exit 1
+fi
+
+if [ ! -z "${PACKAGE##-p}" ]; then
+    PACKAGE=${PACKAGE##-p}
+fi
+
+VERSION_PROPERTIES_FILE="debian/tmp/versions.properties"
+
+mh_lspoms $PACKAGE > /dev/null
+
+# Automatic execution of mh_cleanpom to fill versions.properties
+if [ ! -f "$VERSION_PROPERTIES_FILE" ]; then
+    cat debian/$PACKAGE.poms | while read POM OPTS; do
+        echo "mh_cleanpom $POM"
+        mh_cleanpom $OPTS $POM
+    done
+fi
+
+BIN_PACKAGE="\$(PACKAGE)"
+SOURCE=$(dpkg-parsechangelog | egrep '^Source:' | cut -f2 -d' ')
+if [ "lib$SOURCE-java" = "$PACKAGE" ]; then
+    BIN_PACKAGE="lib\$(PACKAGE)-java"
+elif [ "$SOURCE-java" = "$PACKAGE" ]; then
+    BIN_PACKAGE="\$(PACKAGE)-java"
+fi
+
+gen_rules() {
+    echo "#!/usr/bin/make -f"
+    echo ""
+    echo "include /usr/share/cdbs/1/rules/debhelper.mk"
+    if $USE_ANT ; then
+        echo "include /usr/share/cdbs/1/class/ant.mk"
+    fi
+    echo ""
+    echo "PACKAGE			   := \$(DEB_SOURCE_PACKAGE)"
+    echo "VERSION			   := \$(DEB_UPSTREAM_VERSION)"
+    echo "JAVA_HOME            := /usr/lib/jvm/default-java"
+    if $USE_ANT ; then
+        echo "DEB_JARS             := # TODO - fill the list of jars"
+        echo "DEB_ANT_BUILD_TARGET := package"
+        echo "DEB_ANT_BUILDFILE    := debian/build.xml"
+        echo "DEB_ANT_ARGS         := -Dpackage=\$(PACKAGE) -DartifactId=\$(PACKAGE) -Dversion=\$(VERSION)"
+    fi
+    echo ""
+    echo "binary-post-install/$BIN_PACKAGE::"
+    echo -e "\tmh_installpoms -p$BIN_PACKAGE"
+
+    if [ -f debian/tmp/pom.properties ]; then
+        source debian/tmp/pom.properties
+    fi
+    cat debian/$PACKAGE.poms | while read POM OPTS; do
+        if [[ "$POM" = "pom.xml" || "$POM" = "debian/pom.xml" ]]; then
+            grep "<packaging>\s*pom" $POM > /dev/null
+            if [ $? != 0 ]; then
+                echo -e "\tmh_installjar -p$BIN_PACKAGE $POM build/\$(PACKAGE)-\$(VERSION).jar usr/share/java/\$(PACKAGE)-\$(VERSION).jar usr/share/java/\$(PACKAGE).jar"
+            fi
+        elif [ ! -z "$POM" ]; then
+            BASENAME=$(basename $(dirname $POM))
+            grep "<packaging>\s*pom" $POM > /dev/null
+            if [ $? != 0 ]; then
+                echo -e "\tmh_installjar -p$BIN_PACKAGE $POM $BASENAME/build/$BASENAME-\$(VERSION).jar usr/share/java/$BASENAME-\$(VERSION).jar usr/share/java/$BASENAME.jar"
+            fi
+        fi
+    done
+    echo ""
+    echo "binary-fixup/$BIN_PACKAGE::"
+    echo -e "\tmh_mavenrepo"
+    echo ""
+    echo "clean::"
+    echo -e "\t-rm -rf debian/tmp"
+}
+
+if [ -e debian/rules ]; then
+    gen_rules > debian/rules.new
+    echo "The new rules have been generated into debian/rules.new."
+    echo "You need to merge them manually into debian/rules"
+else
+    mkdir -p debian
+    gen_rules > debian/rules
+    echo "The new rules have been generated into debian/rules."
+fi
