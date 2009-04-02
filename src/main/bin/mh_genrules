@@ -30,8 +30,10 @@ mh_lspoms $PACKAGE > /dev/null
 # Automatic execution of mh_cleanpom to fill versions.properties
 if [ ! -f "$VERSION_PROPERTIES_FILE" ]; then
     cat debian/$PACKAGE.poms | while read POM OPTS; do
-        echo "mh_cleanpom $POM"
-        mh_cleanpom $OPTS $POM
+        if [ ! -z "$POM" ]; then
+            echo "mh_cleanpom $POM"
+            mh_cleanpom $OPTS $POM
+        fi
     done
 fi
 
