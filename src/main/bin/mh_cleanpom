@@ -1,19 +1,51 @@
-#!/bin/bash
+#!/bin/bash --
 
-CLEAN_ARGS=''
-if [ "$1" = "-d" ]; then
-    CLEAN_ARGS=$1
-    shift
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_cleanpom [option]... [pom] [target] [pom-props] [versions-props]"
+   echo -e "Cleans the POM and prepare it for inclusion in the Maven repository."
+   echo -e "Also extracts some information from the POM."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t[pom] is the location of the POM file to clean."
+   echo -e "\t  Default to pom.xml or debian/pom.xml"
+   echo -e "\t[target] is where the cleaned POM is written to."
+   echo -e "\t  Default to debian/tmp/pom.xml"
+   echo -e "\t[pom-props] is where the POM properties file will be written."
+   echo -e "\t  Default to debian/tmp/pom.properties"
+   echo -e "\t[versions-props] is where the versions properties file will be written."
+   echo -e "\t  Default to debian/tmp/versions.properties"
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-d --debian-parent: force the cleaned POM to inherit from"
+   echo -e "\t  org.debian:debian-parent:1.0-SNAPSHOT"
+   echo -e "\t-s<spec> --spec=<spec>: gives the location of the Maven spec file for"
+   echo -e "\t  special properties. Optional, the default location is"
+   echo -e "\t  debian/maven.spec"
+   echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   exit 1
+}
+
+ARGS="d debian-parent s spec v verbose n no-act" parseargs "$@"
+
+if [ "$ARGC" -lt "1" ]; then
+   syntax
 fi
-if [ "$1" = "--debian-parent" ]; then
-    CLEAN_ARGS=$1
-    shift
-fi
-POM=$1
-TARGET=$2
-POM_PROPS=$3
-VERSIONS_PROPS=$4
-SPEC=$5
+
+DEBIANPARENT=$(getarg d debian-parent)
+SPEC=$(getarg s spec)
+SPEC=${SPEC:-debian/maven.spec}
+VERBOSE=$(getarg v verbose)
+NOACT=$(getarg n no-act)
+POM="${ARGV[0]}"
+TARGET="${ARGV[1]:-debian/tmp/pom.xml}"
+POM_PROPS="${ARGV[2]:-debian/tmp/pom.properties}"
+VERSIONS_PROPS="${ARGV[3]:-debian/tmp/versions.properties}"
+
 if [ -z "$POM" ]; then
     if [ -f debian/pom.xml ]; then
         POM="debian/pom.xml"
@@ -21,19 +53,10 @@ if [ -z "$POM" ]; then
         POM="pom.xml"
     fi
 fi
-if [ -z "$TARGET" ]; then
-        TARGET="debian/tmp/pom.xml"
-fi
-if [ -z "$POM_PROPS" ]; then
-        POM_PROPS="debian/tmp/pom.properties"
-fi
-if [ -z "$VERSIONS_PROPS" ]; then
-        VERSIONS_PROPS="debian/tmp/versions.properties"
-fi
-if [ -z "$SPEC" ]; then
-    if [ -f debian/maven.spec ]; then
-        SPEC="debian/maven.spec"
-    fi
+
+CLEAN_ARGS="${VERBOSE:+--verbose} ${DEBIANPARENT:+--debian-parent}"
+
+if [ -z "$NOACT" ]; then
+    java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS $VERSIONS_PROPS $SPEC
 fi
 
-java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS $VERSIONS_PROPS $SPEC

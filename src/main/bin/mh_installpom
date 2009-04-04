@@ -1,54 +1,62 @@
-#!/bin/bash
+#!/bin/bash --
 
 set -e
 
-CLEAN_ARGS=''
-SPEC=''
+. /usr/share/maven-repo-helper/mh_lib.sh
 
-if [ "$1" = "-d" ]; then
-    CLEAN_ARGS=$1
-    shift
-fi
-if [ "$1" = "--debian-parent" ]; then
-    CLEAN_ARGS=$1
-    shift
-fi
-if [ "$1" = "-s" ]; then
-    shift
-    SPEC=$1
-    shift
-fi
-if [ "$1" = "--spec" ]; then
-    shift
-    SPEC=$1
-    shift
+syntax()
+{
+   echo -e "Usage: mh_installpom [option]... [pom]"
+   echo -e "Installs the POM file in /usr/share/maven-repo, at the correct location for"
+   echo -e "Maven."
+   echo -e "Before installing the POM, it prepares it with mh_cleanpom."
+   echo -e ""
+   echo -e "debian/maven.spec is used to alter the version properties for the library and"
+   echo -e "its dependencies."
+   echo -e ""
+   echo -e "Prefer to use mh_installpoms as it reuses the information in"
+   echo -e "debian/\$package.poms and avoids repetition."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t[pom] is the location of the POM associated with the jar to install."
+   echo -e "\t  GroupId, artifactId and version will be extracted from this file."
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-d --debian-parent: force the cleaned POM to inherit from"
+   echo -e "\t  org.debian:debian-parent:1.0-SNAPSHOT"
+   echo -e "\t-s<spec> --spec=<spec>: gives the location of the Maven spec file for"
+   echo -e "\t  special properties. Optional, the default location is"
+   echo -e "\t  debian/maven.spec"
+   echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   exit 1
+}
+
+ARGS="p package d debian-parent s spec v verbose n no-act" parseargs "$@"
+
+if [ "$ARGC" -lt "1" ]; then
+   syntax
 fi
 
-PACKAGE=$1
+DEBIANPARENT=$(getarg d debian-parent)
+SPEC=$(getarg s spec)
+SPEC=${SPEC:-debian/maven.spec}
+PACKAGE=$(getarg p package)
+PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+VERBOSE=$(getarg v verbose)
+NOACT=$(getarg n no-act)
+POM="${ARGV[0]}"
 
-if [ ! -z "${PACKAGE##-p}" ]; then
-    PACKAGE=${PACKAGE##-p}
-fi
-
-POM=$2
-INSTALLED_JAR=$3
-
-if [ -z "$SPEC" ]; then
-    if [ -f debian/maven.spec ]; then
-        SPEC="debian/maven.spec"
-    fi
-fi
+CLEAN_ARGS="${DEBIANPARENT:+--debian-parent}"
+DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
 
 mkdir -p debian/tmp 2> /dev/null
-mh_cleanpom $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties debian/tmp/versions.properties $SPEC
+mh_cleanpom $DH_OPTS $CLEAN_ARGS --spec=$SPEC $POM debian/tmp/pom.xml debian/tmp/pom.properties debian/tmp/versions.properties
 source debian/tmp/pom.properties
 
 GROUP_PATH=$(echo $GROUP_ID | tr . / )
 mv debian/tmp/pom.xml debian/tmp/${ARTIFACT_ID}-${VERSION}.pom
-dh_install -p${PACKAGE} --sourcedir=debian/tmp ${ARTIFACT_ID}-${VERSION}.pom \
+dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${ARTIFACT_ID}-${VERSION}.pom \
 	usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}
-
-if [ ! -z "$INSTALLED_JAR" ]; then
-	dh_link -p${PACKAGE} $INSTALLED_JAR \
-		usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar;
-fi

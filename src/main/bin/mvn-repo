@@ -1,2 +1,2 @@
-#!/bin/sh
+#!/bin/sh --
 java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.DebianPOM "$@"

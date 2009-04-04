@@ -1,15 +1,40 @@
-#!/bin/bash
+#!/bin/bash --
 
 set -e
 
-PACKAGE=$1
+. /usr/share/maven-repo-helper/mh_lib.sh
 
-if [ ! -z "${PACKAGE##-p}" ]; then
-    PACKAGE=${PACKAGE##-p}
-fi
+syntax()
+{
+   echo -e "Usage: mh_installpoms [option]..."
+   echo -e "Reads the file debian/\$package.poms and installs each POM file"
+   echo -e "listed in the .poms file."
+   echo -e ""
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-s<spec> --spec=<spec>: gives the location of the Maven spec file for"
+   echo -e "\t  special properties. Optional, the default location is"
+   echo -e "\t  debian/maven.spec"
+   echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   exit 1
+}
+
+ARGS="p package s spec v verbose n no-act" parseargs "$@"
+
+SPEC=$(getarg s spec)
+SPEC=${SPEC:-debian/maven.spec}
+PACKAGE=$(getarg p package)
+PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+VERBOSE=$(getarg v verbose)
+NOACT=$(getarg n no-act)
+
+DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
 
 cat debian/$PACKAGE.poms | while read POM OPTS; do
     if [ ! -z "$POM" ]; then
-        mh_installpom $OPTS -p$BIN_PACKAGE $POM
+        mh_installpom $DH_OPTS $OPTS -p$PACKAGE --spec=$SPEC $POM
     fi
 done

@@ -1,32 +1,48 @@
-#!/bin/bash
+#!/bin/bash --
 
-VERBOSE=true
-if [ "$1" = "-q" ]; then
-    VERBOSE=false
-    shift
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_lspoms [option]... [package]"
+   echo -e "Looks for all POM files defined in the source of the project."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t[package] is the name of the binary package,"
+   echo -e "\t  e.g. libcommons-lang-java"
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e ""
+   echo -e "You need to execute it on the unpacked origianl source tree, merged with the"
+   echo -e "debian/ folder. It will create the file debian/<binary package>.poms which"
+   echo -e "contains all the POMs to deploy to the Maven repository and is used by"
+   echo -e "mh_mavenrepo and mh_installpoms."
+   echo -e ""
+   echo -e "The contents of debian/<binary package>.poms should be:"
+   echo -e "\t* one POM file location per line,"
+   echo -e "\t* optionaly, the location is followed by the option --debian-parent"
+   echo -e "\t  to indicate that this POM should inherit directly from the Debian"
+   echo -e "\t  parent POM."
+   echo -e ""
+   echo -e "All POMs which are installed in the Maven repository should inherit either"
+   echo -e "directly or indirectly from org.debian:debian-parent:1.0-SNAPSHOT"
+   exit 1
+}
+
+ARGS="" parseargs "$@"
+
+if [ "$ARGC" -lt "1" ]; then
+   syntax
 fi
 
-PACKAGE=$1
-
-if [ -z "$PACKAGE" ]; then
-    echo "Syntax:"
-    echo "mh_lspoms <binary package>"
-    exit 1
-fi
-
-if [ ! -z "${PACKAGE##-p}" ]; then
-    PACKAGE=${PACKAGE##-p}
-fi
+PACKAGE="${ARGV[0]}"
 
 if [ -e debian/$PACKAGE.poms ]; then
-  if $VERBOSE ; then
-    echo debian/$PACKAGE.poms already exist. Please delete it if you want to regenerate it.
-  fi
+  echo debian/$PACKAGE.poms already exist. Please delete it if you want to regenerate it.
 else
   mkdir -p debian
   find . -path '*/.*' -prune -o -path './debian/tmp' -prune -o -type f -name 'pom.xml' -print | sed s,./,, | sed -e's,^\(debian/pom\.xml\|pom\.xml\),\1 --debian-parent,' > debian/$PACKAGE.poms
-  if $VERBOSE ; then
-    echo The list of POM files is now in debian/$PACKAGE.poms
-  fi
+  echo The list of POM files is now in debian/$PACKAGE.poms
 fi
 

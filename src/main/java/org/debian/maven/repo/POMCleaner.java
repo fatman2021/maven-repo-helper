@@ -393,6 +393,7 @@ public class POMCleaner {
             System.out.println("Usage: [option] original-pom target-file versions-properties [special-dependencies]");
             System.out.println("");
             System.out.println("Options:");
+            System.out.println("  -v, --verbose: be extra verbose");
             System.out.println("  -d, --debian-parent: target POM will inherit directly from the Debian parent POM");
             System.out.println("");
             System.out.println("Arguments:");
@@ -435,6 +436,11 @@ public class POMCleaner {
         POMCleaner cleaner = new POMCleaner();
         Collection specialCases = new ArrayList();
         int i = inc(-1, args);
+        boolean verbose = false;
+        if ("--verbose".equals(args[0]) || "-v".equals(args[0])) {
+            verbose = true;
+            i = inc(i, args);
+        }
         boolean inheritFromDebian = false;
         if ("--debian-parent".equals(args[0]) || "-d".equals(args[0])) {
             inheritFromDebian = true;
@@ -448,7 +454,9 @@ public class POMCleaner {
             String specialDependencies = args[i++];
             File sdFile = new File(specialDependencies);
             if (!sdFile.exists()) {
-                System.err.println("Cannot find file: " + sdFile);
+                if (verbose) {
+                    System.err.println("Cannot find file: " + sdFile);
+                }
             } else {
                 try {
                     LineNumberReader lnr = new LineNumberReader(new FileReader(sdFile));

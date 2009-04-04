@@ -1,27 +1,30 @@
-#!/bin/bash
-# Generate some of the build and installation scripts
+#!/bin/bash --
 
-USE_ANT=false
-if [ "$1" = "-a" ]; then
-    USE_ANT=true
-    shift
-fi
-if [ "$1" = "--use-ant" ]; then
-    USE_ANT=true
-    shift
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_genrules [option]... [package]"
+   echo -e "Generate the rules file, at least partially."
+   echo -e "Also extracts some information from the POM."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t[package] is the name of the binary package,"
+   echo -e "\t  e.g. libcommons-lang-java"
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-a --use-ant: add code to use Ant to build the sources"
+   exit 1
+}
+
+ARGS="a use-ant" parseargs "$@"
+
+if [ "$ARGC" -lt "1" ]; then
+   syntax
 fi
 
-PACKAGE=$1
-
-if [ -z "$PACKAGE" ]; then
-    echo "Syntax:"
-    echo "mh_genrules <binary package>"
-    exit 1
-fi
-
-if [ ! -z "${PACKAGE##-p}" ]; then
-    PACKAGE=${PACKAGE##-p}
-fi
+PACKAGE="${ARGV[0]}"
 
 VERSION_PROPERTIES_FILE="debian/tmp/versions.properties"
 
@@ -73,13 +76,13 @@ gen_rules() {
         if [[ "$POM" = "pom.xml" || "$POM" = "debian/pom.xml" ]]; then
             grep "<packaging>\s*pom" $POM > /dev/null
             if [ $? != 0 ]; then
-                echo -e "\tmh_installjar -p$BIN_PACKAGE $POM build/\$(PACKAGE)-\$(VERSION).jar usr/share/java/\$(PACKAGE)-\$(VERSION).jar usr/share/java/\$(PACKAGE).jar"
+                echo -e "\tmh_installjar -p$BIN_PACKAGE -l $POM build/\$(PACKAGE)-\$(VERSION).jar"
             fi
         elif [ ! -z "$POM" ]; then
             BASENAME=$(basename $(dirname $POM))
             grep "<packaging>\s*pom" $POM > /dev/null
             if [ $? != 0 ]; then
-                echo -e "\tmh_installjar -p$BIN_PACKAGE $POM $BASENAME/build/$BASENAME-\$(VERSION).jar usr/share/java/$BASENAME-\$(VERSION).jar usr/share/java/$BASENAME.jar"
+                echo -e "\tmh_installjar -p$BIN_PACKAGE -l $POM $BASENAME/build/$BASENAME-\$(VERSION).jar"
             fi
         fi
     done

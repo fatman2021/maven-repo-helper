@@ -11,6 +11,24 @@ DEB_ANT_BUILD_TARGET := package
 DEB_ANT_BUILDFILE    := ./debian/build.xml
 DEB_ANT_ARGS         := -Dpackage=$(PACKAGE) -Dversion=$(VERSION)
 
+# Generation of man pages
+SCRIPTS       := $(wildcard src/main/bin/mh_*)
+MAN_PAGES     := $(addprefix debian/tmp/doc/,$(addsuffix .1, $(notdir $(SCRIPTS))))
+debian/tmp/mh_lib.sh : src/main/share/mh_lib.sh
+	mkdir -p debian/tmp
+	cp src/main/share/mh_lib.sh debian/tmp/mh_lib.sh
+debian/tmp/mh_% : src/main/bin/mh_% debian/tmp/mh_lib.sh
+	mkdir -p debian/tmp
+	cp $< $@
+	perl -i -pe 's,\. /usr/share/maven-repo-helper/mh_lib.sh,\. debian/tmp/mh_lib.sh,' $@
+	chmod +x $@
+debian/tmp/doc/mh_%.1 : debian/tmp/mh_% 
+	mkdir -p debian/tmp/doc
+	-grep -q '^#!/bin/bash' $< && help2man -N -o $@ $<
+	-grep -q '^#!/usr/bin/perl' $< && pod2man $< > $@
+man-pages: $(MAN_PAGES)
+build/$(PACKAGE):: man-pages
+
 binary-post-install/$(PACKAGE)::
 	dh_install -p$(PACKAGE) build/$(PACKAGE)-$(VERSION).jar /usr/share/java
 	dh_install -p$(PACKAGE) src/main/bin /usr
@@ -18,5 +36,8 @@ binary-post-install/$(PACKAGE)::
 	dh_link -p$(PACKAGE) /usr/share/java/$(PACKAGE)-$(VERSION).jar /usr/share/java/$(PACKAGE).jar
 	dh_link -p$(PACKAGE) /usr/share/$(PACKAGE)/postinst.tmpl /usr/share/debhelper/autoscripts/postinst-maven-repo
 	dh_link -p$(PACKAGE) /usr/share/$(PACKAGE)/postrm.tmpl /usr/share/debhelper/autoscripts/postrm-maven-repo
+	dh_installman $(MAN_PAGES)
 
-
+$(SCRIPTS):
+	help2man $(basename )
+	
