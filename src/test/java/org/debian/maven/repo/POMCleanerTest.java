@@ -15,7 +15,7 @@ import static org.custommonkey.xmlunit.XMLAssert.*;
  *
  * @author ludo
  */
-public class POMCleanerTest extends BaseTest {
+public class POMCleanerTest extends TestBase {
 
     private File pomProperties;
     private File versionProperties;

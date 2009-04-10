@@ -1,6 +1,8 @@
+#!/bin/sh -e
+
 DEBIAN_POM="/usr/share/maven-repo/org/debian/debian-parent/1.0-SNAPSHOT/debian-parent-1.0-SNAPSHOT.pom"
 
-LIBRARIES="#LIBRARIES#"
+LIBRARIES="org.debian.maven.maven-repo-helper 0.1"
 
 remove_repo_property() {
     VERSION_PROPERTY=$1
@@ -17,7 +19,7 @@ properties_end_tag_line() {
     grep -n "</properties>" $DEBIAN_POM | cut -d':' -f1
 }
 
-case "$1" in 
+case "$1" in
   remove|purge)
     echo $LIBRARIES | tr ',' '\n' | while read VERSION_PROPERTY LIBVER; do
         if [ ! -z "$VERSION_PROPERTY" ]; then
@@ -43,3 +45,4 @@ case "$1" in
   ;;
 esac
 
+#DEBHELPER#

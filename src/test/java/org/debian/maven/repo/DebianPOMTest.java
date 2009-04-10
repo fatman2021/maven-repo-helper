@@ -14,7 +14,7 @@ import static org.custommonkey.xmlunit.XMLAssert.*;
  *
  * @author ludo
  */
-public class DebianPOMTest extends BaseTest {
+public class DebianPOMTest extends TestBase {
 
     Map<String, String> libraryProperties;
 

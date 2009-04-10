@@ -7,10 +7,33 @@ Build-Depends: debhelper (>= 5), cdbs, default-jdk, ant, maven-ant-helper, help2
 Standards-Version: 3.8.1
 Vcs-Bzr: lp:~ludovicc/maven-packaging-support/maven-repo-helper
 Vcs-Browser: http://bazaar.launchpad.net/~ludovicc/maven-packaging-support/maven-repo-helper/files
-Homepage: https://code.launchpad.net/maven-packaging-support/
+Homepage: https://launchpad.net/maven-packaging-support
 
 Package: maven-repo-helper
 Architecture: all
 Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless
-Description: Provides support for managing the Maven repository in a Debian distribution.
+Suggests: maven-debian-helper
+Description: Helper tools for including Maven metatada in Debian packages
+ Maven is a software project management and comprehension tool. Based on the
+ concept of a project object model (POM), Maven can manage a project's build,
+ reporting and documentation from a central piece of information.
  .
+ Maven's primary goal is to allow a developer to comprehend the complete
+ state of a development effort in the shortest period of time. In order to
+ attain this goal there are several areas of concern that Maven attempts
+ to deal with:
+ .
+    * Making the build process easy
+    * Providing a uniform build system
+    * Providing quality project information
+    * Providing guidelines for best practices development
+    * Allowing transparent migration to new features
+ .
+ This package enables Debian packages which are not using Maven in their
+ build process to provide and install Maven POMs and libraries in the
+ repository located in /usr/share/maven-repo.
+ .
+ Packages built with Maven (using maven-debian-helper) will benefit as
+ many of their dependencies are already packaged in Debian but they are
+ missing the necessary metadata (Maven POM) which is required by Maven
+ when its using dependencies.

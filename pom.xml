@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.debian</groupId>
+    <groupId>org.debian.maven</groupId>
     <artifactId>maven-repo-helper</artifactId>
     <name>Maven Repo helper</name>
     <packaging>jar</packaging>
@@ -10,7 +10,7 @@
         Provides support for managing the Maven repository in a Debian distribution.
     </description>
 
-    <inceptionYear>2001</inceptionYear>
+    <inceptionYear>2009</inceptionYear>
     <url>https://code.launchpad.net/maven-packaging-support/</url>
     <licenses>
         <license>
@@ -47,6 +47,14 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                  <includes>
+                    <include>**/*Test.java</include>
+                  </includes>
                 </configuration>
             </plugin>
         </plugins>

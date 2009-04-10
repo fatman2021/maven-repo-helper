@@ -118,8 +118,8 @@ public class DebianPOM {
                 parser.close();
             }
 
-            for (Iterator i = remainingProperties.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry = (Map.Entry)i.next();
+            for (Iterator i = remainingProperties.entrySet().iterator(); i.hasNext();) {
+                Map.Entry entry = (Map.Entry) i.next();
                 writer.writeCharacters("\n\t\t");
                 writer.writeStartElement((String) entry.getKey());
                 writer.writeCharacters((String) entry.getValue());
@@ -258,31 +258,27 @@ public class DebianPOM {
     }
 
     public static void main(String[] args) {
-        try {
-            DebianPOM dp = new DebianPOM();
-            File pom = new File(args[1]);
-            File updatedPom = File.createTempFile("pom", "tmp");
+        DebianPOM dp = new DebianPOM();
+        File pom = new File(args[1]);
+        File updatedPom = new File(args[1] + ".tmp");
 
-            if (args[0].equals("add")) {
-                String property = args[2];
-                String version = args[3];
-                String pkg = args[4];
+        if (args[0].equals("add")) {
+            String property = args[2];
+            String version = args[3];
+            String pkg = args[4];
 
-                Map properties = new HashMap();
-                properties.put(property + ".version", version);
-                properties.put(property + ".package", pkg);
-                dp.addLibrary(pom, updatedPom, properties);
+            Map properties = new HashMap();
+            properties.put(property + ".version", version);
+            properties.put(property + ".package", pkg);
+            dp.addLibrary(pom, updatedPom, properties);
 
-            } else if (args[0].equals("remove")) {
-                String property = args[2];
-                dp.removeLibrary(pom, updatedPom, property + ".version", property + ".package");
-            } else {
-                System.err.println("Invalid arguments. Syntax is");
-                System.err.println("mvn-repo add <property> <version> <package>");
-                System.err.println("mvn-repo remove <property>");
-            }
-        } catch (IOException ex) {
-            log.log(Level.SEVERE, null, ex);
+        } else if (args[0].equals("remove")) {
+            String property = args[2];
+            dp.removeLibrary(pom, updatedPom, property + ".version", property + ".package");
+        } else {
+            System.err.println("Invalid arguments. Syntax is");
+            System.err.println("mvn-repo add <property> <version> <package>");
+            System.err.println("mvn-repo remove <property>");
         }
     }
 }
