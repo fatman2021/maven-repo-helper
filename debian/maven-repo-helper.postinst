@@ -2,7 +2,7 @@
 
 DEBIAN_POM="/usr/share/maven-repo/org/debian/debian-parent/1.0-SNAPSHOT/debian-parent-1.0-SNAPSHOT.pom"
 
-LIBRARIES="org.debian.maven.maven-repo-helper 0.1"
+LIBRARIES="org.debian.maven.maven-repo-helper.jar.debian 0.1"
 PACKAGE="maven-repo-helper"
 
 if [ ! -f $DEBIAN_POM ]; then
