@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.maven.wagon</groupId>
+	<artifactId>wagon-http-lightweight</artifactId>
+	<version>debian</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.apache.maven.wagon</groupId>
+		<artifactId>wagon-providers</artifactId>
+		<version>debian</version>
+	</parent>
+	<properties>
+		<debian.originalVersion>1.0-beta-5</debian.originalVersion>
+		<debian.package>libwagon-java</debian.package>
+	</properties>
+
+	<name>Maven Wagon Lightweight HTTP Provider</name>
+	<description>Wagon that gets and puts artifacts through http using standard Java library</description>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven.wagon</groupId>
+			<artifactId>wagon-http-shared</artifactId>
+			<version>debian</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-httpclient</groupId>
+					<artifactId>commons-httpclient</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+</project>

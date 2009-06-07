@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
-  <parent>
-    <artifactId>modello</artifactId>
-    <groupId>org.codehaus.modello</groupId>
-    <version>debian</version>
-  </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.modello</groupId>
   <artifactId>modello-core</artifactId>
-  <version>debian</version>
+  <version>1.0-alpha-22</version>
   <packaging>jar</packaging>
   <name>Modello Core</name>
+
+  <parent>
+    <groupId>org.codehaus.modello</groupId>
+    <artifactId>modello</artifactId>
+    <version>1.0-alpha-22</version>
+  </parent>
 
   <properties>
     <debian.originalVersion>1.0-alpha-22</debian.originalVersion>

@@ -11,7 +11,7 @@ syntax()
    echo -e "Maven."
    echo -e "Before installing the POM, it prepares it with mh_cleanpom."
    echo -e ""
-   echo -e "debian/maven.spec is used to alter the version properties for the library and"
+   echo -e "debian/maven.rules is used to alter the version properties for the library and"
    echo -e "its dependencies."
    echo -e ""
    echo -e "Prefer to use mh_installpoms as it reuses the information in"
@@ -24,39 +24,63 @@ syntax()
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: package to act on "
-   echo -e "\t-d --debian-parent: force the cleaned POM to inherit from"
-   echo -e "\t  org.debian:debian-parent:1.0-SNAPSHOT"
-   echo -e "\t-s<spec> --spec=<spec>: gives the location of the Maven spec file for"
+   echo -e "\t-o --no-parent: don't inherit from a parent POM"
+   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
    echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.spec"
+   echo -e "\t  debian/maven.rules"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    exit 1
 }
 
-ARGS="p package d debian-parent s spec v verbose n no-act" parseargs "$@"
+ARGS="p package o no-parent r rules v verbose n no-act" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
 fi
 
-DEBIANPARENT=$(getarg d debian-parent)
-SPEC=$(getarg s spec)
-SPEC=${SPEC:-debian/maven.spec}
+NOPARENT=$(getarg o no-parent)
+RULES=$(getarg r rules)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
 
-CLEAN_ARGS="${DEBIANPARENT:+--debian-parent}"
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
+CLEAN_ARGS="--package=${PACKAGE} ${NOPARENT:+--no-parent} ${RULES:+--rules=$RULES}"
 
 mkdir -p debian/tmp 2> /dev/null
-mh_cleanpom $DH_OPTS $CLEAN_ARGS --spec=$SPEC $POM debian/tmp/pom.xml debian/tmp/pom.properties debian/tmp/versions.properties
+
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties"
+fi
+
+mh_cleanpom $DH_OPTS $CLEAN_ARGS --keep-pom-version $POM debian/tmp/pom.xml.keep debian/tmp/pom.properties.keep
+mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties
 source debian/tmp/pom.properties
 
-GROUP_PATH=$(echo $GROUP_ID | tr . / )
-mv debian/tmp/pom.xml debian/tmp/${ARTIFACT_ID}-${VERSION}.pom
-dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${ARTIFACT_ID}-${VERSION}.pom \
-	usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}
+groupPath=$(echo $groupId | tr . / )
+
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    echo -e "\tmv debian/tmp/pom.xml debian/tmp/${artifactId}-${debianVersion}.pom"
+fi
+
+mv debian/tmp/pom.xml.keep debian/tmp/${artifactId}-${version}.pom
+mv debian/tmp/pom.xml debian/tmp/${artifactId}-${debianVersion}.pom
+
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${version}.pom usr/share/maven-repo/${groupPath}/${artifactId}/${version}"
+fi
+
+dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${version}.pom \
+	usr/share/maven-repo/${groupPath}/${artifactId}/${version}
+
+if [[ "${version}" != "${debianVersion}" ]]; then
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+        echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${debianVersion}.pom usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}"
+    fi
+
+    dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${debianVersion}.pom \
+        usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}
+fi

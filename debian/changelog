@@ -1,4 +1,4 @@
-maven-repo-helper (0.1) unstable; urgency=low
+maven-repo-helper (0.5) unstable; urgency=low
 
   * Initial release. (Closes: #521947)
 

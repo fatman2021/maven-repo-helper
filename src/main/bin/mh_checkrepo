@@ -1,0 +1,33 @@
+#!/bin/bash --
+
+set -e
+
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_checkrepo <location>"
+   echo -e "Checks the Maven repository for consistency and prints a report."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t<location> is the location of the Maven repository."
+   echo -e "\t  Default to /usr/share/maven-repo"
+   echo -e ""
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-v --verbose: show more information while running"
+   exit 1
+}
+
+ARGS="v verbose n" parseargs "$@"
+
+VERBOSE=$(getarg v verbose)
+
+if [ "$ARGC" -gt "0" ]; then
+	REPO="${ARGV[0]}"
+else
+	REPO="/usr/share/maven-repo"
+fi
+
+java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.Repository $REPO

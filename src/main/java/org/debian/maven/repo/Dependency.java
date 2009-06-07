@@ -4,6 +4,11 @@
  */
 package org.debian.maven.repo;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  *
  * @author ludo
@@ -65,6 +70,18 @@ public class Dependency {
             return false;
         }
         final Dependency other = (Dependency) obj;
+        if ((this.groupId == null) ? (other.groupId != null) : !this.groupId.equals(other.groupId)) {
+            return false;
+        }
+        if ((this.artifactId == null) ? (other.artifactId != null) : !this.artifactId.equals(other.artifactId)) {
+            return false;
+        }
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
+            return false;
+        }
         return true;
     }
 
@@ -76,4 +93,41 @@ public class Dependency {
         hash = 31 * hash + (this.version != null ? this.version.hashCode() : 0);
         return hash;
     }
+
+    public String toString() {
+        return groupId + ":" + artifactId + ":" + type + ":" + version;
+    }
+
+    public Dependency applyRules(Collection rules) {
+        for (Iterator i = rules.iterator(); i.hasNext();) {
+            DependencyRule rule = (DependencyRule) i.next();
+            if (rule.matches(this)) {
+                return rule.apply(this);
+            }
+        }
+        return this;
+    }
+
+    public DependencyRule findMatchingRule(Collection rules) {
+        for (Iterator i = rules.iterator(); i.hasNext();) {
+            DependencyRule rule = (DependencyRule) i.next();
+            if (rule.matches(this)) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
+    public static List applyRules(List dependencies, Collection rules) {
+        if (dependencies == null) {
+            return null;
+        }
+        List result = new ArrayList();
+        for (Iterator i = dependencies.iterator(); i.hasNext();) {
+            Dependency dependency = (Dependency) i.next();
+            result.add(dependency.applyRules(rules));
+        }
+        return result;
+    }
+
 }

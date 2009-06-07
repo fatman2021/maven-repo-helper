@@ -26,67 +26,125 @@ syntax()
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: package to act on "
-   echo -e "\t-s<spec> --spec=<spec>: gives the location of the Maven spec file for"
+   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
    echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.spec"
+   echo -e "\t  debian/maven.rules"
    echo -e "\t-l --java-lib: Optional, if given it will create additional links into "
    echo -e "\t  /usr/share/java to comply with the Java specification. More precisely,"
    echo -e "\t  the links created will be /usr/share/java/$name-$version.jar and"
    echo -e "\t  /usr/share/java/$name.jar"
-   echo -e "\t-n<name> --name=<name>: Optional, the name to use when installing the"
+   echo -e "\t-n<name> --usj-name=<name>: Optional, the name to use when installing the"
    echo -e "\t  library in /usr/share/java when --java-lib is used."
    echo -e "\t  Defaults to the artifact id found in the POM."
-   echo -e "\t-r<version> --version=<version>: Optional, the version to use when"
+   echo -e "\t-i<version> --usj-version=<version>: Optional, the version to use when"
    echo -e "\t  installing the library in /usr/share/java when --java-lib is used."
    echo -e "\t  Defaults to the version found in the POM."
+   echo -e "\t-c<classifier> --classifier=<classifier>: Optional, the classifier for"
+   echo -e "\t  the jar. Empty by default."
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    exit 1
 }
 
-ARGS="s spec l java-lib n name r version v verbose n no-act" parseargs "$@"
+ARGS="p package r rules l java-lib n usj-name i usj-version c classifier v verbose n no-act" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
 fi
 
-SPEC=$(getarg s spec)
-SPEC=${SPEC:-debian/maven.spec}
+RULES=$(getarg r rules)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 JAVALIB=$(getarg l java-lib)
 NAME=$(getarg l java-lib)
+CLASSIFIER=$(getarg c classifier)
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
 JAR="${ARGV[1]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
+CLEAN_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES}"
 
 mkdir -p debian/tmp 2> /dev/null
-mh_cleanpom $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties debian/tmp/notused.properties $SPEC
+
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties"
+fi
+
+mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties
 source debian/tmp/pom.properties
 
-GROUP_PATH=$(echo $GROUP_ID | tr . / )
+groupPath=$(echo $groupId | tr . / )
+
+if [ ! -e $JAR ]; then
+    echo "Cannot find the jar to install: $JAR"
+    exit 2
+fi
+
+VERSIONED_JAR_NAME="${artifactId}-${version}.jar"
+if [ ! -z "$CLASSIFIER" ]; then
+    VERSIONED_JAR_NAME="${artifactId}-${version}-${CLASSIFIER}.jar"
+fi
 
 # Install the jar in the Maven repository
-cp $JAR debian/tmp/${ARTIFACT_ID}-${VERSION}.jar
-dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${ARTIFACT_ID}-${VERSION}.jar \
-	usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    echo -e "\tcp $JAR debian/tmp/${VERSIONED_JAR_NAME}"
+fi
+
+cp $JAR debian/tmp/${VERSIONED_JAR_NAME}
+
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${VERSIONED_JAR_NAME} usr/share/maven-repo/${groupPath}/${artifactId}/${version}"
+fi
+
+dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${VERSIONED_JAR_NAME} \
+	usr/share/maven-repo/${groupPath}/${artifactId}/${version}
+
+if [[ "${version}" != "${debianVersion}" ]]; then
+
+    DEBIAN_JAR_NAME="${artifactId}-${debianVersion}.jar"
+    if [ ! -z "$CLASSIFIER" ]; then
+        DEBIAN_JAR_NAME="${artifactId}-${debianVersion}-${CLASSIFIER}.jar"
+    fi
+
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+        echo -e "\tdh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}/${DEBIAN_JAR_NAME}"
+    fi
+
+    dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} \
+        usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}/${DEBIAN_JAR_NAME}
+
+fi
 
 # Create the additional links
 for (( i=2; i < $ARGC; i++ )); do
     LINK_JAR="${ARGV[i]}"
-	dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar \
+
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+        echo -e "\tdh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} $LINK_JAR;"
+    fi
+
+    dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} \
         $LINK_JAR;
 done
 if [ -n "$JAVALIB" ]; then
-    JAR_NAME=$(getarg n name)
-    JAR_NAME=${JAR_NAME:-$ARTIFACT_ID}
-    JAR_VERSION=$(getarg r version)
-    JAR_VERSION=${JAR_VERSION:-$VERSION}
-	dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar \
+    JAR_NAME=$(getarg n usj-name)
+    JAR_NAME=${JAR_NAME:-$artifactId}
+    JAR_VERSION=$(getarg i usj-version)
+    JAR_VERSION=${JAR_VERSION:-$version}
+
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+        echo -e "\tdh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} usr/share/java/$JAR_NAME.jar;"
+    fi
+
+    dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} \
         usr/share/java/$JAR_NAME.jar;
-	dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.jar \
+
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+        echo -e "\tdh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} usr/share/java/$JAR_NAME-$JAR_VERSION.jar;"
+    fi
+
+    dh_link $DH_OPTS -p${PACKAGE} usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${VERSIONED_JAR_NAME} \
         usr/share/java/$JAR_NAME-$JAR_VERSION.jar;
 fi

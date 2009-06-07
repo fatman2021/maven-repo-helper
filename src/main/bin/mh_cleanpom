@@ -4,7 +4,7 @@
 
 syntax()
 {
-   echo -e "Usage: mh_cleanpom [option]... [pom] [target] [pom-props] [versions-props]"
+   echo -e "Usage: mh_cleanpom [option]... [pom] [target] [pom-props]"
    echo -e "Cleans the POM and prepare it for inclusion in the Maven repository."
    echo -e "Also extracts some information from the POM."
    echo -e ""
@@ -15,36 +15,100 @@ syntax()
    echo -e "\t  Default to debian/tmp/pom.xml"
    echo -e "\t[pom-props] is where the POM properties file will be written."
    echo -e "\t  Default to debian/tmp/pom.properties"
-   echo -e "\t[versions-props] is where the versions properties file will be written."
-   echo -e "\t  Default to debian/tmp/versions.properties"
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
-   echo -e "\t-d --debian-parent: force the cleaned POM to inherit from"
-   echo -e "\t  org.debian:debian-parent:1.0-SNAPSHOT"
-   echo -e "\t-s<spec> --spec=<spec>: gives the location of the Maven spec file for"
-   echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.spec"
+   echo -e "\t-p<package> --package=<package>: name of the Debian package containing"
+   echo -e "\t  this library"
+   echo -e "\t-o --no-parent: don't inherit from a parent POM"
+   echo -e "\t-k --keep-pom-version: keep the original version of the POM but,"
+   echo -e "\t  convert all other versions in dependencies and plugins"
+   echo -e "\t-k --keep-all-elements: keep all elements in the POM, do a version"
+   echo -e "\t  transformation only, don't delete the build and other elements."
+   echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
+   echo -e "\t  extra rules to apply when cleaning the POM."
+   echo -e "\t  Optional, the default location is debian/maven.rules"
+   echo -e "\t-i<rules> --published-rules=<rules>: path to the file containing the"
+   echo -e "\t  extra rules to publish in the property debian.mavenRules in the cleaned POM"
+   echo -e "\t  Optional, the default location is debian/maven.publishedRules"
+   echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
+   echo -e "\t  do not even convert versions to the default 'debian' version"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e ""
+   echo -e "Description:"
+   echo -e "\tCleans a Maven POM and prepare it for inclusion in the Debian"
+   echo -e "\trepository for Maven."
+   echo -e ""
+   echo -e "\tThe POM will be normalised, and its parent tag removed if the option"
+   echo -e "\t--no-parent is given. The version will be replaced by 'debian', unless"
+   echo -e "\ta special rule applies (see below the discussion about rules)."
+   echo -e "\tBuild, profiles and other build time only sections of the POM"
+   echo -e "\twill be stripped."
+   echo -e ""
+   echo -e "\tIf versions are given for a dependency, this version will be"
+   echo -e "\treplaced by the 'debian' version, or a rule can be given to"
+   echo -e "\tuse a custom version"
+   echo -e ""
+   echo -e "\tYou can modify those defaults with the help of the"
+   echo -e "\trules file. This file should contain the lines with the format:"
+   echo -e "\t<groupId> [artifactId] [type] [version]"
+   echo -e "\twhere groupId, artifactId, type and version can be the explicit attribute to"
+   echo -e "\tmatch, or can contain a wildcard (*) for generic matches."
+   echo -e ""
+   echo -e "\tEach one of those elements can also be a replace rule, of the form"
+   echo -e "\ts/<regex>/<replace>/ where regex is a regular expression, and replace"
+   echo -e "\tis the replacement. Substitution groups $1 $2... can be used in the"
+   echo -e "\treplacement if capture groups () have been used in the regex."
+   echo -e ""
+   echo -e "\tThe first element is mandatory (groupId), but you can ignore the following"
+   echo -e "\telements."
+   echo -e "\tIf the version is missing, then any version will be replaced with 'debian'."
+   echo -e "\tIf type is missing, then any type is matched."
+   echo -e "\tIf artifactId is missing, then any artifactId is matched."
+   echo -e ""
+   echo -e "\tYou can also have comments in this file, it should be a line starting with #"
+   echo -e ""
+   echo -e "Example of a rules file:"
+   echo -e ""
+   echo -e "\ts/commons-(.*)/org.apache.commons.commons$1/"
+   echo -e "\torg.itext * * s/1\\..*/1.x/"
+   echo -e "\torg.itext * * s/2\\..*/2.x/"
+   echo -e "\torg.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"
+   echo -e ""
+   echo -e "\tThis rules file does the following:"
+   echo -e "\t- all groupIds starting with commons- will have org.apache.commons. prefixed to them"
+   echo -e "\t- any artifact in the org.itext group with a version number starting with 1. will"
+   echo -e "\t  use the 1.x version"
+   echo -e "\t- any artifact in the org.itext group with a version number starting with 2. will"
+   echo -e "\t  use the 2.x version"
+   echo -e "\t- the jar with groupId=org.codehaus.plexus and artifactId=plexus-container-default and a"
+   echo -e "\t  version starting with 1.0-alpha- will use the 1.0-alpha version"
+   echo -e ""
+   echo -e "\tThe default rule (* * * s/.*/debian/) replaces any version number with"
+   echo -e "\tthe 'debian' version and always applies last if there was no other matches."
+   echo -e "\tAnother default rule (* * maven-plugin *) keep the version for all plugins"
+   echo -e "\tas the plugin mechanism requires a version in Maven."
    exit 1
 }
 
-ARGS="d debian-parent s spec v verbose n no-act" parseargs "$@"
+ARGS="p package o no-parent k keep-pom-version r rules i published-rules v verbose n no-act" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
 fi
 
-DEBIANPARENT=$(getarg d debian-parent)
-SPEC=$(getarg s spec)
-SPEC=${SPEC:-debian/maven.spec}
+NOPARENT=$(getarg o no-parent)
+KEEPVERSION=$(getarg k keep-pom-version)
+RULES=$(getarg r rules)
+PUBLISHED_RULES=$(getarg i published-rules)
+PACKAGE=$(getarg p package)
+PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
 TARGET="${ARGV[1]:-debian/tmp/pom.xml}"
 POM_PROPS="${ARGV[2]:-debian/tmp/pom.properties}"
-VERSIONS_PROPS="${ARGV[3]:-debian/tmp/versions.properties}"
 
 if [ -z "$POM" ]; then
     if [ -f debian/pom.xml ]; then
@@ -53,10 +117,21 @@ if [ -z "$POM" ]; then
         POM="pom.xml"
     fi
 fi
+if [ -z "$PUBLISHED_RULES" ]; then
+    if [ -f debian/maven.publishedRules ]; then
+        RULES="debian/maven.publishedRules"
+    fi
+fi
 
-CLEAN_ARGS="${VERBOSE:+--verbose} ${DEBIANPARENT:+--debian-parent}"
+if [ -z "$RULES" ]; then
+    if [ -f debian/maven.rules ]; then
+        RULES="debian/maven.rules"
+    fi
+fi
+
+CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES}"
 
 if [ -z "$NOACT" ]; then
-    java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS $VERSIONS_PROPS $SPEC
+    java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS
 fi
 

@@ -3,7 +3,7 @@ Section: java
 Priority: optional
 Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 Uploaders: Ludovic Claude <ludovic.claude@laposte.net>
-Build-Depends: debhelper (>= 5), cdbs, default-jdk, ant, maven-ant-helper, help2man
+Build-Depends: debhelper (>= 5), cdbs, default-jdk, ant, help2man
 Standards-Version: 3.8.1
 Vcs-Bzr: lp:~ludovicc/maven-packaging-support/maven-repo-helper
 Vcs-Browser: http://bazaar.launchpad.net/~ludovicc/maven-packaging-support/maven-repo-helper/files

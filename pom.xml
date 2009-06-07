@@ -5,10 +5,8 @@
     <artifactId>maven-repo-helper</artifactId>
     <name>Maven Repo helper</name>
     <packaging>jar</packaging>
-    <version>0.1</version>
-    <description>
-        Provides support for managing the Maven repository in a Debian distribution.
-    </description>
+    <version>0.5</version>
+    <description>Provides support for managing the Maven repository in a Debian distribution.</description>
 
     <inceptionYear>2009</inceptionYear>
     <url>https://code.launchpad.net/maven-packaging-support/</url>
@@ -45,8 +43,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.4</source>
+                    <target>1.4</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -64,7 +62,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.4</version>
+            <version>3.8.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -79,6 +77,12 @@
             <version>1.4</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+  <groupId>org.testng</groupId>
+  <artifactId>testng</artifactId>
+  <version>5.7</version>
+  <classifier>jdk15</classifier>
+</dependency>
     </dependencies>
 
 </project>

@@ -24,27 +24,22 @@ debian/tmp/mh_% : src/main/bin/mh_% debian/tmp/mh_lib.sh
 	chmod +x $@
 debian/tmp/doc/mh_%.1 : debian/tmp/mh_% 
 	mkdir -p debian/tmp/doc
-	-grep -q '^#!/bin/bash' $< && help2man -N -o $@ $<
-	-grep -q '^#!/usr/bin/perl' $< && pod2man $< > $@
+	help2man -N -o $@ $<
 man-pages: $(MAN_PAGES)
 build/$(PACKAGE):: man-pages
 
 binary-post-install/$(PACKAGE)::
-	dh_install -p$(PACKAGE) build/$(PACKAGE)-$(VERSION).jar /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/$(VERSION)
+	mv build/$(PACKAGE)-$(VERSION).jar build/$(PACKAGE)-debian.jar
+	dh_install -p$(PACKAGE) build/$(PACKAGE)-debian.jar /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 	dh_install -p$(PACKAGE) src/main/bin /usr
 	dh_install -p$(PACKAGE) src/main/share/* /usr/share/$(PACKAGE)
-	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/$(VERSION)/$(PACKAGE)-$(VERSION).jar /usr/share/java/$(PACKAGE).jar
-	dh_link -p$(PACKAGE) /usr/share/$(PACKAGE)/postinst.tmpl /usr/share/debhelper/autoscripts/postinst-maven-repo
-	dh_link -p$(PACKAGE) /usr/share/$(PACKAGE)/postrm.tmpl /usr/share/debhelper/autoscripts/postrm-maven-repo
+	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/tmp
-	java -cp build/$(PACKAGE)-$(VERSION).jar org.debian.maven.repo.POMCleaner --debian-parent pom.xml debian/tmp/$(PACKAGE)-$(VERSION).pom debian/tmp/pom.properties debian/tmp/versions.properties
-	dh_install -p$(PACKAGE) --sourcedir=debian/tmp $(PACKAGE)-$(VERSION).pom \
-		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/$(VERSION)
+	java -cp build/$(PACKAGE)-debian.jar org.debian.maven.repo.POMCleaner --debian-parent pom.xml debian/tmp/$(PACKAGE)-debian.pom debian/tmp/pom.properties 
+	dh_install -p$(PACKAGE) --sourcedir=debian/tmp $(PACKAGE)-debian.pom \
+		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 
 clean::
 	-rm -r debian/tmp
 
-$(SCRIPTS):
-	help2man $(basename )
-	

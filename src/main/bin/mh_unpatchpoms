@@ -1,0 +1,38 @@
+#!/bin/bash --
+
+set -e
+
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_unpatchpoms [option]..."
+   echo -e "Restore the POM files that have been patched to their original content."
+   echo -e ""
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   exit 1
+}
+
+ARGS="p package v verbose n no-act" parseargs "$@"
+
+PACKAGE=$(getarg p package)
+PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+VERBOSE=$(getarg v verbose)
+NOACT=$(getarg n no-act)
+
+if [ -z "$NOACT" ]; then
+    cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
+        if [ ! -z "$POM" ]; then
+            if [ -e ${POM}.save ]; then
+                rm $POM
+                mv ${POM}.save $POM
+            fi
+        fi
+    done
+fi
+

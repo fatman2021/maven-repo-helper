@@ -12,45 +12,32 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
+import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 /**
  *
  * @author ludo
  */
-public class TestBase {
+public class TestBase extends XMLTestCase {
 
     protected static File testDir = new File("tmp");
-    private List<Reader> openedReaders = new ArrayList();
+    private List openedReaders = new ArrayList();
     protected File pom;
     protected File updatedPom;
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        testDir.mkdir();
-        XMLUnit.setIgnoreWhitespace(true);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        testDir.delete();
-    }
-
-    @Before
     public void setUp() {
+        XMLUnit.setIgnoreWhitespace(true);
+        testDir.mkdir();
         pom = new File(testDir, "original.pom");
         updatedPom = new File(testDir, "updated.pom");
     }
 
-    @After
     public void tearDown() {
         if (pom.exists()) {
             pom.delete();
@@ -58,7 +45,8 @@ public class TestBase {
         if (updatedPom.exists()) {
             updatedPom.delete();
         }
-        for (Reader reader : openedReaders) {
+        for (Iterator i = openedReaders.iterator(); i.hasNext(); ) {
+            Reader reader = (Reader) i.next();
             try {
                 reader.close();
             } catch (IOException ex) {
@@ -66,6 +54,7 @@ public class TestBase {
             }
         }
         openedReaders.clear();
+        testDir.delete();
     }
 
     protected void useFile(String resource, File file) throws IOException {

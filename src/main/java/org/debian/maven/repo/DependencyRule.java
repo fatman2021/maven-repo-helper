@@ -1,0 +1,123 @@
+package org.debian.maven.repo;
+
+import java.util.StringTokenizer;
+
+/**
+ *
+ * @author ludo
+ */
+public class DependencyRule implements Comparable {
+
+    public static DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
+    public static DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin *");
+
+    private Rule groupRule;
+    private Rule artifactRule;
+    private Rule typeRule;
+    private Rule versionRule;
+
+    public DependencyRule(String def) {
+        StringTokenizer st = new StringTokenizer(def, " \t", false);
+        if (st.hasMoreTokens()) {
+            groupRule = new Rule(st.nextToken());
+        } else {
+            groupRule = new Rule("*");
+        }
+        if (st.hasMoreTokens()) {
+            artifactRule = new Rule(st.nextToken());
+        } else {
+            artifactRule = new Rule("*");
+        }
+        if (st.hasMoreTokens()) {
+            typeRule = new Rule(st.nextToken());
+        } else {
+            typeRule = new Rule("*");
+        }
+        if (st.hasMoreTokens()) {
+            versionRule = new Rule(st.nextToken());
+        } else {
+            versionRule = new Rule("s/.*/debian/");
+        }
+    }
+
+    public boolean matches(Dependency dependency) {
+        return groupRule.match(dependency.getGroupId()) && artifactRule.match(dependency.getArtifactId()) && typeRule.match(dependency.getType()) && versionRule.match(dependency.getVersion());
+    }
+
+    public Dependency apply(Dependency dependency) {
+        return new Dependency(groupRule.apply(dependency.getGroupId()),
+                artifactRule.apply(dependency.getArtifactId()),
+                typeRule.apply(dependency.getType()),
+                versionRule.apply(dependency.getVersion()));
+    }
+
+    public int compareTo(Object o) {
+        DependencyRule other = (DependencyRule) o;
+        if (groupRule.isGeneric() && !other.groupRule.isGeneric()) {
+            return 1;
+        }
+        if (!groupRule.isGeneric() && other.groupRule.isGeneric()) {
+            return -1;
+        }
+        if (artifactRule.isGeneric() && !other.artifactRule.isGeneric()) {
+            return 1;
+        }
+        if (!artifactRule.isGeneric() && other.artifactRule.isGeneric()) {
+            return -1;
+        }
+        if (typeRule.isGeneric() && !other.typeRule.isGeneric()) {
+            return 1;
+        }
+        if (!typeRule.isGeneric() && other.typeRule.isGeneric()) {
+            return -1;
+        }
+        if (versionRule.isGeneric() && !other.versionRule.isGeneric()) {
+            return 1;
+        }
+        if (!versionRule.isGeneric() && other.versionRule.isGeneric()) {
+            return -1;
+        }
+        return this.toPatternString().compareTo(other.toPatternString());
+    }
+
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DependencyRule other = (DependencyRule) obj;
+        if (this.groupRule != other.groupRule && (this.groupRule == null || !this.groupRule.equals(other.groupRule))) {
+            return false;
+        }
+        if (this.artifactRule != other.artifactRule && (this.artifactRule == null || !this.artifactRule.equals(other.artifactRule))) {
+            return false;
+        }
+        if (this.typeRule != other.typeRule && (this.typeRule == null || !this.typeRule.equals(other.typeRule))) {
+            return false;
+        }
+        if (this.versionRule != other.versionRule && (this.versionRule == null || !this.versionRule.equals(other.versionRule))) {
+            return false;
+        }
+        return true;
+    }
+
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + (this.groupRule != null ? this.groupRule.hashCode() : 0);
+        hash = 73 * hash + (this.artifactRule != null ? this.artifactRule.hashCode() : 0);
+        hash = 73 * hash + (this.typeRule != null ? this.typeRule.hashCode() : 0);
+        hash = 73 * hash + (this.versionRule != null ? this.versionRule.hashCode() : 0);
+        return hash;
+    }
+
+    public String toPatternString() {
+        return groupRule.getPattern() + ":" + artifactRule.getPattern() + ":" + typeRule.getPattern() + ":" + versionRule.getPattern();
+    }
+
+    public String toString() {
+        return groupRule + " " + artifactRule + " " + typeRule + " " + versionRule;
+    }
+
+}

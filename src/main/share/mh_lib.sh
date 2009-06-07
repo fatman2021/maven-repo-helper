@@ -4,7 +4,7 @@
 # - package selection
 #
 
-VERSION=0.2
+MH_VERSION=${MH_VERSION:-0.5}
 
 parseargs()
 {
@@ -12,7 +12,7 @@ parseargs()
    ARGV=()
    while [ -n "$1" ]; do
       if [ "-V" = "$1" ] || [ "--version" = "$1" ]; then
-         echo "Maven Repo Helper version $VERSION"
+         echo "Maven Repo Helper version $MH_VERSION"
          exit 0
       elif [ "-h" = "$1" ] || [ "--help" = "$1" ]; then
          syntax

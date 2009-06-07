@@ -4,13 +4,13 @@
 
 syntax()
 {
-   echo -e "Usage: mh_genrules [option]... [package]"
+   echo -e "Usage: mh_genrules [option]... <package>"
    echo -e "Generate the rules file, at least partially."
-   echo -e "Also extracts some information from the POM."
    echo -e ""
    echo -e "Where"
-   echo -e "\t[package] is the name of the binary package,"
-   echo -e "\t  e.g. libcommons-lang-java"
+   echo -e "\t<package> is the name of the binary package,"
+   echo -e "\t  e.g. libcommons-lang-java. Default to the first binary"
+   echo -e "\t  found in the debian/control file"
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
@@ -20,25 +20,13 @@ syntax()
 
 ARGS="a use-ant" parseargs "$@"
 
-if [ "$ARGC" -lt "1" ]; then
-   syntax
+if [ "$ARGC" -gt "0" ]; then
+	PACKAGE="${ARGV[0]}"
+else
+	PACKAGE=$(dh_listpackages | head -1)
 fi
-
-PACKAGE="${ARGV[0]}"
-
-VERSION_PROPERTIES_FILE="debian/tmp/versions.properties"
 
 mh_lspoms $PACKAGE > /dev/null
-
-# Automatic execution of mh_cleanpom to fill versions.properties
-if [ ! -f "$VERSION_PROPERTIES_FILE" ]; then
-    cat debian/$PACKAGE.poms | while read POM OPTS; do
-        if [ ! -z "$POM" ]; then
-            echo "mh_cleanpom $POM"
-            mh_cleanpom $OPTS $POM
-        fi
-    done
-fi
 
 BIN_PACKAGE="\$(PACKAGE)"
 SOURCE=$(dpkg-parsechangelog | egrep '^Source:' | cut -f2 -d' ')
@@ -56,8 +44,8 @@ gen_rules() {
         echo "include /usr/share/cdbs/1/class/ant.mk"
     fi
     echo ""
-    echo "PACKAGE			   := \$(DEB_SOURCE_PACKAGE)"
-    echo "VERSION			   := \$(DEB_UPSTREAM_VERSION)"
+    echo "PACKAGE              := \$(DEB_SOURCE_PACKAGE)"
+    echo "VERSION              := \$(DEB_UPSTREAM_VERSION)"
     echo "JAVA_HOME            := /usr/lib/jvm/default-java"
     if $USE_ANT ; then
         echo "DEB_JARS             := # TODO - fill the list of jars"
@@ -69,9 +57,6 @@ gen_rules() {
     echo "binary-post-install/$BIN_PACKAGE::"
     echo -e "\tmh_installpoms -p$BIN_PACKAGE"
 
-    if [ -f debian/tmp/pom.properties ]; then
-        source debian/tmp/pom.properties
-    fi
     cat debian/$PACKAGE.poms | while read POM OPTS; do
         if [[ "$POM" = "pom.xml" || "$POM" = "debian/pom.xml" ]]; then
             grep "<packaging>\s*pom" $POM > /dev/null
@@ -86,9 +71,6 @@ gen_rules() {
             fi
         fi
     done
-    echo ""
-    echo "binary-fixup/$BIN_PACKAGE::"
-    echo -e "\tmh_mavenrepo"
     echo ""
     echo "clean::"
     echo -e "\t-rm -rf debian/tmp"

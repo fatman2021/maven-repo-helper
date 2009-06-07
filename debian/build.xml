@@ -2,18 +2,93 @@
 
     <property file="debian/build.properties"/>
     <property name="maven.test.skip" value="true"/>
-    <property name="maven.build.xml" value="/usr/share/maven-ant-helper/maven-build.xml"/>
-    <property file="/usr/share/maven-ant-helper/maven-defaults.properties"/>
+    <property name="artifactId" value="maven-repo-helper"/>
+
+    <target name="init">
+        <available property="available.resources" file="src/main/resources"/>
+
+        <fail unless="artifactId" message="Missing required property: artifactId"/>
+        <fail unless="version" message="Missing required property: version"/>
+        <fail unless="basedir" message="Missing required property: basedir"/>
+
+        <echo message="Compile classpath: ${classpath.full.compile}"/>
+        <echo message="Test classpath: ${classpath.full.test}"/>
+    </target>
 
     <target name="clean">
-        <ant target="clean" antfile="${maven.build.xml}" dir="."/>
+        <delete dir="${build.directory}"/>
     </target>
 
-    <target name="package">
-        <ant target="package" antfile="${maven.build.xml}" dir=".">
-            <property name="artifactId" value="${package}"/>
-        </ant>
+    <!--
+     | LIFECYCLE: jar
+     |
+     | This mimics the default Maven build life-cycle: http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
+     |-->
+
+     <target name="process-resources" depends="init" if="available.resources">
+        <mkdir dir="${build.outputDirectory}"/>
+        <copy todir="${build.outputDirectory}">
+            <fileset dir="src/main/resources"/>
+        </copy>
+     </target>
+
+    <target name="compile" depends="process-resources">
+        <mkdir dir="${build.outputDirectory}"/>
+        <mkdir dir="${build.directory}/generated-sources"/>
+        <javac
+            destdir="${build.outputDirectory}"
+            classpath="${classpath.compile}"
+            nowarn="true"
+            source="${build.javaVersion}" target="${build.javaVersion}"
+            debug="on">
+            <src path="${build.sourceDirectory}"/>
+            <src path="${build.directory}/generated-sources"/>
+        </javac>
     </target>
+
+    <target name="process-test-resources" depends="compile" unless="maven.test.skip">
+        <mkdir dir="${build.testOutputDirectory}"/>
+        <copy todir="${build.testOutputDirectory}">
+            <fileset dir="src/test/resources"/>
+        </copy>
+     </target>
+
+    <target name="test-compile" depends="process-test-resources" unless="maven.test.skip">
+        <mkdir dir="${build.testOutputDirectory}"/>
+        <javac
+            destdir="${build.testOutputDirectory}"
+            classpath="${classpath.full.test}"
+            nowarn="true"
+            source="${build.javaVersion}" target="${build.javaVersion}"
+            debug="on">
+            <src path="${build.testSourceDirectory}"/>
+        </javac>
+    </target>
+
+    <target name="test" depends="test-compile" unless="maven.test.skip">
+        <mkdir dir="${build.directory}/test-output"/>
+        <junit printsummary="yes" haltonfailure="no"> <!--  fork="yes" forkmode="once" -->
+            <sysproperty key="basedir" value="${basedir}"/>
+            <classpath>
+                <pathelement path="${classpath.full.test}"/>
+            </classpath>
+
+            <formatter type="plain"/>
+            <batchtest todir="${build.directory}/test-output">
+                <fileset dir="${build.testSourceDirectory}">
+                    <include name="**/*Test.java"/>
+                    <exclude name="**/Abstract*"/>
+                    <exclude name="${maven.test.exclude}"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="package" depends="test">
+        <jar jarfile="${build.directory}/${artifactId}-${version}.jar"
+            basedir="${build.outputDirectory}"/>
+    </target>
+
 
 </project>
 
