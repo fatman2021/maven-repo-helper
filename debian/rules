@@ -14,6 +14,15 @@ DEB_ANT_ARGS         := -Dpackage=$(PACKAGE) -Dversion=$(VERSION)
 # Generation of man pages
 SCRIPTS       := $(wildcard src/main/bin/mh_*)
 MAN_PAGES     := $(addprefix debian/tmp/doc/,$(addsuffix .1, $(notdir $(SCRIPTS))))
+mh_checkrepo_description = "Checks the Maven repository."
+mh_cleanpom_description = "Cleans a POM file."
+mh_genrules_description = "Generates the debian/rules file with Maven support."
+mh_installjar_description = "Installs a jar into /usr/share/maven-repo."
+mh_installpom_description = "Installs a POM file into /usr/share/maven-repo."
+mh_installpoms_description = "Installs all POMs for the package into /usr/share/maven-repo."
+mh_lspoms_description = "Generates a list of POMs for the package."
+mh_patchpoms_description = "Patches the POM files using the Maven dependency rules."
+mh_unpatchpoms_description = "Undo the patches on the POM files."
 debian/tmp/mh_lib.sh : src/main/share/mh_lib.sh
 	mkdir -p debian/tmp
 	cp src/main/share/mh_lib.sh debian/tmp/mh_lib.sh
@@ -24,7 +33,7 @@ debian/tmp/mh_% : src/main/bin/mh_% debian/tmp/mh_lib.sh
 	chmod +x $@
 debian/tmp/doc/mh_%.1 : debian/tmp/mh_% 
 	mkdir -p debian/tmp/doc
-	help2man -N -o $@ $<
+	help2man -N -n $(mh_$*_description) -o $@ $<
 man-pages: $(MAN_PAGES)
 build/$(PACKAGE):: man-pages
 
