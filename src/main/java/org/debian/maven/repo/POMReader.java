@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -31,7 +32,11 @@ public class POMReader {
         if (! originalPom.exists()) {
             System.err.println("Cannot find pom file " + originalPom.getAbsolutePath());
         }
-        XMLStreamReader parser = factory.createXMLStreamReader(new BufferedReader(new FileReader(originalPom)));
+        return readPom(new FileReader(originalPom));
+    }
+
+    public POMInfo readPom(Reader originalPom) throws XMLStreamException {
+        XMLStreamReader parser = factory.createXMLStreamReader(new BufferedReader(originalPom));
         List path = new ArrayList();
         List dependencies = new ArrayList();
         List dependencyManagement = new ArrayList();
@@ -40,6 +45,7 @@ public class POMReader {
         List pluginManagement = new ArrayList();
         List profileDependencies = new ArrayList();
         List profileDependencyManagement = new ArrayList();
+        List modules = new ArrayList();
 
         Map properties = new TreeMap();
         Dependency thisPom = new Dependency(null, null, "jar", null);
@@ -47,6 +53,7 @@ public class POMReader {
         Dependency currentDependency = null;
         int inLevel = 0;
         int inIgnoredElement = 0;
+        int inModule = 0;
         int inDependency = 0;
         int inExtension = 0;
         int inPlugin = 0;
@@ -105,6 +112,10 @@ public class POMReader {
                             extensions.add(currentDependency);
                         } else if (inExtension > 0) {
                             inExtension++;
+                        } else if (inLevel == 2 && "modules".equals(element)) {
+                            inModule++;
+                        } else if (inModule > 0) {
+                            inModule++;
                         } else if (inLevel == 2 && "parent".equals(element)) {
                             inParent++;
                             parent = new Dependency();
@@ -132,6 +143,8 @@ public class POMReader {
                             inPlugin--;
                         } else if (inExtension > 0) {
                             inExtension--;
+                        } else if (inModule > 0) {
+                            inModule--;
                         } else if (inParent > 0) {
                             inParent--;
                         } else if (inProperties > 0) {
@@ -153,7 +166,13 @@ public class POMReader {
                             currentDependency.setType(value);
                         } else if ("version".equals(element)) {
                             currentDependency.setVersion(value);
+                        } else if ("optional".equals(element)) {
+                            currentDependency.setOptional("true".equals(value));
+                        } else if ("scope".equals(element)) {
+                            currentDependency.setScope(value);
                         }
+                    } else if (inModule > 1) {
+                        modules.add(value);
                     } else if (inParent > 1) {
                         if ("groupId".equals(element)) {
                             parent.setGroupId(value);
@@ -220,6 +239,7 @@ public class POMReader {
         }
         info.setThisPom(thisPom);
         info.setParent(parent);
+        info.setModules(modules);
         info.setDependencies(dependencies);
         info.setDependencyManagement(dependencyManagement);
         info.setExtensions(extensions);

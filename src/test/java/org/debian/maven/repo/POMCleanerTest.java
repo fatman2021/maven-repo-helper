@@ -125,6 +125,29 @@ public class POMCleanerTest extends TestBase {
     /**
      * Test of cleanPom method, of class POMCleaner.
      */
+    public void testCleanPlexusActiveCollectionsPom() throws Exception {
+        pomProperties = new File(testDir, "pom.properties");
+        usePom("plexus-active-collections.pom");
+        boolean noParent = true;
+        POMCleaner instance = new POMCleaner();
+        instance.addDefaultRules();
+        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
+        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha.*/1.0-alpha/"));
+        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-maven-plugin maven-plugin s/.*/1.3.8/"));
+        instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libplexus-active-collections-java");
+        assertXMLEqual(read("plexus-active-collections.cleaned"), read(updatedPom));
+        Properties pomInfo = new Properties();
+        pomInfo.load(new FileReader(pomProperties));
+        assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
+        assertEquals("plexus-active-collections", pomInfo.get("artifactId"));
+        assertEquals("jar", pomInfo.get("type"));
+        assertEquals("1.0-beta-2", pomInfo.get("version"));
+        assertEquals("debian", pomInfo.get("debianVersion"));
+    }
+
+    /**
+     * Test of cleanPom method, of class POMCleaner.
+     */
     public void testCleanSlf4jPom() throws Exception {
         pomProperties = new File(testDir, "pom.properties");
         usePom("slf4j.xml");

@@ -19,6 +19,8 @@ public class Dependency {
     private String artifactId;
     private String type;
     private String version;
+    private boolean optional;
+    private String scope;
 
     public Dependency() {
     }
@@ -62,6 +64,22 @@ public class Dependency {
         this.version = version;
     }
 
+    public boolean isOptional() {
+        return optional;
+    }
+
+    public void setOptional(boolean optional) {
+        this.optional = optional;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -80,6 +98,26 @@ public class Dependency {
             return false;
         }
         if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean equalsIgnoreVersion(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Dependency other = (Dependency) obj;
+        if ((this.groupId == null) ? (other.groupId != null) : !this.groupId.equals(other.groupId)) {
+            return false;
+        }
+        if ((this.artifactId == null) ? (other.artifactId != null) : !this.artifactId.equals(other.artifactId)) {
+            return false;
+        }
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
             return false;
         }
         return true;

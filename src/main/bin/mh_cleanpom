@@ -92,7 +92,7 @@ syntax()
    exit 1
 }
 
-ARGS="p package o no-parent k keep-pom-version r rules i published-rules v verbose n no-act" parseargs "$@"
+ARGS="p package o no-parent k keep-pom-version r rules i published-rules s no-rules v verbose n no-act" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
@@ -102,6 +102,7 @@ NOPARENT=$(getarg o no-parent)
 KEEPVERSION=$(getarg k keep-pom-version)
 RULES=$(getarg r rules)
 PUBLISHED_RULES=$(getarg i published-rules)
+NORULES=$(getarg s no-rules)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
@@ -119,7 +120,7 @@ if [ -z "$POM" ]; then
 fi
 if [ -z "$PUBLISHED_RULES" ]; then
     if [ -f debian/maven.publishedRules ]; then
-        RULES="debian/maven.publishedRules"
+        PUBLISHED_RULES="debian/maven.publishedRules"
     fi
 fi
 
@@ -129,7 +130,7 @@ if [ -z "$RULES" ]; then
     fi
 fi
 
-CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES}"
+CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${NORULES:+--no-rules}"
 
 if [ -z "$NOACT" ]; then
     java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS

@@ -413,7 +413,7 @@ public class POMTransformer extends POMReader {
         }
         if (!publishedRules.isEmpty()) {
             indent(writer, inLevel + 1);
-            writer.writeStartElement("debian.mavenRule");
+            writer.writeStartElement("debian.mavenRules");
             StringWriter sw = new StringWriter();
             for (Iterator i = publishedRules.iterator(); i.hasNext();) {
                 DependencyRule dependencyRule = (DependencyRule) i.next();
@@ -439,7 +439,7 @@ public class POMTransformer extends POMReader {
         void handlePOM(File pomFile, boolean noParent) throws Exception;
     }
 
-    private void foreachPoms(File poms, POMHandler handler) {
+    private static void foreachPoms(File poms, POMHandler handler) {
         try {
             LineNumberReader reader = new LineNumberReader(new FileReader(poms));
             String line;
@@ -463,6 +463,22 @@ public class POMTransformer extends POMReader {
         }
     }
 
+    public static Map getPomOptions(File poms) {
+        final Map pomOptions = new HashMap();
+        foreachPoms(poms, new POMHandler() {
+
+            public void handlePOM(File pomFile, boolean noParent) throws Exception {
+                String option = "";
+                if (noParent) {
+                    option = "--no-parent";
+                }
+                pomOptions.put(pomFile, option);
+            }
+        });
+
+        return pomOptions;
+    }
+
     public static void main(String[] args) {
         if (args.length == 0 || "-h".equals(args[0]) || "--help".equals(args[0])) {
             System.out.println("Purpose: Transforms the POM files to use Debian versions.");
@@ -474,6 +490,8 @@ public class POMTransformer extends POMReader {
             System.out.println("    this library");
             System.out.println("  -r<rules>, --rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to apply when cleaning the POM");
+            System.out.println("  -i<rules>, --published-rules=<rules>: path to the file containing the");
+            System.out.println("    extra rules to publish in the property debian.mavenRules in the cleaned POM");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
             System.out.println("  --keep-pom-version: keep the original version of the POMs but, ");
@@ -513,6 +531,10 @@ public class POMTransformer extends POMReader {
                 rulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--rules=")) {
                 rulesFile = new File(arg.substring("--rules=".length()));
+            } else if (arg.startsWith("-i")) {
+                publishedRulesFile = new File(arg.substring(2));
+            } else if (arg.startsWith("--published-rules=")) {
+                publishedRulesFile = new File(arg.substring("--rules=".length()));
             }
             i = inc(i, args);
         }
@@ -525,7 +547,9 @@ public class POMTransformer extends POMReader {
             poms = new File("debian/" + debianPackage + ".poms");
         }
 
-        if (!noRules) {
+        if (noRules) {
+            transformer.addRule(DependencyRule.NO_CHANGE_RULE);
+        } else {
             transformer.addDefaultRules();
             if (rulesFile != null) {
                 if (!rulesFile.exists()) {

@@ -14,6 +14,7 @@ syntax()
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
+   echo -e "\t-p<package> --package=<package>: package to act on "
    echo -e ""
    echo -e "You need to execute it on the unpacked origial source tree, merged with the"
    echo -e "debian/ folder. It will create the file debian/<binary package>.poms which"
@@ -28,14 +29,17 @@ syntax()
    exit 1
 }
 
-ARGS="" parseargs "$@"
+ARGS="p package" parseargs "$@"
 
-if [ "$ARGC" -gt "0" ]; then
-	PACKAGE="${ARGV[0]}"
-else
-	PACKAGE=$(dh_listpackages | head -1)
+PACKAGE=$(getarg p package)
+
+if [ -z "$PACKAGE" ]; then
+	if [ "$ARGC" -gt "0" ]; then
+		PACKAGE="${ARGV[0]}"
+	else
+		PACKAGE=$(dh_listpackages | head -1)
+	fi
 fi
-
 
 if [ -e debian/$PACKAGE.poms ]; then
   echo debian/$PACKAGE.poms already exist. Please delete it if you want to regenerate it.

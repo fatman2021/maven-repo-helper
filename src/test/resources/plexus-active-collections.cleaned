@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.codehaus.plexus</groupId>
+	<artifactId>plexus-active-collections</artifactId>
+	<version>debian</version>
+	<packaging>jar</packaging>
+	<properties>
+		<debian.originalVersion>1.0-beta-2</debian.originalVersion>
+		<debian.package>libplexus-active-collections-java</debian.package>
+	</properties>
+
+	<name>Plexus Container-Backed Active Collections</name>
+	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-component-api</artifactId>
+			<version>debian</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-container-default</artifactId>
+			<version>1.0-alpha</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.x</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<scm>
+		<connection>scm:svn:http://svn.codehaus.org/plexus/tags/plexus-active-collections-1.0-beta-2</connection>
+		<developerConnection>scm:svn:https://svn.codehaus.org/plexus/tags/plexus-active-collections-1.0-beta-2</developerConnection>
+	</scm>
+</project>

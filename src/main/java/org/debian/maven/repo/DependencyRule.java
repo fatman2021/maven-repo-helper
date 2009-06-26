@@ -10,6 +10,7 @@ public class DependencyRule implements Comparable {
 
     public static DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
     public static DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin *");
+    public static DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * *");
 
     private Rule groupRule;
     private Rule artifactRule;
@@ -51,6 +52,13 @@ public class DependencyRule implements Comparable {
                 versionRule.apply(dependency.getVersion()));
     }
 
+    /**
+     * Natural sort order: from the most specific rules to the most generic rules,
+     * a rule is more generic if a generic match appears on th egroup rule, then
+     * artifact rule, then type rule, then version rule.
+     * If 2 rules have the same order of genericity, then use an alphabetical
+     * sorting of the pattern strings.
+     */
     public int compareTo(Object o) {
         DependencyRule other = (DependencyRule) o;
         if (groupRule.isGeneric() && !other.groupRule.isGeneric()) {

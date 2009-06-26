@@ -4,12 +4,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class POMInfo {
     private String originalParentVersion;
     private Dependency originalPom;
     private Dependency parent;
     private Dependency thisPom;
+    private List modules;
     private List dependencies;
     private List dependencyManagement;
     private List extensions;
@@ -68,6 +72,14 @@ public class POMInfo {
      */
     public void setThisPom(Dependency thisPom) {
         this.thisPom = thisPom;
+    }
+
+    public List getModules() {
+        return modules;
+    }
+
+    public void setModules(List modules) {
+        this.modules = modules;
     }
 
     /**
@@ -144,6 +156,26 @@ public class POMInfo {
 
     public void setExtensions(List extensions) {
         this.extensions = extensions;
+    }
+
+    public Set getPublishedRules(boolean includeDefault) {
+        Set rules = new TreeSet();
+        if (includeDefault) {
+            rules.add(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
+            rules.add(DependencyRule.TO_DEBIAN_VERSION_RULE);
+        }
+        if (getProperties() == null) {
+            return rules;
+        }
+        String mavenRules = (String) getProperties().get("debian.mavenRules");
+        if (mavenRules != null) {
+            StringTokenizer st = new StringTokenizer(mavenRules, ",");
+            while (st.hasMoreTokens()) {
+                String rule = st.nextToken().trim();
+                rules.add(new DependencyRule(rule));
+            }
+        }
+        return rules;
     }
 
     public POMInfo applyRules(Collection rules) {
