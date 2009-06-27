@@ -50,5 +50,5 @@ binary-post-install/$(PACKAGE)::
 		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 
 clean::
-	-rm -r debian/tmp
+	-rm -rf debian/tmp
 
