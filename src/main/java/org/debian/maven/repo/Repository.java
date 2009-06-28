@@ -6,6 +6,7 @@ package org.debian.maven.repo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +41,11 @@ public class Repository {
     public Repository(File baseDir) {
         this.baseDir = baseDir;
         try {
-            superPom = pomReader.readPom(new InputStreamReader(getClass().getResourceAsStream("/org/apache/maven/project/pom-4.0.0.xml")));
+            InputStream superPomSource = getClass().getResourceAsStream("/org/apache/maven/project/pom-4.0.0.xml");
+            // The maven2 jars may not always be present in the classpath
+            if (superPomSource != null) {
+                superPom = pomReader.readPom(new InputStreamReader(superPomSource));
+            }
         } catch (XMLStreamException ex) {
             log.log(Level.SEVERE, null, ex);
         }

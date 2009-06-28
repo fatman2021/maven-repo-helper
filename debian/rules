@@ -45,7 +45,7 @@ binary-post-install/$(PACKAGE)::
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/tmp
-	java -cp build/$(PACKAGE)-debian.jar org.debian.maven.repo.POMCleaner --debian-parent pom.xml debian/tmp/$(PACKAGE)-debian.pom debian/tmp/pom.properties 
+	java -cp build/$(PACKAGE)-debian.jar org.debian.maven.repo.POMCleaner --no-parent --rules=debian/maven.rules pom.xml debian/tmp/$(PACKAGE)-debian.pom debian/tmp/pom.properties 
 	dh_install -p$(PACKAGE) --sourcedir=debian/tmp $(PACKAGE)-debian.pom \
 		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 
