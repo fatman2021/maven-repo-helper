@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.LineNumberReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -79,6 +80,21 @@ public class TestBase extends XMLTestCase {
         Reader r = new FileReader(f);
         openedReaders.add(r);
         return r;
+    }
+
+    protected void show(File f) {
+            try {
+        LineNumberReader lnr = new LineNumberReader(read(f));
+        do {
+                String l = lnr.readLine();
+                if (l == null) {
+                    break;
+                }
+                System.out.println(l);
+        } while (true);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
     }
 
 }

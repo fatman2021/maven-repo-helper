@@ -61,4 +61,16 @@ public class POMTransformerTest extends TestBase {
         assertXMLEqual(read("plexus-container-default.transformed"), read(updatedPom));
     }
 
+    /**
+     * Test of cleanPom method, of class POMCleaner.
+     */
+    public void testTransformDoxiaFmlPom() throws Exception {
+        usePom("doxia-module-fml.xml");
+        boolean noParent = false;
+        POMTransformer instance = new POMTransformer();
+        instance.addDefaultRules();
+        instance.transformPom(pom, updatedPom, noParent, true, "libdoxia-java");
+        assertXMLEqual(read("doxia-module-fml.transformed"), read(updatedPom));
+    }
+
 }

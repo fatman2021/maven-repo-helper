@@ -29,7 +29,7 @@ public class POMReader {
     protected final XMLInputFactory factory = XMLInputFactory.newInstance();
 
     public POMInfo readPom(File originalPom) throws XMLStreamException, FileNotFoundException {
-        if (! originalPom.exists()) {
+        if (!originalPom.exists()) {
             System.err.println("Cannot find pom file " + originalPom.getAbsolutePath());
         }
         return readPom(new FileReader(originalPom));
@@ -43,8 +43,10 @@ public class POMReader {
         List extensions = new ArrayList();
         List plugins = new ArrayList();
         List pluginManagement = new ArrayList();
+        List pluginDependencies = new ArrayList();
         List profileDependencies = new ArrayList();
         List profileDependencyManagement = new ArrayList();
+        List profilePluginDependencies = new ArrayList();
         List modules = new ArrayList();
 
         Map properties = new TreeMap();
@@ -88,7 +90,16 @@ public class POMReader {
                                     dependencies.add(currentDependency);
                                 } else if ("profile".equals(parentParentElement)) {
                                     profileDependencies.add(currentDependency);
+                                } else if ("plugin".equals(parentParentElement)) {
+                                    String p5Element = (String) path.get(path.size() - 6);
+                                    if ("project".equals(p5Element)) {
+                                        pluginDependencies.add(currentDependency);
+                                    } else if ("profile".equals(p5Element)) {
+                                        profilePluginDependencies.add(currentDependency);
+                                    }
                                 }
+                            } else {
+                                System.err.println("Unexpected element: " + parentElement);
                             }
                         } else if (inDependency > 0) {
                             inDependency++;
@@ -225,15 +236,17 @@ public class POMReader {
         inferedProperties.put("project.version", thisPom.getVersion());
         expendProperties(dependencies, inferedProperties);
         expendProperties(dependencyManagement, inferedProperties);
-        expendProperties(profileDependencies, inferedProperties);
-        expendProperties(profileDependencyManagement, inferedProperties);
         expendProperties(plugins, inferedProperties);
         expendProperties(pluginManagement, inferedProperties);
+        expendProperties(pluginDependencies, inferedProperties);
+        expendProperties(profileDependencies, inferedProperties);
+        expendProperties(profileDependencyManagement, inferedProperties);
+        expendProperties(profilePluginDependencies, inferedProperties);
 
         POMInfo info = new POMInfo();
         if (properties.get("debian.originalVersion") != null) {
             Dependency originalPomDep = new Dependency(thisPom.getGroupId(),
-                    thisPom.getArtifactId(), thisPom.getType(), 
+                    thisPom.getArtifactId(), thisPom.getType(),
                     (String) properties.get("debian.originalVersion"));
             info.setOriginalPom(originalPomDep);
         }
@@ -243,10 +256,12 @@ public class POMReader {
         info.setDependencies(dependencies);
         info.setDependencyManagement(dependencyManagement);
         info.setExtensions(extensions);
-        info.setProfileDependencies(profileDependencies);
-        info.setProfileDependencyManagement(profileDependencyManagement);
         info.setPlugins(plugins);
         info.setPluginManagement(pluginManagement);
+        info.setPluginDependencies(pluginDependencies);
+        info.setProfileDependencies(profileDependencies);
+        info.setProfileDependencyManagement(profileDependencyManagement);
+        info.setProfilePluginDependencies(profilePluginDependencies);
         info.setProperties(properties);
         return info;
     }

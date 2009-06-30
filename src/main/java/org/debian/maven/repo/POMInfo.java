@@ -19,8 +19,10 @@ public class POMInfo {
     private List extensions;
     private List plugins;
     private List pluginManagement;
+    private List pluginDependencies;
     private List profileDependencies;
     private List profileDependencyManagement;
+    private List profilePluginDependencies;
     private Map properties;
 
     public Dependency getOriginalPom() {
@@ -158,6 +160,22 @@ public class POMInfo {
         this.extensions = extensions;
     }
 
+    public List getPluginDependencies() {
+        return pluginDependencies;
+    }
+
+    public void setPluginDependencies(List pluginDependencies) {
+        this.pluginDependencies = pluginDependencies;
+    }
+
+    public List getProfilePluginDependencies() {
+        return profilePluginDependencies;
+    }
+
+    public void setProfilePluginDependencies(List profilePluginDependencies) {
+        this.profilePluginDependencies = profilePluginDependencies;
+    }
+
     public Set getPublishedRules(boolean includeDefault) {
         Set rules = new TreeSet();
         if (includeDefault) {
@@ -194,8 +212,10 @@ public class POMInfo {
         result.setDependencyManagement(Dependency.applyRules(getDependencyManagement(), rules));
         result.setExtensions(Dependency.applyRules(getExtensions(), rules));
         result.setPlugins(Dependency.applyRules(getPlugins(), rules));
+        result.setPluginDependencies(Dependency.applyRules(getPluginDependencies(), rules));
         result.setPluginManagement(Dependency.applyRules(getPluginManagement(), rules));
         result.setProfileDependencies(Dependency.applyRules(getProfileDependencies(), rules));
+        result.setProfilePluginDependencies(Dependency.applyRules(getProfilePluginDependencies(), rules));
         result.setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
         result.setProperties(getProperties());
 

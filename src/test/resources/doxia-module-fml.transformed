@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-module-fml</artifactId>
+        <version>1.1</version>
+        <packaging>jar</packaging>
+        <parent>
+                <groupId>org.apache.maven.doxia</groupId>
+                <artifactId>doxia-modules</artifactId>
+                <version>1.1</version>
+        </parent>
+        <properties>
+                <debian.originalVersion>1.1</debian.originalVersion>
+                <debian.package>libdoxia-java</debian.package>
+        </properties>
+
+        <name>Doxia :: FML Module</name>
+        <description>A Doxia module for FML source documents.</description>
+        <dependencies>
+                <dependency>
+                        <groupId>org.codehaus.plexus</groupId>
+                        <artifactId>plexus-utils</artifactId>
+                </dependency>
+                <dependency>
+                        <groupId>org.apache.maven.doxia</groupId>
+                        <artifactId>doxia-test-docs</artifactId>
+                        <scope>test</scope>
+                </dependency>
+                <dependency>
+                        <groupId>xerces</groupId>
+                        <artifactId>xercesImpl</artifactId>
+                        <version>debian</version>
+                        <scope>test</scope>
+                </dependency>
+        </dependencies>
+        <build>
+                <plugins>
+                        <plugin>
+                                <groupId>org.codehaus.modello</groupId>
+                                <artifactId>modello-maven-plugin</artifactId>
+                                <executions>
+                                        <execution>
+                                                <id>descriptor</id>
+                                                <phase>generate-sources</phase>
+                                                <goals>
+                                                        <goal>java</goal>
+                                                </goals>
+                                                <configuration>
+                                                        <models>
+                                                                <model>src/main/mdo/fml.mdo</model>
+                                                        </models>
+                                                        <version>1.0.0</version>
+                                                </configuration>
+                                        </execution>
+                                </executions>
+                        </plugin>
+                </plugins>
+        </build>
+        <profiles>
+                <profile>
+                        <id>reporting</id>
+                        <build>
+                                <plugins>
+                                        <plugin>
+                                                <groupId>org.apache.maven.plugins</groupId>
+                                                <artifactId>maven-antrun-plugin</artifactId>
+                                                <executions>
+                                                        <execution>
+                                                                <phase>site</phase>
+                                                                <configuration>
+                                                                        <tasks>
+                                                                                <taskdef name="xsddoc" classname="net.sf.xframe.xsddoc.Task">
+                                                                                </taskdef>
+                                                                                <mkdir dir="${reporting.outputDirectory}/xsddoc">
+                                                                                </mkdir>
+                                                                                <xsddoc file="${basedir}/src/main/resources/fml-1.0.xsd" out="${basedir}/${reporting.outputDirectory}/xsddoc" doctitle="Reference of Schema FML 1.0" verbose="true">
+                                                                                </xsddoc>
+                                                                        </tasks>
+                                                                </configuration>
+                                                                <goals>
+                                                                        <goal>run</goal>
+                                                                </goals>
+                                                        </execution>
+                                                </executions>
+                                                <dependencies>
+                                                        <dependency>
+                                                                <groupId>xsddoc</groupId>
+                                                                <artifactId>xsddoc</artifactId>
+                                                                <version>debian</version>
+                                                        </dependency>
+                                                        <dependency>
+                                                                <groupId>xalan</groupId>
+                                                                <artifactId>xalan</artifactId>
+                                                                <version>debian</version>
+                                                        </dependency>
+                                                </dependencies>
+                                        </plugin>
+                                </plugins>
+                        </build>
+                </profile>
+        </profiles>
+</project>

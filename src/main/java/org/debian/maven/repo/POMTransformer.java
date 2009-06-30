@@ -173,65 +173,13 @@ public class POMTransformer extends POMReader {
                         } else {
                             indent(writer, inLevel);
                             writer.writeStartElement(element);
+                            copyNsAndAttributes(parser, writer);
+
                             inLevel++;
                             path.add(element);
 
                             if ("project".equals(element) && inLevel == 1) {
-                                indent(writer, inLevel);
-                                writer.writeStartElement("modelVersion");
-                                writer.writeCharacters("4.0.0");
-                                writer.writeEndElement();
-                                indent(writer, inLevel);
-                                writer.writeStartElement("groupId");
-                                writer.writeCharacters(pomInfo.getGroupId());
-                                writer.writeEndElement();
-                                indent(writer, inLevel);
-                                writer.writeStartElement("artifactId");
-                                writer.writeCharacters(pomInfo.getArtifactId());
-                                writer.writeEndElement();
-                                indent(writer, inLevel);
-                                writer.writeStartElement("version");
-                                if (keepPomVersion) {
-                                    writer.writeCharacters(info.getOriginalVersion());
-                                } else {
-                                    writer.writeCharacters(pomInfo.getVersion());
-                                }
-                                writer.writeEndElement();
-                                indent(writer, inLevel);
-                                writer.writeStartElement("packaging");
-                                writer.writeCharacters(pomInfo.getType());
-                                writer.writeEndElement();
-                                indent(writer, inLevel);
-                                if (!noParent && parent != null) {
-                                    writer.writeStartElement("parent");
-                                    indent(writer, inLevel + 1);
-                                    writer.writeStartElement("groupId");
-                                    writer.writeCharacters(parent.getGroupId());
-                                    writer.writeEndElement();
-                                    indent(writer, inLevel + 1);
-                                    writer.writeStartElement("artifactId");
-                                    writer.writeCharacters(parent.getArtifactId());
-                                    writer.writeEndElement();
-                                    indent(writer, inLevel + 1);
-                                    writer.writeStartElement("version");
-                                    if (keepPomVersion) {
-                                        // use original parent version
-                                        writer.writeCharacters(info.getOriginalParentVersion());
-                                    } else {
-                                        writer.writeCharacters(parent.getVersion());
-                                    }
-                                    writer.writeEndElement();
-                                    indent(writer, inLevel);
-                                    writer.writeEndElement();
-                                    indent(writer, inLevel);
-                                }
-                                if (info.getProperties().isEmpty()) {
-                                    writer.writeStartElement("properties");
-                                    writeDebianProperties(writer, inLevel, info, debianPackage);
-                                    indent(writer, inLevel);
-                                    writer.writeEndElement();
-                                    indent(writer, inLevel);
-                                }
+                                copyAndFillProjectHeader(parser, writer, inLevel, pomInfo, keepPomVersion, info, noParent, parent, debianPackage);
                             } else if (inLevel == 2 && "properties".equals(element)) {
                                 inProperty++;
                             } else if (inProperty > 0) {
@@ -253,6 +201,13 @@ public class POMTransformer extends POMReader {
                                         dependencyList = info.getDependencies();
                                     } else if ("profile".equals(parentParentElement)) {
                                         dependencyList = info.getProfileDependencies();
+                                    } else if ("plugin".equals(parentParentElement)) {
+                                        String p5Element = (String) path.get(path.size() - 6);
+                                        if ("project".equals(p5Element)) {
+                                            dependencyList = info.getPluginDependencies();
+                                        } else if ("profile".equals(p5Element)) {
+                                            dependencyList = info.getProfilePluginDependencies();
+                                        }
                                     }
                                     if (dependencyList != null) {
                                         int index = inc(dependencyIndexes, dependencyList);
@@ -292,6 +247,7 @@ public class POMTransformer extends POMReader {
 
                             }
                         }
+
                         break;
                     }
 
@@ -344,7 +300,7 @@ public class POMTransformer extends POMReader {
                                 }
                             }
                             writer.writeCharacters(value);
-                            afterText = !value.isEmpty();
+                            afterText = value != null && !value.isEmpty();
                         }
                         break;
                     }
@@ -366,6 +322,91 @@ public class POMTransformer extends POMReader {
                 }
             } catch (IOException ex) {
                 log.log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLStreamWriter writer, int inLevel, Dependency pomInfo, boolean keepPomVersion, POMInfo info, boolean noParent, Dependency parent, String debianPackage) throws XMLStreamException {
+        if (parser.getNamespaceCount() == 0) {
+            writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
+            writer.writeNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            writer.writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "schemaLocation",
+                    "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
+        }
+        indent(writer, inLevel);
+        writer.writeStartElement("modelVersion");
+        writer.writeCharacters("4.0.0");
+        writer.writeEndElement();
+        indent(writer, inLevel);
+        writer.writeStartElement("groupId");
+        writer.writeCharacters(pomInfo.getGroupId());
+        writer.writeEndElement();
+        indent(writer, inLevel);
+        writer.writeStartElement("artifactId");
+        writer.writeCharacters(pomInfo.getArtifactId());
+        writer.writeEndElement();
+        indent(writer, inLevel);
+        writer.writeStartElement("version");
+        if (keepPomVersion) {
+            writer.writeCharacters(info.getOriginalVersion());
+        } else {
+            writer.writeCharacters(pomInfo.getVersion());
+        }
+        writer.writeEndElement();
+        indent(writer, inLevel);
+        writer.writeStartElement("packaging");
+        writer.writeCharacters(pomInfo.getType());
+        writer.writeEndElement();
+        indent(writer, inLevel);
+        if (!noParent && parent != null) {
+            writer.writeStartElement("parent");
+            indent(writer, inLevel + 1);
+            writer.writeStartElement("groupId");
+            writer.writeCharacters(parent.getGroupId());
+            writer.writeEndElement();
+            indent(writer, inLevel + 1);
+            writer.writeStartElement("artifactId");
+            writer.writeCharacters(parent.getArtifactId());
+            writer.writeEndElement();
+            indent(writer, inLevel + 1);
+            writer.writeStartElement("version");
+            if (keepPomVersion) {
+                // use original parent version
+                writer.writeCharacters(info.getOriginalParentVersion());
+            } else {
+                writer.writeCharacters(parent.getVersion());
+            }
+            writer.writeEndElement();
+            indent(writer, inLevel);
+            writer.writeEndElement();
+            indent(writer, inLevel);
+        }
+        if (info.getProperties().isEmpty()) {
+            writer.writeStartElement("properties");
+            writeDebianProperties(writer, inLevel, info, debianPackage);
+            indent(writer, inLevel);
+            writer.writeEndElement();
+            indent(writer, inLevel);
+        }
+    }
+
+    private void copyNsAndAttributes(XMLStreamReader parser, XMLStreamWriter writer) throws XMLStreamException {
+        int nbNamespace = parser.getNamespaceCount();
+        for (int i = 0; i < nbNamespace; i++) {
+            String nsPrefix = parser.getNamespacePrefix(i);
+            String nsURI = parser.getNamespaceURI(i);
+            writer.writeNamespace(nsPrefix, nsURI);
+        }
+        int nbAttributes = parser.getAttributeCount();
+        for (int i = 0; i < nbAttributes; i++) {
+            String attrNamespace = parser.getAttributeNamespace(i);
+            String attrPrefix = parser.getAttributePrefix(i);
+            String attrName = parser.getAttributeLocalName(i);
+            String value = parser.getAttributeValue(i);
+            if (attrNamespace == null) {
+                writer.writeAttribute(attrName, value);
+            } else {
+                writer.writeAttribute(attrPrefix, attrNamespace, attrName, value);
             }
         }
     }
