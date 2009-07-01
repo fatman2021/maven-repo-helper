@@ -1,16 +1,69 @@
-Format-Specification: http://wiki.debian.org/Proposals/CopyrightFormat?action=recall&rev=437
-Upstream-Name: Maven Repo support
-Upstream-Maintainer: Ludovic Claude
-Upstream-Source: https://launchpad.net/maven-packaging-support/
+Format-Specification: http://dep.debian.net/deps/dep5/
+Name: Maven Repo support
+Maintainer: Ludovic Claude
+Source: https://launchpad.net/maven-packaging-support/
 
 Files: *
-Copyright: Copyright 2009, Ludovic Claude  <ludovic.claude@laposte.net>
+Copyright: 2009, Ludovic Claude  <ludovic.claude@laposte.net>
+License: BSD
+
+Files: src/test/resources/slf4j.xml
+Copyright: 2004-2005, SLF4J.ORG
+	       2004-2007, QOS.ch
+License: MIT
+
+Files: src/test/resources/modello-core.xml
+Copyright: 2004-2007, Codehaus.org
+           1999, Intalio Inc
+License: MIT
+
+Files: src/test/resources/plexus-container-default.xml
+Copyright: 2001-2006, Codehaus Foundation
+License: Apache-2.0
+
+Files: src/test/resources/plexus-active-collections.pom
+Copyright: 2006-2009, Codehaus Foundation
+License: Apache-2.0
+
+Files: src/test/resources/*.xml
+Copyright: 2001-2009, Apache Software foundation
+License: Apache-2.0
+
+Copyright: 2009, Ludovic Claude  <ludovic.claude@laposte.net>
 License: BSD
   On Debian GNU/Linux system you can find the complete text of the
   BSD license in '/usr/share/common-licenses/BSD'
 
 Files: debian/*
-Copyright: Copyright (C) 2009, Ludovic Claude <ludovic.claude@laposte.net>
+Copyright: 2009, Ludovic Claude <ludovic.claude@laposte.net>
+License: BSD
+
 License: BSD
   On Debian GNU/Linux system you can find the complete text of the
   BSD license in '/usr/share/common-licenses/BSD'
+
+License: Apache-2.0
+  On Debian GNU/Linux system you can find the complete text of the
+  Apache 2.0 license in '/usr/share/common-licenses/Apache-2.0'.
+
+License: MIT
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation
+  files (the "Software"), to deal in the Software without
+  restriction, including without limitation the rights to use, copy,
+  modify, merge, publish, distribute, sublicense, and/or sell copies
+  of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  .   
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  .    
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  DEALINGS IN THE SOFTWARE.
+
