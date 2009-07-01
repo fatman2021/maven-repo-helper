@@ -189,7 +189,7 @@ public class POMCleaner extends POMTransformer {
             } else if (arg.startsWith("-i")) {
                 publishedRulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--published-rules=")) {
-                publishedRulesFile = new File(arg.substring("--rules=".length()));
+                publishedRulesFile = new File(arg.substring("--published-rules=".length()));
             }
             i = inc(i, args);
         }

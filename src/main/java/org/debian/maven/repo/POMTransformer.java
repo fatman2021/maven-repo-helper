@@ -513,7 +513,7 @@ public class POMTransformer extends POMReader {
                 if (noParent) {
                     option = "--no-parent";
                 }
-                pomOptions.put(pomFile, option);
+                pomOptions.put(pomFile.getAbsoluteFile(), option);
             }
         });
 
