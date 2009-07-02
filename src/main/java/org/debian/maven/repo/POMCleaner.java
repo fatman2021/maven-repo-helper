@@ -1,7 +1,7 @@
 package org.debian.maven.repo;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +57,7 @@ public class POMCleaner extends POMTransformer {
             pomProps.put("type", info.getThisPom().getType());
             pomProps.put("version", info.getOriginalVersion());
             pomProps.put("debianVersion", info.getThisPom().getVersion());
-            FileWriter pomWriter = new FileWriter(pomProperties);
+            FileOutputStream pomWriter = new FileOutputStream(pomProperties);
             pomProps.store(pomWriter, "POM properties");
             pomWriter.close();
 
