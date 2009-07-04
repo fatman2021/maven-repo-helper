@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.debian.maven.repo;
 
 import java.io.BufferedReader;
@@ -82,7 +78,7 @@ public class POMTransformer extends POMReader {
             String line = null;
             while ((line = lnr.readLine()) != null) {
                 line = line.trim();
-                if (!line.isEmpty() && !line.startsWith("#")) {
+                if (line.length() > 0 && !line.startsWith("#")) {
                     if (verbose) {
                         System.out.println("  " + line);
                     }
@@ -300,7 +296,7 @@ public class POMTransformer extends POMReader {
                                 }
                             }
                             writer.writeCharacters(value);
-                            afterText = value != null && !value.isEmpty();
+                            afterText = value != null && value.length() > 0;
                         }
                         break;
                     }
@@ -556,7 +552,7 @@ public class POMTransformer extends POMReader {
         String debianPackage = "";
         File rulesFile = null;
         File publishedRulesFile = new File("debian/maven.publishedRules");
-        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().isEmpty())) {
+        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
                 verbose = true;
@@ -615,7 +611,7 @@ public class POMTransformer extends POMReader {
     private static int inc(int i, String[] args) {
         do {
             i++;
-        } while (i < args.length && args[i].isEmpty());
+        } while (i < args.length && args[i].length() == 0);
         return i;
     }
 }

@@ -57,6 +57,6 @@ if [ -z "$NOACT" ]; then
             cp $POM $POM.save
         fi
     done
-    java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.POMTransformer $DH_OPTS $MH_ARGS
+	java -cp $CLASSPATH org.debian.maven.repo.POMTransformer $DH_OPTS $MH_ARGS
 fi
 

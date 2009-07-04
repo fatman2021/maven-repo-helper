@@ -30,4 +30,4 @@ else
 	REPO="/usr/share/maven-repo"
 fi
 
-java -cp /usr/share/java/maven-repo-helper.jar org.debian.maven.repo.Repository $REPO
+java -cp $CLASSPATH org.debian.maven.repo.Repository $REPO

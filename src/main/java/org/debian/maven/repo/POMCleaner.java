@@ -166,7 +166,7 @@ public class POMCleaner extends POMTransformer {
         String debianPackage = "";
         File rulesFile = null;
         File publishedRulesFile = new File("debian/maven.publishedRules");
-        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().isEmpty())) {
+        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
                 verbose = true;
@@ -226,7 +226,7 @@ public class POMCleaner extends POMTransformer {
     private static int inc(int i, String[] args) {
         do {
             i++;
-        } while (i < args.length && args[i].isEmpty());
+        } while (i < args.length && args[i].length() == 0);
         return i;
     }
 }

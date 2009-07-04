@@ -3,7 +3,7 @@ Section: java
 Priority: optional
 Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 Uploaders: Ludovic Claude <ludovic.claude@laposte.net>
-Build-Depends: debhelper (>= 5), cdbs, default-jdk, ant, help2man
+Build-Depends: debhelper (>= 7), cdbs, default-jdk, ant, help2man, libstax-java
 Standards-Version: 3.8.1
 Vcs-Bzr: lp:~ludovicc/maven-packaging-support/maven-repo-helper
 Vcs-Browser: http://bazaar.launchpad.net/~ludovicc/maven-packaging-support/maven-repo-helper/files
@@ -11,7 +11,7 @@ Homepage: https://launchpad.net/maven-packaging-support
 
 Package: maven-repo-helper
 Architecture: all
-Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless
+Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless, libstax-java
 Suggests: maven-debian-helper
 Description: Helper tools for including Maven metatada in Debian packages
  Maven is a software project management and comprehension tool. Based on the

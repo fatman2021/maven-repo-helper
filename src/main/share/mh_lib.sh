@@ -5,6 +5,7 @@
 #
 
 MH_VERSION=${MH_VERSION:-0.5}
+CLASSPATH=/usr/share/java/maven-repo-helper.jar:/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar
 
 parseargs()
 {
