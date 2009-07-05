@@ -5,7 +5,8 @@
 #
 
 MH_VERSION=${MH_VERSION:-0.5}
-CLASSPATH=/usr/share/java/maven-repo-helper.jar:/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar
+CLASSPATH=/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar:/usr/share/java/maven-repo-helper.jar
+JAVA_OPTIONS=-Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.XMLOutputFactoryBase
 
 parseargs()
 {

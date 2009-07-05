@@ -133,6 +133,6 @@ fi
 CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${NORULES:+--no-rules}"
 
 if [ -z "$NOACT" ]; then
-	java -cp $CLASSPATH org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS
+	java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS
 fi
 
