@@ -148,6 +148,26 @@ public class POMCleanerTest extends TestBase {
     /**
      * Test of cleanPom method, of class POMCleaner.
      */
+    public void testCleanPlexusArchiverPom() throws Exception {
+        pomProperties = new File(testDir, "pom.properties");
+        usePom("plexus-archiver.pom");
+        boolean noParent = true;
+        POMCleaner instance = new POMCleaner();
+        instance.addDefaultRules();
+        instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libplexus-archiver-java");
+        assertXMLEqual(read("plexus-archiver.cleaned"), read(updatedPom));
+        Properties pomInfo = new Properties();
+        pomInfo.load(new FileReader(pomProperties));
+        assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
+        assertEquals("plexus-achiver", pomInfo.get("artifactId"));
+        assertEquals("jar", pomInfo.get("type"));
+        assertEquals("1.0-alpha-12", pomInfo.get("version"));
+        assertEquals("debian", pomInfo.get("debianVersion"));
+    }
+
+    /**
+     * Test of cleanPom method, of class POMCleaner.
+     */
     public void testCleanSlf4jPom() throws Exception {
         pomProperties = new File(testDir, "pom.properties");
         usePom("slf4j.xml");

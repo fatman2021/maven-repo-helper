@@ -9,6 +9,17 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 public class POMInfo {
+    
+    public static final String DEPENDENCY_MANAGEMENT_LIST = "DependencyManagement";
+    public static final String PROFILE_DEPENDENCY_MANAGEMENT_LIST = "ProfileDependencyManagement";
+    public static final String DEPENDENCIES = "Dependencies";
+    public static final String PROFILE_DEPENDENCIES = "ProfileDependencies";
+    public static final String PLUGIN_DEPENDENCIES = "PluginDependencies";
+    public static final String PROFILE_PLUGIN_DEPENDENCIES = "ProfilePluginDependencies";
+    public static final String PLUGINS = "Plugins";
+    public static final String PLUGIN_MANAGEMENT = "PluginManagement";
+    public static final String EXTENSIONS = "Extensions";
+
     private String originalParentVersion;
     private Dependency originalPom;
     private Dependency parent;
@@ -260,5 +271,36 @@ public class POMInfo {
                 }
             }
         }
+    }
+
+    public List getDependencyList(String listSelector) {
+        if (DEPENDENCY_MANAGEMENT_LIST.equals(listSelector)) {
+            return getDependencyManagement();
+        }
+        if (PROFILE_DEPENDENCY_MANAGEMENT_LIST.equals(listSelector)) {
+            return getProfileDependencyManagement();
+        }
+        if (DEPENDENCIES.equals(listSelector)) {
+            return getDependencies();
+        }
+        if (PROFILE_DEPENDENCIES.equals(listSelector)) {
+            return getProfileDependencies();
+        }
+        if (PLUGIN_DEPENDENCIES.equals(listSelector)) {
+            return getPluginDependencies();
+        }
+        if (PROFILE_PLUGIN_DEPENDENCIES.equals(listSelector)) {
+            return getProfilePluginDependencies();
+        }
+        if (PLUGINS.equals(listSelector)) {
+            return getPlugins();
+        }
+        if (PLUGIN_MANAGEMENT.equals(listSelector)) {
+            return getPluginManagement();
+        }
+        if (EXTENSIONS.equals(listSelector)) {
+            return getExtensions();
+        }
+        return null;
     }
 }

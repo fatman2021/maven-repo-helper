@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.codehaus.plexus</groupId>
+	<artifactId>plexus-archiver</artifactId>
+	<version>debian</version>
+	<packaging>jar</packaging>
+	<properties>
+		<debian.originalVersion>1.0-alpha-12</debian.originalVersion>
+		<debian.package>libplexus-archiver-java</debian.package>
+	</properties>
+
+	<name>Plexus Archiver Component</name>
+	<contributors>
+		<contributor>
+			<name>Dan Tran</name>
+		</contributor>
+		<contributor>
+			<name>Richard van der Hoff</name>
+		</contributor>
+	</contributors>
+	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-container-default</artifactId>
+        		<version>debian</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+        		<version>debian</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-io</artifactId>
+			<version>debian</version>
+		</dependency>
+	</dependencies>
+	<scm>
+		<connection>scm:svn:http://svn.codehaus.org/plexus/plexus-components/tags/plexus-archiver-1.0-alpha-12</connection>
+		<developerConnection>scm:svn:https://svn.codehaus.org/plexus/plexus-components/tags/plexus-archiver-1.0-alpha-12</developerConnection>
+		<url>http://fisheye.codehaus.org/browse/plexus/plexus-components/tags/plexus-archiver-1.0-alpha-12</url>
+	</scm>
+</project>

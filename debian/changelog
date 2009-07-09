@@ -2,6 +2,7 @@ maven-repo-helper (0.6) experimental; urgency=low
 
   * Move mh_genrules scripts to the maven-debian-helper package,
     as it needs mh_lspoms and other components from this package.
+  * Repair missing version information on dependencies
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 09 Jul 2009 15:53:25 +0100
 

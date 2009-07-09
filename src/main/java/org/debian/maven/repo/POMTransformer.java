@@ -134,7 +134,7 @@ public class POMTransformer extends POMReader {
             POMInfo info = readPom(originalPom);
 
             info = info.applyRules(rules);
-            Dependency parent = info.getParent();
+            Dependency parent = noParent ? null : info.getParent();
             Dependency pomInfo = info.getThisPom();
 
             // Second pass - create the new document
@@ -145,6 +145,7 @@ public class POMTransformer extends POMReader {
             int inPlugin = 0;
             int inProperty = 0;
             int inLevel = 0;
+            boolean sawVersion = false;
             List path = new ArrayList();
             Map dependencyIndexes = new HashMap();
             Dependency dependency = null;
@@ -175,38 +176,40 @@ public class POMTransformer extends POMReader {
                             path.add(element);
 
                             if ("project".equals(element) && inLevel == 1) {
-                                copyAndFillProjectHeader(parser, writer, inLevel, pomInfo, keepPomVersion, info, noParent, parent, debianPackage);
+                                copyAndFillProjectHeader(parser, writer, inLevel, pomInfo, keepPomVersion, info, parent, debianPackage);
                             } else if (inLevel == 2 && "properties".equals(element)) {
                                 inProperty++;
                             } else if (inProperty > 0) {
                                 inProperty++;
                             } else if ("dependency".equals(element)) {
                                 inDependency++;
+                                sawVersion = false;
                                 String parentElement = (String) path.get(path.size() - 2);
                                 String parentParentElement = (String) path.get(path.size() - 3);
                                 if ("dependencies".equals(parentElement)) {
-                                    List dependencyList = null;
+                                    String listSelector = null;
                                     if ("dependencyManagement".equals(parentParentElement)) {
                                         String p3Element = (String) path.get(path.size() - 4);
                                         if ("project".equals(p3Element)) {
-                                            dependencyList = info.getDependencyManagement();
+                                            listSelector = POMInfo.DEPENDENCY_MANAGEMENT_LIST;
                                         } else if ("profile".equals(p3Element)) {
-                                            dependencyList = info.getProfileDependencyManagement();
+                                            listSelector = POMInfo.PROFILE_DEPENDENCY_MANAGEMENT_LIST;
                                         }
                                     } else if ("project".equals(parentParentElement)) {
-                                        dependencyList = info.getDependencies();
+                                        listSelector = POMInfo.DEPENDENCIES;
                                     } else if ("profile".equals(parentParentElement)) {
-                                        dependencyList = info.getProfileDependencies();
+                                        listSelector = POMInfo.PROFILE_DEPENDENCIES;
                                     } else if ("plugin".equals(parentParentElement)) {
                                         String p5Element = (String) path.get(path.size() - 6);
                                         if ("project".equals(p5Element)) {
-                                            dependencyList = info.getPluginDependencies();
+                                            listSelector = POMInfo.PLUGIN_DEPENDENCIES;
                                         } else if ("profile".equals(p5Element)) {
-                                            dependencyList = info.getProfilePluginDependencies();
+                                            listSelector = POMInfo.PROFILE_PLUGIN_DEPENDENCIES;
                                         }
                                     }
-                                    if (dependencyList != null) {
-                                        int index = inc(dependencyIndexes, dependencyList);
+                                    if (listSelector != null) {
+                                        int index = inc(dependencyIndexes, listSelector);
+                                        List dependencyList = info.getDependencyList(listSelector);
                                         dependency = (Dependency) dependencyList.get(index);
                                     }
                                 }
@@ -216,6 +219,9 @@ public class POMTransformer extends POMReader {
                                 if ("exclusion".equals(element)) {
                                     inExclusion++;
                                 } else {
+                                    if ("version".equals(element)) {
+                                        sawVersion = true;
+                                    }
                                     inDependency++;
                                 }
                             } else if ("plugin".equals(element)) {
@@ -223,20 +229,19 @@ public class POMTransformer extends POMReader {
                                 String parentElement = (String) path.get(path.size() - 2);
                                 String parentParentElement = (String) path.get(path.size() - 3);
                                 if ("plugins".equals(parentElement)) {
-                                    List dependencyList;
+                                    String listSelector = POMInfo.PLUGINS;
                                     if ("pluginManagement".equals(parentParentElement)) {
-                                        dependencyList = info.getPluginManagement();
-                                    } else {
-                                        dependencyList = info.getPlugins();
+                                        listSelector = POMInfo.PLUGIN_MANAGEMENT;
                                     }
-                                    int index = inc(dependencyIndexes, dependencyList);
+                                    int index = inc(dependencyIndexes, listSelector);
+                                    List dependencyList = info.getDependencyList(listSelector);
                                     dependency = (Dependency) dependencyList.get(index);
                                 }
                             } else if (inPlugin > 0) {
                                 inPlugin++;
                             } else if ("extension".equals(element)) {
                                 inExtension++;
-                                int index = inc(dependencyIndexes, info.getExtensions());
+                                int index = inc(dependencyIndexes, POMInfo.EXTENSIONS);
                                 dependency = (Dependency) info.getExtensions().get(index);
                             } else if (inExtension > 0) {
                                 inExtension++;
@@ -251,6 +256,21 @@ public class POMTransformer extends POMReader {
                         if (inIgnoredElement > 0) {
                             inIgnoredElement--;
                         } else {
+                            // Attempt to repair missing version information on dependencies
+                            if (inDependency == 1 && !sawVersion && parent == null) {
+                                if (dependency.getVersion() == null) {
+                                    dependency.setVersion("debian");
+                                    // Give a chance to customize the version
+                                    // In maven.rules, you can write:
+                                    // myDependencyGroup myDependencyArtifact * s/.*/myVersion/
+                                    dependency = dependency.applyRules(rules);
+                                }
+                                indent(writer, inLevel);
+                                writer.writeStartElement("version");
+                                writer.writeCharacters(dependency.getVersion());
+                                writer.writeEndElement();
+                            }
+
                             inLevel--;
                             path.remove(path.size() - 1);
                             if (inExclusion > 0) {
@@ -322,7 +342,7 @@ public class POMTransformer extends POMReader {
         }
     }
 
-    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLStreamWriter writer, int inLevel, Dependency pomInfo, boolean keepPomVersion, POMInfo info, boolean noParent, Dependency parent, String debianPackage) throws XMLStreamException {
+    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLStreamWriter writer, int inLevel, Dependency pomInfo, boolean keepPomVersion, POMInfo info, Dependency parent, String debianPackage) throws XMLStreamException {
         if (parser.getNamespaceCount() == 0) {
             writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
             writer.writeNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -354,7 +374,7 @@ public class POMTransformer extends POMReader {
         writer.writeCharacters(pomInfo.getType());
         writer.writeEndElement();
         indent(writer, inLevel);
-        if (!noParent && parent != null) {
+        if (parent != null) {
             writer.writeStartElement("parent");
             indent(writer, inLevel + 1);
             writer.writeStartElement("groupId");
@@ -422,14 +442,14 @@ public class POMTransformer extends POMReader {
         return INFO_ELEMENTS.contains(element);
     }
 
-    private int inc(Map dependencyIndexes, List dependencyList) {
-        Integer index = (Integer) dependencyIndexes.get(dependencyList);
+    private int inc(Map dependencyIndexes, String selector) {
+        Integer index = (Integer) dependencyIndexes.get(selector);
         if (index == null) {
             index = new Integer(0);
         } else {
             index = new Integer(index.intValue() + 1);
         }
-        dependencyIndexes.put(dependencyList, index);
+        dependencyIndexes.put(selector, index);
         return index.intValue();
     }
 
