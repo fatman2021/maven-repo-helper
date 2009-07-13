@@ -1,3 +1,10 @@
+maven-repo-helper (0.6.1) experimental; urgency=low
+
+ * Add a workaround to use gcj with maven-repo-helper:
+    avoid using gnu xml stream when reading or writing XML documents.
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 13 Jul 2009 20:15:14 +0100
+
 maven-repo-helper (0.6) experimental; urgency=low
 
   * Move mh_genrules scripts to the maven-debian-helper package,

@@ -5,7 +5,7 @@
 package org.debian.maven.repo;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.util.Properties;
 
 /**
@@ -42,7 +42,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "maven2");
         assertXMLEqual(read("maven.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.apache.maven", pomInfo.get("groupId"));
         assertEquals("maven", pomInfo.get("artifactId"));
         assertEquals("pom", pomInfo.get("type"));
@@ -62,7 +62,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libmodello-java");
         assertXMLEqual(read("modello-core.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.modello", pomInfo.get("groupId"));
         assertEquals("modello-core", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
@@ -72,7 +72,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, "libmodello-java");
         assertXMLEqual(read("modello-core.keep.cleaned"), read(updatedPom));
         pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.modello", pomInfo.get("groupId"));
         assertEquals("modello-core", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
@@ -93,7 +93,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libwagon-java");
         assertXMLEqual(read("wagon-http-lightweight.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.apache.maven.wagon", pomInfo.get("groupId"));
         assertEquals("wagon-http-lightweight", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
@@ -114,7 +114,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libplexus-container-default-java");
         assertXMLEqual(read("plexus-container-default.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
         assertEquals("plexus-container-default", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
@@ -137,7 +137,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libplexus-active-collections-java");
         assertXMLEqual(read("plexus-active-collections.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
         assertEquals("plexus-active-collections", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
@@ -157,7 +157,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libplexus-archiver-java");
         assertXMLEqual(read("plexus-archiver.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
         assertEquals("plexus-achiver", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
@@ -177,7 +177,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libslf4j-java");
         assertXMLEqual(read("slf4j.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.slf4j", pomInfo.get("groupId"));
         assertEquals("slf4j-parent", pomInfo.get("artifactId"));
         assertEquals("pom", pomInfo.get("type"));
@@ -198,7 +198,7 @@ public class POMCleanerTest extends TestBase {
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, "libcommons-validator-java");
         assertXMLEqual(read("commons-validator.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
-        pomInfo.load(new FileReader(pomProperties));
+        pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("commons-validator", pomInfo.get("groupId"));
         assertEquals("commons-validator", pomInfo.get("artifactId"));
         assertEquals("jar", pomInfo.get("type"));
