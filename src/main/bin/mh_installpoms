@@ -35,7 +35,7 @@ MH_ARGS="--package=${PACKAGE} ${NOPARENT:+--no-parent} ${RULES:+--rules=$RULES}"
 
 cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
     if [ ! -z "$POM" ]; then
-        if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+        if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
 	        echo -e "\tmh_installpom $DH_OPTS $MH_OPTS $OPT1 $OPT2 $POM"
 		fi
         mh_installpom $DH_OPTS $MH_OPTS $OPT1 $OPT2 $POM

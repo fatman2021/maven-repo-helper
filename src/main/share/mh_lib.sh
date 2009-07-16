@@ -4,7 +4,7 @@
 # - package selection
 #
 
-MH_VERSION=${MH_VERSION:-0.6}
+MH_VERSION=${MH_VERSION:-0.7}
 CLASSPATH=/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar:/usr/share/java/maven-repo-helper.jar
 JAVA_OPTIONS="-Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.XMLOutputFactoryBase -Djavax.xml.stream.XMLInputFactory=com.bea.xml.stream.MXParserFactory"
 

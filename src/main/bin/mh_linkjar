@@ -6,16 +6,16 @@ set -e
 
 syntax()
 {
-   echo -e "Usage: mh_installjar [option]... [pom] [jar] [link]..."
-   echo -e "Installs the jar file in /usr/share/maven-repo, at the correct location for"
-   echo -e "Maven. The jar is copied into the build directory."
+   echo -e "Usage: mh_linkjar [option]... [pom] [source_jar] [link]..."
+   echo -e "Create symlinks in package build directories, including links to the jar"
+   echo -e "file in /usr/share/maven-repo, at the correct location for Maven."
    echo -e "It can also create additional links to the jar, usually located in"
    echo -e "/usr/share/java."
    echo -e ""
    echo -e "Where"
    echo -e "\t[pom] is the location of the POM associated with the jar to install."
    echo -e "\t  GroupId, artifactId and version will be extracted from this file."
-   echo -e "\t[jar] is the path to the jar to install, usually located in the build"
+   echo -e "\t[source_jar] is the path to the jar to install, usually located in the build"
    echo -e "\t  folder."
    echo -e "\t[link] is an additional link to the jar to install, usually there should"
    echo -e "\t  be a link to usr/share/java/$jar.jar and"
@@ -43,11 +43,6 @@ syntax()
    echo -e "\t-s --no-usj-versionless: Optional, don't install the versionless link"
    echo -e "\t  in /usr/share/java."
    echo -e "\t  This flag is used only when the -l or --java-lib option is given."
-   echo -e "\t-d<path> --dest-jar=<path>: Optional, the destination for the real jar."
-   echo -e "\t  The other places where the jar appears, in the repository or in the"
-   echo -e "\t  list of links, will be symlinks to this jar."
-   echo -e "\t  Defaults to /usr/share/java/$name-$version.jar if --java-lib is used,"
-   echo -e "\t  otherwise it goes to the versioned path in the Maven repository."
    echo -e "\t-c<classifier> --classifier=<classifier>: Optional, the classifier for"
    echo -e "\t  the jar. Empty by default."
    echo -e "\t-v --verbose: show more information while running"
@@ -55,7 +50,7 @@ syntax()
    exit 1
 }
 
-ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act" parseargs "$@"
+ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless c classifier v verbose n no-act" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
@@ -67,7 +62,6 @@ PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 JAVALIB=$(getarg l java-lib)
 USJ_JAR_NAME=$(getarg n usj-name)
 NO_USJ_VERSIONLESS=$(getarg s no-usj-versionless)
-TARGET_JAR_PATH=$(getarg d dest-jar)
 CLASSIFIER=$(getarg c classifier)
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
@@ -79,7 +73,7 @@ CLEAN_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES}"
 
 mkdir -p debian/tmp 2> /dev/null
 
-if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
     echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties"
 fi
 
@@ -87,11 +81,6 @@ mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properti
 source debian/tmp/pom.properties
 
 groupPath=$(echo $groupId | tr . / )
-
-if [ ! -e $JAR ]; then
-    echo "Cannot find the jar to install: $JAR"
-    exit 2
-fi
 
 VERSIONED_JAR_NAME="${artifactId}-${version}.jar"
 if [ ! -z "$CLASSIFIER" ]; then
@@ -106,9 +95,6 @@ fi
 MVN_VERSIONED_DIR=usr/share/maven-repo/${groupPath}/${artifactId}/${version}
 MVN_DEBIAN_DIR=usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}
 
-TARGET_DIR=${MVN_VERSIONED_DIR}
-TARGET_JAR=${VERSIONED_JAR_NAME}
-
 if [ -n "$JAVALIB" ]; then
     USJ_JAR_NAME=$(getarg n usj-name)
     USJ_JAR_NAME=${USJ_JAR_NAME:-$artifactId}
@@ -116,65 +102,47 @@ if [ -n "$JAVALIB" ]; then
     USJ_JAR_VERSION=${USJ_JAR_VERSION:-$version}
 	USJ_VERSIONED_JAR_NAME=${USJ_JAR_NAME}-${USJ_JAR_VERSION}.jar
     USJ_JAR_NAME=${USJ_JAR_NAME}.jar
-	TARGET_DIR=usr/share/java
-	TARGET_JAR=${USJ_VERSIONED_JAR_NAME}
 fi
 
-if [[ -n "$TARGET_JAR_PATH" ]]; then
-	TARGET_DIR=$(dirname $TARGET_JAR_PATH)
-	TARGET_JAR=$(basename $TARGET_JAR_PATH)
-fi
-
-JAR_INSTALLED=
-
-install_jar ()
+link_jar ()
 {
 	local srcDir=$1
 	local srcJar=$2
 	local destDir=$3
 	local destJar=$4
 
-	if [[ ("$destDir" == "$TARGET_DIR") && ("$destJar" == "$TARGET_JAR") ]]; then
-		# avoid duplication as install_jar is called twice
-		if [[ -n "$JAR_INSTALLED" ]]; then 
-			return 
-		fi
-		cp ${srcJar} debian/tmp/${destJar}
-		if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-			echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${destJar} ${destDir}"
-		fi
-		dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${destJar} ${destDir}
-		JAR_INSTALLED=done
-	else
-		if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-			echo -e "\tdh_link $DH_OPTS -p${PACKAGE} ${srcDir}${srcJar} ${destDir}/${destJar}"
-		fi
-	    dh_link $DH_OPTS -p${PACKAGE} ${srcDir}/${srcJar} ${destDir}/${destJar}
+	if [[ ("$srcDir" == "$destDir") && ("$srcJar" == "$destJar") ]]; then
+		return
 	fi
+
+	if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+		echo -e "\tdh_link $DH_OPTS -p${PACKAGE} ${srcDir}${srcJar} ${destDir}/${destJar}"
+	fi
+    dh_link $DH_OPTS -p${PACKAGE} ${srcDir}/${srcJar} ${destDir}/${destJar}
 }
 
-# Install the jar in its target directory
-install_jar "" "$JAR" "$TARGET_DIR" "$TARGET_JAR"
+TARGET_DIR=$(dirname $JAR)
+TARGET_JAR=$(basename $JAR)
 
-# Install the jar in the Maven repository
-install_jar "$TARGET_DIR" "$TARGET_JAR" "$MVN_VERSIONED_DIR" "$VERSIONED_JAR_NAME"
+# Install the link to the jar into the Maven repository
+link_jar "$TARGET_DIR" "$TARGET_JAR" "$MVN_VERSIONED_DIR" "$VERSIONED_JAR_NAME"
 
 if [[ "${version}" != "${debianVersion}" ]]; then
-	install_jar "$TARGET_DIR" "$TARGET_JAR" "$MVN_DEBIAN_DIR" "$DEBIAN_JAR_NAME"
+	link_jar "$TARGET_DIR" "$TARGET_JAR" "$MVN_DEBIAN_DIR" "$DEBIAN_JAR_NAME"
 fi
 
 # Create the additional links supplied on the argument list
 for (( i=2; i < $ARGC; i++ )); do
     LINK_JAR="${ARGV[i]}"
-	install_jar "$TARGET_DIR" "$TARGET_JAR" "$(dirname $LINK_JAR)" "$(basename $LINK_JAR)"
+	link_jar "$TARGET_DIR" "$TARGET_JAR" "$(dirname $LINK_JAR)" "$(basename $LINK_JAR)"
 done
 
-# Install the jar in /usr/share/java
+# Install the link to the jar in /usr/share/java
 if [ -n "$JAVALIB" ]; then
 
-	install_jar "$TARGET_DIR" "$TARGET_JAR" "usr/share/java" "$USJ_VERSIONED_JAR_NAME"
+	link_jar "$TARGET_DIR" "$TARGET_JAR" "usr/share/java" "$USJ_VERSIONED_JAR_NAME"
 
 	if [[ -z "$NO_USJ_VERSIONLESS" ]]; then
-		install_jar "$TARGET_DIR" "$TARGET_JAR" "usr/share/java" "$USJ_JAR_NAME"
+		link_jar "$TARGET_DIR" "$TARGET_JAR" "usr/share/java" "$USJ_JAR_NAME"
 	fi
 fi

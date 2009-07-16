@@ -52,7 +52,7 @@ CLEAN_ARGS="--package=${PACKAGE} ${NOPARENT:+--no-parent} ${RULES:+--rules=$RULE
 
 mkdir -p debian/tmp 2> /dev/null
 
-if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
     echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties"
 fi
 
@@ -62,14 +62,14 @@ source debian/tmp/pom.properties
 
 groupPath=$(echo $groupId | tr . / )
 
-if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
     echo -e "\tmv debian/tmp/pom.xml debian/tmp/${artifactId}-${debianVersion}.pom"
 fi
 
 mv debian/tmp/pom.xml.keep debian/tmp/${artifactId}-${version}.pom
 mv debian/tmp/pom.xml debian/tmp/${artifactId}-${debianVersion}.pom
 
-if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
     echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${version}.pom usr/share/maven-repo/${groupPath}/${artifactId}/${version}"
 fi
 
@@ -77,7 +77,7 @@ dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${version}
 	usr/share/maven-repo/${groupPath}/${artifactId}/${version}
 
 if [[ "${version}" != "${debianVersion}" ]]; then
-    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE"="1" ]]; then
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
         echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${debianVersion}.pom usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}"
     fi
 
