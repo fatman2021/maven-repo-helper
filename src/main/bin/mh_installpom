@@ -70,17 +70,15 @@ mv debian/tmp/pom.xml.keep debian/tmp/${artifactId}-${version}.pom
 mv debian/tmp/pom.xml debian/tmp/${artifactId}-${debianVersion}.pom
 
 if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-    echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${version}.pom usr/share/maven-repo/${groupPath}/${artifactId}/${version}"
+    echo -e "\tinstall -m 644 -D debian/tmp/${artifactId}-${version}.pom debian/${PACKAGE}/usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${artifactId}-${version}.pom"
 fi
 
-dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${version}.pom \
-	usr/share/maven-repo/${groupPath}/${artifactId}/${version}
+install -m 644 -D debian/tmp/${artifactId}-${version}.pom debian/${PACKAGE}/usr/share/maven-repo/${groupPath}/${artifactId}/${version}/${artifactId}-${version}.pom
 
 if [[ "${version}" != "${debianVersion}" ]]; then
     if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-        echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${debianVersion}.pom usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}"
+        echo -e "\tinstall -m 644 -D debian/tmp/${artifactId}-${debianVersion}.pom debian/${PACKAGE}/usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}/${artifactId}-${debianVersion}.pom"
     fi
 
-    dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${artifactId}-${debianVersion}.pom \
-        usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}
+	install -m 644 -D debian/tmp/${artifactId}-${debianVersion}.pom debian/${PACKAGE}/usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}/${artifactId}-${debianVersion}.pom
 fi

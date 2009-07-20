@@ -4,7 +4,9 @@ maven-repo-helper (0.7) unstable; urgency=low
    the Maven repository (as suggested by Marcus Better)
   * Add a new script, mh_linkjar, which creates links to the jar into
    /usr/share/maven-repo. Unlike mh_installjar, it does not copy the
-   jar into the build directory. 
+   jar into the build directory.
+  * Use install instead of dh_install in the scripts as it can
+   interfer if there is a .install file in the debian folder.
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 16 Jul 2009 10:09:26 +0100
 

@@ -134,6 +134,10 @@ install_jar ()
 	local destDir=$3
 	local destJar=$4
 
+	if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+		echo "mh_installjar: Install $srcDir $srcJar to $destDir $destJar"
+	fi
+
 	if [[ ("$destDir" == "$TARGET_DIR") && ("$destJar" == "$TARGET_JAR") ]]; then
 		# avoid duplication as install_jar is called twice
 		if [[ -n "$JAR_INSTALLED" ]]; then 
@@ -141,9 +145,10 @@ install_jar ()
 		fi
 		cp ${srcJar} debian/tmp/${destJar}
 		if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-			echo -e "\tdh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${destJar} ${destDir}"
+			echo -e "\tinstall -m 644 -D ${srcJar} debian/${PACKAGE}/${destDir}/${destJar}"
 		fi
-		dh_install $DH_OPTS -p${PACKAGE} --sourcedir=debian/tmp ${destJar} ${destDir}
+		install -m 644 -D ${srcJar} debian/${PACKAGE}/${destDir}/${destJar}
+
 		JAR_INSTALLED=done
 	else
 		if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
