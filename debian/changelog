@@ -1,12 +1,28 @@
 maven-repo-helper (0.7) unstable; urgency=low
 
   * Install jars in /usr/share/java and create link to them from
-   the Maven repository (as suggested by Marcus Better)
+    the Maven repository (as suggested by Marcus Better)
   * Add a new script, mh_linkjar, which creates links to the jar into
-   /usr/share/maven-repo. Unlike mh_installjar, it does not copy the
-   jar into the build directory.
+    /usr/share/maven-repo. Unlike mh_installjar, it does not copy the
+    jar into the build directory.
   * Use install instead of dh_install in the scripts as it can
-   interfer if there is a .install file in the debian folder.
+    interfer if there is a .install file in the debian folder.
+  * Add Recommends: debhelper as debhelper is used in some scripts
+    (mh_install* and mh_linkjar)
+  * Add --set-version to mh_cleanpom, mh_installpom, mh_installpoms
+    to be able to force the version of the artifact in Maven without
+    needing patching the original POM file.
+  * More errors detected in repo scan
+  * Use http://maven.apache.org/xsd/maven-4_0_0.xsd as the location of
+    the xsd in the xml namespace declaration to keep gcj happy. It should
+    not affect Maven or other tools, provided that the xsd is registered
+    in a XML catalog.
+  * By default, remove the test dependencies from cleaned POMs (except for
+    multi-module POM) as they are not useful outside building the project
+    itself most of the time and they make checking consistency in the 
+    Maven repository harder.
+  * mh_cleanpom, mh_installpom(s) and mh_transformpoms can remove 
+    dependencies from the POM files
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 16 Jul 2009 10:09:26 +0100
 

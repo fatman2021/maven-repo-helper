@@ -9,13 +9,14 @@ import java.util.StringTokenizer;
 public class DependencyRule implements Comparable {
 
     public static DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
-    public static DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin *");
-    public static DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * *");
+    public static DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
+    public static DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * * * *");
 
     private Rule groupRule;
     private Rule artifactRule;
     private Rule typeRule;
     private Rule versionRule;
+    private Rule scopeRule;
 
     public DependencyRule(String def) {
         StringTokenizer st = new StringTokenizer(def, " \t", false);
@@ -39,17 +40,25 @@ public class DependencyRule implements Comparable {
         } else {
             versionRule = new Rule("s/.*/debian/");
         }
+        if (st.hasMoreTokens()) {
+            scopeRule = new Rule(st.nextToken());
+        } else {
+            scopeRule = new Rule("*");
+        }
     }
 
     public boolean matches(Dependency dependency) {
-        return groupRule.match(dependency.getGroupId()) && artifactRule.match(dependency.getArtifactId()) && typeRule.match(dependency.getType()) && versionRule.match(dependency.getVersion());
+        return groupRule.match(dependency.getGroupId()) && artifactRule.match(dependency.getArtifactId()) && typeRule.match(dependency.getType()) 
+                && versionRule.match(dependency.getVersion()) && scopeRule.match(dependency.getScope());
     }
 
     public Dependency apply(Dependency dependency) {
-        return new Dependency(groupRule.apply(dependency.getGroupId()),
+        return new Dependency(groupRule.apply(dependency.getGroupId()), 
                 artifactRule.apply(dependency.getArtifactId()),
                 typeRule.apply(dependency.getType()),
-                versionRule.apply(dependency.getVersion()));
+                versionRule.apply(dependency.getVersion()),
+                scopeRule.apply(dependency.getScope()),
+                dependency.isOptional());
     }
 
     /**
@@ -85,6 +94,12 @@ public class DependencyRule implements Comparable {
         if (!versionRule.isGeneric() && other.versionRule.isGeneric()) {
             return -1;
         }
+        if (scopeRule.isGeneric() && !other.scopeRule.isGeneric()) {
+            return 1;
+        }
+        if (!scopeRule.isGeneric() && other.scopeRule.isGeneric()) {
+            return -1;
+        }
         return this.toPatternString().compareTo(other.toPatternString());
     }
 
@@ -108,6 +123,9 @@ public class DependencyRule implements Comparable {
         if (this.versionRule != other.versionRule && (this.versionRule == null || !this.versionRule.equals(other.versionRule))) {
             return false;
         }
+        if (this.scopeRule != other.scopeRule && (this.scopeRule == null || !this.scopeRule.equals(other.scopeRule))) {
+            return false;
+        }
         return true;
     }
 
@@ -117,15 +135,17 @@ public class DependencyRule implements Comparable {
         hash = 73 * hash + (this.artifactRule != null ? this.artifactRule.hashCode() : 0);
         hash = 73 * hash + (this.typeRule != null ? this.typeRule.hashCode() : 0);
         hash = 73 * hash + (this.versionRule != null ? this.versionRule.hashCode() : 0);
+        hash = 73 * hash + (this.scopeRule != null ? this.scopeRule.hashCode() : 0);
         return hash;
     }
 
     public String toPatternString() {
-        return groupRule.getPattern() + ":" + artifactRule.getPattern() + ":" + typeRule.getPattern() + ":" + versionRule.getPattern();
+        return groupRule.getPattern() + ":" + artifactRule.getPattern() + ":" + typeRule.getPattern() + ":" + versionRule.getPattern()
+                + ":" + scopeRule.getPattern();
     }
 
     public String toString() {
-        return groupRule + " " + artifactRule + " " + typeRule + " " + versionRule;
+        return groupRule + " " + artifactRule + " " + typeRule + " " + versionRule + " " + scopeRule;
     }
 
 }

@@ -14,24 +14,37 @@ syntax()
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
+   echo -e "\t  do not use the version declared in the POM file."
    echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
    echo -e "\t  special properties. Optional, the default location is"
    echo -e "\t  debian/maven.rules"
+   echo -e "\t-u<rules> --published-rules=<rules>: path to the file containing the"
+   echo -e "\t  extra rules to publish in the property debian.mavenRules in the cleaned POM"
+   echo -e "\t  Optional, the default location is debian/maven.publishedRules"
+   echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  extra rules use to remove certain dependencies from the cleaned POM"
+   echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e ""
+   echo -e "See also: mh_installpom(1), mh_cleanpom(1)"
    exit 1
 }
 
-ARGS="p package r rules v verbose n no-act" parseargs "$@"
+ARGS="p package r rules v u published-rules i ignore-rules e set-version verbose n no-act" parseargs "$@"
 
 RULES=$(getarg r rules)
+PUBLISHED_RULES=$(getarg u published-rules)
+IGNORE_RULES=$(getarg i ignore-rules)
+SETVERSION=$(getarg e set-version)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-MH_ARGS="--package=${PACKAGE} ${NOPARENT:+--no-parent} ${RULES:+--rules=$RULES}"
+MH_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
 
 cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
     if [ ! -z "$POM" ]; then

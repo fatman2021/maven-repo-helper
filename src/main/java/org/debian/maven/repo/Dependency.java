@@ -30,6 +30,16 @@ public class Dependency {
         this.artifactId = artifactId;
         this.type = type;
         this.version = version;
+        this.scope = "runtime";
+    }
+
+    public Dependency(String groupId, String artifactId, String type, String version, String scope, boolean optional) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.type = type;
+        this.version = version;
+        this.scope = scope;
+        this.optional = optional;
     }
 
     public String getArtifactId() {

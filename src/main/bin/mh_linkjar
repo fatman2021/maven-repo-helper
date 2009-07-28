@@ -6,7 +6,7 @@ set -e
 
 syntax()
 {
-   echo -e "Usage: mh_linkjar [option]... [pom] [source_jar] [link]..."
+   echo -e "Usage: mh_linkjar [option]... [pom] [dest_jar] [link]..."
    echo -e "Create symlinks in package build directories, including links to the jar"
    echo -e "file in /usr/share/maven-repo, at the correct location for Maven."
    echo -e "It can also create additional links to the jar, usually located in"
@@ -15,8 +15,8 @@ syntax()
    echo -e "Where"
    echo -e "\t[pom] is the location of the POM associated with the jar to install."
    echo -e "\t  GroupId, artifactId and version will be extracted from this file."
-   echo -e "\t[source_jar] is the path to the jar to install, usually located in the build"
-   echo -e "\t  folder."
+   echo -e "\t[dest_jar] is the path of the installed jar, usually located in the"
+   echo -e "\t  usr/share/java folder."
    echo -e "\t[link] is an additional link to the jar to install, usually there should"
    echo -e "\t  be a link to usr/share/java/$jar.jar and"
    echo -e "\t  usr/share/java/$jar-$version.jar to comply with the Java packaging"

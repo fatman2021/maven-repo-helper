@@ -40,6 +40,7 @@ public class POMTransformer extends POMReader {
                 "artifactId", "packaging", "version"});
     private Set rules = new TreeSet();
     private Set publishedRules = new TreeSet();
+    private Set ignoreRules = new TreeSet();
     private boolean verbose;
 
     public POMTransformer() {
@@ -70,6 +71,17 @@ public class POMTransformer extends POMReader {
 
     public void addPublishedRules(File file) {
         addRules(file, publishedRules);
+    }
+
+    public void addIgnoreRule(DependencyRule rule) {
+        if (verbose) {
+            System.out.println("Ignore rules:");
+        }
+        ignoreRules.add(rule);
+    }
+
+    public void addIgnoreRules(File file) {
+        addRules(file, ignoreRules);
     }
 
     private void addRules(File file, Set dest) {
@@ -104,12 +116,13 @@ public class POMTransformer extends POMReader {
         });
     }
 
-    public void transformPoms(File poms, final String debianPackage, final boolean keepPomVersion) {
+    public void transformPoms(File poms, final String debianPackage, final boolean keepPomVersion,
+            final String setVersion) {
         foreachPoms(poms, new POMHandler() {
 
             public void handlePOM(File pomFile, boolean noParent) throws Exception {
                 File targetFile = new File(pomFile.getAbsolutePath() + ".new");
-                transformPom(pomFile, targetFile, noParent, keepPomVersion, debianPackage);
+                transformPom(pomFile, targetFile, noParent, keepPomVersion, setVersion, debianPackage);
                 pomFile.delete();
                 targetFile.renameTo(pomFile);
             }
@@ -117,11 +130,11 @@ public class POMTransformer extends POMReader {
     }
 
     public void transformPom(File originalPom, File targetPom) throws XMLStreamException, FileNotFoundException, IOException {
-        transformPom(originalPom, targetPom, false, false, null);
+        transformPom(originalPom, targetPom, false, false, null, null);
     }
 
     public POMInfo transformPom(File originalPom, File targetPom,
-            boolean noParent, boolean keepPomVersion, String debianPackage) throws XMLStreamException, FileNotFoundException, IOException {
+            boolean noParent, boolean keepPomVersion, String setVersion, String debianPackage) throws XMLStreamException, FileNotFoundException, IOException {
 
         if (targetPom.getParentFile() != null) {
             targetPom.getParentFile().mkdirs();
@@ -132,6 +145,10 @@ public class POMTransformer extends POMReader {
         try {
             // First pass - read information for this POM
             POMInfo info = readPom(originalPom);
+
+            if (setVersion != null) {
+                info.getThisPom().setVersion(setVersion);
+            }
 
             info = info.applyRules(rules);
             Dependency parent = noParent ? null : info.getParent();
@@ -168,21 +185,12 @@ public class POMTransformer extends POMReader {
                         } else if (inIgnoredElement > 0) {
                             inIgnoredElement++;
                         } else {
-                            indent(writer, inLevel);
-                            writer.writeStartElement(element);
-                            copyNsAndAttributes(parser, writer);
-
                             inLevel++;
                             path.add(element);
 
-                            if ("project".equals(element) && inLevel == 1) {
-                                copyAndFillProjectHeader(parser, writer, inLevel, pomInfo, keepPomVersion, info, parent, debianPackage);
-                            } else if (inLevel == 2 && "properties".equals(element)) {
-                                inProperty++;
-                            } else if (inProperty > 0) {
-                                inProperty++;
-                            } else if ("dependency".equals(element)) {
-                                inDependency++;
+                            // Handle the special case of dependencies which can be ignored
+                            // such as test dependencies during a clean operation
+                            if ("dependency".equals(element)) {
                                 sawVersion = false;
                                 String parentElement = (String) path.get(path.size() - 2);
                                 String parentParentElement = (String) path.get(path.size() - 3);
@@ -211,8 +219,29 @@ public class POMTransformer extends POMReader {
                                         int index = inc(dependencyIndexes, listSelector);
                                         List dependencyList = info.getDependencyList(listSelector);
                                         dependency = (Dependency) dependencyList.get(index);
+                                        if (!acceptDependency(dependency, info)) {
+                                            inIgnoredElement++;
+                                            inLevel--;
+                                            path.remove(path.size() - 1);
+                                            dependency = null;
+                                            continue;
+                                        }
                                     }
                                 }
+                            }
+
+                            indent(writer, inLevel - 1);
+                            writer.writeStartElement(element);
+                            copyNsAndAttributes(parser, writer);
+
+                            if ("project".equals(element) && inLevel == 1) {
+                                copyAndFillProjectHeader(parser, writer, inLevel, pomInfo, keepPomVersion, info, parent, debianPackage);
+                            } else if (inLevel == 2 && "properties".equals(element)) {
+                                inProperty++;
+                            } else if (inProperty > 0) {
+                                inProperty++;
+                            } else if ("dependency".equals(element)) {
+                                inDependency++;
                             } else if (inExclusion > 0) {
                                 inExclusion++;
                             } else if (inDependency > 0) {
@@ -245,7 +274,6 @@ public class POMTransformer extends POMReader {
                                 dependency = (Dependency) info.getExtensions().get(index);
                             } else if (inExtension > 0) {
                                 inExtension++;
-
                             }
                         }
 
@@ -257,7 +285,7 @@ public class POMTransformer extends POMReader {
                             inIgnoredElement--;
                         } else {
                             // Attempt to repair missing version information on dependencies
-                            if (inDependency == 1 && !sawVersion && parent == null) {
+                            if (dependency != null && inDependency == 1 && !sawVersion && parent == null) {
                                 if (dependency.getVersion() == null) {
                                     dependency.setVersion("debian");
                                     // Give a chance to customize the version
@@ -304,7 +332,7 @@ public class POMTransformer extends POMReader {
                     case XMLStreamConstants.CHARACTERS: {
                         if (inIgnoredElement == 0) {
                             String value = parser.getText().trim();
-                            if (dependency != null && inExclusion == 0) {
+                            if (dependency != null && (inDependency == 2 || inPlugin == 2 || inExtension == 2) && inExclusion == 0 ) {
                                 if ("groupId".equals(element)) {
                                     value = dependency.getGroupId();
                                 } else if ("artifactId".equals(element)) {
@@ -347,7 +375,7 @@ public class POMTransformer extends POMReader {
             writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
             writer.writeNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
             writer.writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "schemaLocation",
-                    "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
+                    "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd");
         }
         indent(writer, inLevel);
         writer.writeStartElement("modelVersion");
@@ -440,6 +468,16 @@ public class POMTransformer extends POMReader {
 
     protected boolean isInfoElement(String element) {
         return INFO_ELEMENTS.contains(element);
+    }
+
+    protected boolean acceptDependency(Dependency dependency, POMInfo info) {
+        for (Iterator i = ignoreRules.iterator(); i.hasNext();) {
+            DependencyRule ignoreRule = (DependencyRule) i.next();
+            if (ignoreRule.matches(dependency)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private int inc(Map dependencyIndexes, String selector) {
@@ -547,10 +585,16 @@ public class POMTransformer extends POMReader {
             System.out.println("    this library");
             System.out.println("  -r<rules>, --rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to apply when cleaning the POM");
-            System.out.println("  -i<rules>, --published-rules=<rules>: path to the file containing the");
+            System.out.println("  -u<rules>, --published-rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to publish in the property debian.mavenRules in the cleaned POM");
+            System.out.println("  -u<rules>, --published-rules=<rules>: path to the file containing the");
+            System.out.println("    extra rules to publish in the property debian.mavenRules in the cleaned POM");
+            System.out.println("  -i<rules>, --ignore-rules=<rules>: path to the file containing the");
+            System.out.println("    extra rules use to remove certain dependencies from the transformed POM");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
+            System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
+            System.out.println("    do not use the version declared in the POM file.");
             System.out.println("  --keep-pom-version: keep the original version of the POMs but, ");
             System.out.println("    convert all other versions in dependencies and plugins");
             System.out.println("");
@@ -569,9 +613,11 @@ public class POMTransformer extends POMReader {
         boolean verbose = false;
         boolean noRules = false;
         boolean keepPomVersion = false;
+        String setVersion = null;
         String debianPackage = "";
         File rulesFile = null;
-        File publishedRulesFile = new File("debian/maven.publishedRules");
+        File publishedRulesFile = null;
+        File ignoreRulesFile = null;
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
@@ -588,10 +634,18 @@ public class POMTransformer extends POMReader {
                 rulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--rules=")) {
                 rulesFile = new File(arg.substring("--rules=".length()));
-            } else if (arg.startsWith("-i")) {
+            } else if (arg.startsWith("-u")) {
                 publishedRulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--published-rules=")) {
-                publishedRulesFile = new File(arg.substring("--rules=".length()));
+                publishedRulesFile = new File(arg.substring("--published-rules=".length()));
+            } else if (arg.startsWith("-i")) {
+                ignoreRulesFile = new File(arg.substring(2));
+            } else if (arg.startsWith("--ignore-rules=")) {
+                ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
+            } else if (arg.startsWith("-e")) {
+                setVersion = arg.substring(2);
+            } else if (arg.startsWith("--set-version=")) {
+                setVersion = arg.substring("--set-version=".length());
             }
             i = inc(i, args);
         }
@@ -624,8 +678,11 @@ public class POMTransformer extends POMReader {
                 transformer.addPublishedRules(publishedRulesFile);
             }
         }
+        if (ignoreRulesFile != null && ignoreRulesFile.exists()) {
+            transformer.addIgnoreRules(ignoreRulesFile);
+        }
 
-        transformer.transformPoms(poms, debianPackage, keepPomVersion);
+        transformer.transformPoms(poms, debianPackage, keepPomVersion, setVersion);
     }
 
     private static int inc(int i, String[] args) {

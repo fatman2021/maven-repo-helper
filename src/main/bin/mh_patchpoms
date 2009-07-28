@@ -19,9 +19,12 @@ syntax()
    echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
    echo -e "\t  special properties. Optional, the default location is"
    echo -e "\t  debian/maven.rules"
-   echo -e "\t-i<rules> --published-rules=<rules>: path to the file containing the"
+   echo -e "\t-u<rules> --published-rules=<rules>: path to the file containing the"
    echo -e "\t  extra rules to publish in the property debian.mavenRules in the cleaned POM"
    echo -e "\t  Optional, the default location is debian/maven.publishedRules"
+   echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  extra rules use to remove certain dependencies from the cleaned POM"
+   echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
    echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
    echo -e "\t  do not even convert versions to the default 'debian' version"
    echo -e "\t-k --keep-pom-version: keep the original version of the POMs but, "
@@ -31,10 +34,11 @@ syntax()
    exit 1
 }
 
-ARGS="p package r rules i published-rules s no-rules k keep-pom-version v verbose n no-act" parseargs "$@"
+ARGS="p package r rules u published-rules i ignore-rules s no-rules k keep-pom-version v verbose n no-act" parseargs "$@"
 
 RULES=$(getarg r rules)
-PUBLISHED_RULES=$(getarg i published-rules)
+PUBLISHED_RULES=$(getarg u published-rules)
+IGNORE_RULES=$(getarg i ignore-rules)
 NORULES=$(getarg s no-rules)
 KEEP_POM_VERSION=$(getarg k keep-pom-version)
 PACKAGE=$(getarg p package)
@@ -49,7 +53,7 @@ if [ -z "$RULES" ]; then
 fi
 
 DH_OPTS="${VERBOSE:+-v}"
-MH_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES} ${KEEP_POM_VERSION:+--keep-pom-version} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${NORULES:+--no-rules}"
+MH_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES} ${KEEP_POM_VERSION:+--keep-pom-version} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${NORULES:+--no-rules}"
 
 if [ -z "$NOACT" ]; then
     cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
@@ -57,6 +61,6 @@ if [ -z "$NOACT" ]; then
             cp $POM $POM.save
         fi
     done
-	java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.POMTransformer $DH_OPTS $MH_ARGS
+    java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.POMTransformer $DH_OPTS $MH_ARGS
 fi
 

@@ -173,6 +173,12 @@ public class Repository {
             Entry entry = (Entry) i.next();
             File pom = (File) entry.getKey();
             POMInfo pomInfo = (POMInfo) entry.getValue();
+            if (pomInfo.getThisPom().getVersion() == null) {
+                issues.add("Missing version in " + pom);
+            }
+            if (pomInfo.getThisPom().getVersion().endsWith("-SNAPSHOT")) {
+                issues.add("Snapshot version in " + pom);
+            }
             for (Iterator j = pomInfo.getDependencies().iterator(); j.hasNext();) {
                 Dependency dependency = (Dependency) j.next();
                 if (!dep2info.containsKey(dependency)) {

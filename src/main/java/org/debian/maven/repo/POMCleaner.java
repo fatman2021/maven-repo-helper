@@ -39,7 +39,7 @@ public class POMCleaner extends POMTransformer {
     }
 
     public void cleanPom(File originalPom, File targetPom, File pomProperties,
-            boolean noParent, boolean keepPomVersion, String debianPackage) {
+            boolean noParent, boolean keepPomVersion, String setVersion, String debianPackage) {
 
         if (targetPom.getParentFile() != null) {
             targetPom.getParentFile().mkdirs();
@@ -49,7 +49,7 @@ public class POMCleaner extends POMTransformer {
         }
 
         try {
-            POMInfo info = transformPom(originalPom, targetPom, noParent, keepPomVersion, debianPackage);
+            POMInfo info = transformPom(originalPom, targetPom, noParent, keepPomVersion, setVersion, debianPackage);
 
             Properties pomProps = new Properties();
             pomProps.put("groupId", info.getThisPom().getGroupId());
@@ -77,6 +77,13 @@ public class POMCleaner extends POMTransformer {
         return WRITE_IGNORED_ELEMENTS.contains(element);
     }
 
+    protected boolean acceptDependency(Dependency dependency, POMInfo info) {
+        if (!super.acceptDependency(dependency, info)) {
+            return false;
+        }
+        return "pom".equals(info.getThisPom().getType()) || !"test".equals(dependency.getScope());
+    }
+
     public static void main(String[] args) {
         if (args.length == 0 || "-h".equals(args[0]) || "--help".equals(args[0])) {
             System.out.println("Purpose: cleans a Maven POM for inclusion in the Debian/Maven repository in /usr/share/maven-repo");
@@ -89,10 +96,14 @@ public class POMCleaner extends POMTransformer {
             System.out.println("    this library");
             System.out.println("  -r<rules>, --rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to apply when cleaning the POM");
-            System.out.println("  -i<rules>, --published-rules=<rules>: path to the file containing the");
+            System.out.println("  -u<rules>, --published-rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to publish in the property debian.mavenRules in the cleaned POM");
+            System.out.println("  -i<rules>, --ignore-rules=<rules>: path to the file containing the");
+            System.out.println("    extra rules use to remove certain dependencies from the cleaned POM");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
+            System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
+            System.out.println("    do not use the version declared in the POM file.");
             System.out.println("  --keep-pom-version: keep the original version of the POM but, ");
             System.out.println("    convert all other versions in dependencies and plugins");
             System.out.println("  --keep-all-elements: keep all elements in the POM, do a version");
@@ -164,8 +175,10 @@ public class POMCleaner extends POMTransformer {
         boolean keepPomVersion = false;
         boolean keepAllElements = false;
         String debianPackage = "";
+        String setVersion = null;
         File rulesFile = null;
         File publishedRulesFile = new File("debian/maven.publishedRules");
+        File ignoreRulesFile = new File("debian/maven.ignoreRules");
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
@@ -186,10 +199,18 @@ public class POMCleaner extends POMTransformer {
                 rulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--rules=")) {
                 rulesFile = new File(arg.substring("--rules=".length()));
-            } else if (arg.startsWith("-i")) {
+            } else if (arg.startsWith("-u")) {
                 publishedRulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--published-rules=")) {
                 publishedRulesFile = new File(arg.substring("--published-rules=".length()));
+            } else if (arg.startsWith("-i")) {
+                ignoreRulesFile = new File(arg.substring(2));
+            } else if (arg.startsWith("--ignore-rules=")) {
+                ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
+            } else if (arg.startsWith("-e")) {
+                setVersion = arg.substring(2);
+            } else if (arg.startsWith("--set-version=")) {
+                setVersion = arg.substring("--set-version=".length());
             }
             i = inc(i, args);
         }
@@ -217,10 +238,13 @@ public class POMCleaner extends POMTransformer {
                 cleaner.addPublishedRules(publishedRulesFile);
             }
         }
+        if (ignoreRulesFile != null && ignoreRulesFile.exists()) {
+            cleaner.addIgnoreRules(ignoreRulesFile);
+        }
 
         cleaner.setKeepAllElements(keepAllElements);
         cleaner.cleanPom(originalPom, targetPom, pomProperties, noParent,
-                keepPomVersion, debianPackage);
+                keepPomVersion, setVersion, debianPackage);
     }
 
     private static int inc(int i, String[] args) {

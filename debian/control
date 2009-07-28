@@ -12,6 +12,7 @@ Homepage: https://launchpad.net/maven-packaging-support
 Package: maven-repo-helper
 Architecture: all
 Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless, libstax-java
+Recommends: debhelper
 Suggests: maven-debian-helper
 Description: Helper tools for including Maven metatada in Debian packages
  Maven is a software project management and comprehension tool. Based on the
