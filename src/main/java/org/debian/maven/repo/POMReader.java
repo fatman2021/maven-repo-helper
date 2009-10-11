@@ -226,6 +226,11 @@ public class POMReader {
         if (thisPom.getVersion() == null && parent != null) {
             thisPom.setVersion(parent.getVersion());
         }
+        
+        // Damien Raude-Morvan: Resolve "parent.version" variable when parsing pom 
+        if (thisPom.getVersion().equalsIgnoreCase("${parent.version}") && parent != null) {
+            thisPom.setVersion(parent.getVersion());
+        }
 
         Map inferedProperties = new TreeMap(properties);
         inferedProperties.put("pom.groupId", thisPom.getGroupId());
