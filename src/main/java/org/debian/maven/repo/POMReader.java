@@ -20,6 +20,7 @@ import javax.xml.stream.XMLStreamReader;
  * Reads relevant information from the POM.
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
+ * @author Damien Raude-Morvan <drazzib@debian.org>
  */
 public class POMReader {
 
@@ -226,19 +227,28 @@ public class POMReader {
         if (thisPom.getVersion() == null && parent != null) {
             thisPom.setVersion(parent.getVersion());
         }
-        
-        // Damien Raude-Morvan: Resolve "parent.version" variable when parsing pom 
-        if (thisPom.getVersion().equalsIgnoreCase("${parent.version}") && parent != null) {
-            thisPom.setVersion(parent.getVersion());
-        }
 
         Map inferedProperties = new TreeMap(properties);
+        
         inferedProperties.put("pom.groupId", thisPom.getGroupId());
         inferedProperties.put("project.groupId", thisPom.getGroupId());
+        inferedProperties.put("groupId", thisPom.getGroupId());
+        
         inferedProperties.put("pom.artifactId", thisPom.getArtifactId());
         inferedProperties.put("project.artifactId", thisPom.getArtifactId());
+        inferedProperties.put("artifactId", thisPom.getArtifactId());
+        
         inferedProperties.put("pom.version", thisPom.getVersion());
         inferedProperties.put("project.version", thisPom.getVersion());
+        inferedProperties.put("version", thisPom.getVersion());
+        
+        if (parent != null) {
+            inferedProperties.put("parent.groupId", parent.getGroupId());
+            inferedProperties.put("parent.artifactId", parent.getArtifactId());
+            inferedProperties.put("parent.version", parent.getVersion());
+        }
+        
+        expandProperties(thisPom, inferedProperties);
         expendProperties(dependencies, inferedProperties);
         expendProperties(dependencyManagement, inferedProperties);
         expendProperties(plugins, inferedProperties);
