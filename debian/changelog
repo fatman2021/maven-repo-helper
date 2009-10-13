@@ -1,10 +1,10 @@
-maven-repo-helper (0.9) UNRELEASED; urgency=low
+maven-repo-helper (0.9) unstable; urgency=low
 
   * org/debian/maven/repo/POMReader.java:
     Extend previous fix to parse much more properties
     and use expandProperties() like other cases.
 
- -- Damien Raude-Morvan <drazzib@debian.org>  Mon, 12 Oct 2009 00:27:19 +0200
+ -- Damien Raude-Morvan <drazzib@debian.org>  Tue, 13 Oct 2009 22:49:43 +0200
 
 maven-repo-helper (0.8) unstable; urgency=low
 
