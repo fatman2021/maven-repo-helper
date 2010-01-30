@@ -1,3 +1,25 @@
+maven-repo-helper (0.10) unstable; urgency=low
+
+  * Add more unit tests
+  * maven.ignoreRules now supports eliminating some plugins from the build
+  * maven.rules can be used to repair missing version numbers for
+    plugins and extensions as well as dependencies (Closes: #561420) 
+  * If a pom file is followed by the --ignore option in the file
+    <package>.poms, then it is ignored from the build and all operations
+    (cleaning, patching)
+  * Add support for maven.cleanIgnoreRules to ignore additional dependencies or
+    plugins during the clean phase.
+  * mh_cleanpom automatically adds a published rule for any Maven plugin, this
+    rule is used later by maven-debian-helper to force the versions of the
+    Maven plugins used in a pom.xml file with the versions defined in the
+    repository
+  * Read rules from the Maven repository to force the version of
+    Maven plugins to be  the same as in the repository
+  * Add --debian-build and --no-docs-build options to mh_patchpoms to remove
+    some elements from the POM during a Debian build
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Tue, 12 Jan 2010 00:12:23 +0100
+
 maven-repo-helper (0.9) unstable; urgency=low
 
   * org/debian/maven/repo/POMReader.java:

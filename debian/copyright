@@ -25,7 +25,7 @@ Files: src/test/resources/plexus-active-collections.pom
 Copyright: 2006-2009, Codehaus Foundation
 License: Apache-2.0
 
-Files: src/test/resources/*.xml
+Files: src/test/resources/*.xml src/test/resources/org/apache/maven/project/pom-4.0.0.xml
 Copyright: 2001-2009, Apache Software foundation
 License: Apache-2.0
 
