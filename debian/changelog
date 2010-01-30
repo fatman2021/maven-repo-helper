@@ -1,4 +1,4 @@
-maven-repo-helper (0.10) unstable; urgency=low
+maven-repo-helper (1.0) unstable; urgency=low
 
   * Add more unit tests
   * maven.ignoreRules now supports eliminating some plugins from the build
