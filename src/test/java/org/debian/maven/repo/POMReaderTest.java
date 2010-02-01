@@ -62,6 +62,11 @@ public class POMReaderTest extends TestBase {
         assertEquals(2, info.getProperties().size());
         assertEquals("2.1.0-SNAPSHOT", info.getProperties().get("mavenVersion"));
         assertEquals("1.0-beta-5", info.getProperties().get("wagonVersion"));
+
+        assertNotNull(info.getModules());
+        assertTrue(info.getModules().contains("maven-artifact"));
+        assertTrue(info.getModules().contains("maven-core"));
+
     }
 
 }

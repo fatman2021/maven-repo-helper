@@ -1,3 +1,12 @@
+maven-repo-helper (1.0.1) unstable; urgency=low
+
+  * Bump up Standards-Version to 3.8.4
+  * Fix NPE on mh_transformpoms
+  * Looks like I missed many files while merging changes
+    to Debian, it's now fixed.
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 01 Feb 2010 23:02:27 +0100
+
 maven-repo-helper (1.0) unstable; urgency=low
 
   * Add more unit tests

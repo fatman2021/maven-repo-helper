@@ -23,37 +23,69 @@ syntax()
    echo -e "\t  extra rules to publish in the property debian.mavenRules in the cleaned POM"
    echo -e "\t  Optional, the default location is debian/maven.publishedRules"
    echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
-   echo -e "\t  extra rules use to remove certain dependencies from the cleaned POM"
+   echo -e "\t  rules use to remove certain dependencies from the cleaned POM"
    echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
+   echo -e "\t-c<rules> --clean-ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  rules use to remove certain dependencies from the cleaned POM,"
+   echo -e "\t  in addition to the ignore rules specified previously. This is"
+   echo -e "\t  useful in situations such as when the Maven clean target requires more"
+   echo -e "\t  dependencies or plugins to ignore than the build target"
+   echo -e "\t  Optional, it is ignored by default"
    echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
    echo -e "\t  do not even convert versions to the default 'debian' version"
    echo -e "\t-k --keep-pom-version: keep the original version of the POMs but, "
    echo -e "\t  convert all other versions in dependencies and plugins"
+   echo -e "\t-d --debian-build: transform during a Debian build, which means that"
+   echo -e "\t  some POM elements will be removed"
+   echo -e "\t-b --build-no-docs: transform during a build where no documentation is generated,"
+   echo -e "\t  which means that some POM elements will be removed"
+   echo -e "\t-m<repo root>--maven-repo=<repo root>: location of the Maven repository,"
+   echo -e "\t  used to force the versions of the Maven plugins used in the current"
+   echo -e "\t  POM file with the versions found in the repository"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    exit 1
 }
 
-ARGS="p package r rules u published-rules i ignore-rules s no-rules k keep-pom-version v verbose n no-act" parseargs "$@"
+ARGS="p package r rules u published-rules i ignore-rules c clean-ignore-rules s no-rules k keep-pom-version v verbose n no-act d debian-build b build-no-docs m maven-repo" parseargs "$@"
 
 RULES=$(getarg r rules)
 PUBLISHED_RULES=$(getarg u published-rules)
 IGNORE_RULES=$(getarg i ignore-rules)
+CLEAN_IGNORE_RULES=$(getarg c clean-ignore-rules)
 NORULES=$(getarg s no-rules)
 KEEP_POM_VERSION=$(getarg k keep-pom-version)
+MAVEN_REPO=$(getarg m maven-repo)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
+DEBIAN_BUILD=$(getarg d debian-build)
+BUILD_NO_DOCS=$(getarg b build-no-docs)
 
+if [ -z "$PUBLISHED_RULES" ]; then
+    if [ -f debian/maven.publishedRules ]; then
+        PUBLISHED_RULES="debian/maven.publishedRules"
+    fi
+fi
+if [ -z "$IGNORE_RULES" ]; then
+    if [ -f debian/maven.ignoreRules ]; then
+        IGNORE_RULES="debian/maven.ignoreRules"
+    fi
+fi
 if [ -z "$RULES" ]; then
     if [ -f debian/maven.rules ]; then
         RULES="debian/maven.rules"
     fi
 fi
+if [ -z "$MAVEN_REPO" ]; then
+    if [ -f /usr/share/maven-repo ]; then
+        MAVEN_REPO="/usr/share/maven-repo"
+    fi
+fi
 
 DH_OPTS="${VERBOSE:+-v}"
-MH_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES} ${KEEP_POM_VERSION:+--keep-pom-version} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${NORULES:+--no-rules}"
+MH_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES} ${KEEP_POM_VERSION:+--keep-pom-version} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--ignore-rules=$CLEAN_IGNORE_RULES} ${NORULES:+--no-rules} ${DEBIAN_BUILD:+--debian-build} ${BUILD_NO_DOCS:+--build-no-docs} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO}"
 
 if [ -z "$NOACT" ]; then
     cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do

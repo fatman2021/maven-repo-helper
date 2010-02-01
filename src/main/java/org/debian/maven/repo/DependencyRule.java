@@ -47,6 +47,26 @@ public class DependencyRule implements Comparable {
         }
     }
 
+    public Rule getArtifactRule() {
+        return artifactRule;
+    }
+
+    public Rule getGroupRule() {
+        return groupRule;
+    }
+
+    public Rule getScopeRule() {
+        return scopeRule;
+    }
+
+    public Rule getTypeRule() {
+        return typeRule;
+    }
+
+    public Rule getVersionRule() {
+        return versionRule;
+    }
+
     public boolean matches(Dependency dependency) {
         return groupRule.match(dependency.getGroupId()) && artifactRule.match(dependency.getArtifactId()) && typeRule.match(dependency.getType()) 
                 && versionRule.match(dependency.getVersion()) && scopeRule.match(dependency.getScope());

@@ -37,6 +37,7 @@ public class Repository {
     private Map resolvedPoms = new HashMap();
     private POMInfo superPom;
     private POMReader pomReader = new POMReader();
+    private boolean scanned = false;
 
     public Repository(File baseDir) {
         this.baseDir = baseDir;
@@ -77,7 +78,7 @@ public class Repository {
 
         // Map<DependencyRule,POMInfo>
         Map potentialMatches = new TreeMap();
-        for (Iterator i = resolvedPoms.values().iterator(); i.hasNext();) {
+        for (Iterator i = resolvedPomsIterator(); i.hasNext();) {
             POMInfo testPom = (POMInfo) i.next();
             Set rules = testPom.getPublishedRules(true);
             for (Iterator j = rules.iterator(); j.hasNext();) {
@@ -94,6 +95,10 @@ public class Repository {
         return null;
     }
 
+    public Iterator resolvedPomsIterator() {
+        return resolvedPoms.values().iterator();
+    }
+
     public List searchMatchingPOMsIgnoreVersion(Dependency dependency) {
         List result = new ArrayList();
         POMInfo pom = searchMatchingPOM(dependency);
@@ -102,13 +107,21 @@ public class Repository {
             return result;
         }
 
-        for (Iterator i = resolvedPoms.values().iterator(); i.hasNext();) {
+        for (Iterator i = resolvedPomsIterator(); i.hasNext();) {
             POMInfo testPom = (POMInfo) i.next();
             if (testPom.getThisPom().equalsIgnoreVersion(dependency)) {
                 result.add(testPom);
             }
         }
         return result;
+    }
+
+    public void scanOnce() {
+        if (scanned) {
+            return;
+        }
+        scanned = true;
+        scan();
     }
 
     public void scan() {

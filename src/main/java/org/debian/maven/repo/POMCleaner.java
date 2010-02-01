@@ -70,6 +70,14 @@ public class POMCleaner extends POMTransformer {
         }
     }
 
+    protected void transformingPom(POMInfo pom) {
+        if (pom.getThisPom().getType().equals("maven-plugin")) {
+            addIgnoreRule(new DependencyRule(pom.getThisPom().getGroupId() + " "
+                    + pom.getThisPom().getArtifactId() + " maven-plugin s/.*/"
+                    + pom.getThisPom().getVersion() + "/"));
+        }
+    }
+
     protected boolean isWriteIgnoredElement(String element) {
         if (keepAllElements) {
             return super.isWriteIgnoredElement(element);
@@ -99,7 +107,10 @@ public class POMCleaner extends POMTransformer {
             System.out.println("  -u<rules>, --published-rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to publish in the property debian.mavenRules in the cleaned POM");
             System.out.println("  -i<rules>, --ignore-rules=<rules>: path to the file containing the");
-            System.out.println("    extra rules use to remove certain dependencies from the cleaned POM");
+            System.out.println("    extra rules use to remove certain dependencies from the transformed POM");
+            System.out.println("    This option can be repeated, in order to have multiple sets of");
+            System.out.println("    dependencies to ignore, useful in situations such as when the Maven clean");
+            System.out.println("    target requires more dependencies or plugins to ignore than the build target");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
             System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
@@ -108,6 +119,9 @@ public class POMCleaner extends POMTransformer {
             System.out.println("    convert all other versions in dependencies and plugins");
             System.out.println("  --keep-all-elements: keep all elements in the POM, do a version");
             System.out.println("    transformation only, don't delete the build and other elements.");
+            System.out.println("  -m<repo root>--maven-repo=<repo root>: location of the Maven repository,");
+            System.out.println("    used to force the versions of the Maven plugins used in the current");
+            System.out.println("    POM file with the versions found in the repository");
             System.out.println("");
             System.out.println("Arguments:");
             System.out.println("  original-pom: location of the original POM");
@@ -179,6 +193,7 @@ public class POMCleaner extends POMTransformer {
         File rulesFile = null;
         File publishedRulesFile = new File("debian/maven.publishedRules");
         File ignoreRulesFile = new File("debian/maven.ignoreRules");
+        File mavenRepo = null;
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
@@ -203,14 +218,26 @@ public class POMCleaner extends POMTransformer {
                 publishedRulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--published-rules=")) {
                 publishedRulesFile = new File(arg.substring("--published-rules=".length()));
-            } else if (arg.startsWith("-i")) {
-                ignoreRulesFile = new File(arg.substring(2));
-            } else if (arg.startsWith("--ignore-rules=")) {
-                ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
+            } else if (arg.startsWith("-i") || arg.startsWith("--ignore-rules=")) {
+                if (arg.startsWith("-i")) {
+                    ignoreRulesFile = new File(arg.substring(2));
+                } else {
+                    ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
+                }
+                if (ignoreRulesFile.exists()) {
+                    cleaner.addIgnoreRules(ignoreRulesFile);
+                } else {
+                    System.err.println("Cannot find file: " + ignoreRulesFile);
+                }
+
             } else if (arg.startsWith("-e")) {
                 setVersion = arg.substring(2);
             } else if (arg.startsWith("--set-version=")) {
                 setVersion = arg.substring("--set-version=".length());
+            } else if (arg.startsWith("-m")) {
+                mavenRepo = new File(arg.substring(2));
+            } else if (arg.startsWith("--maven-repo=")) {
+                mavenRepo = new File(arg.substring("--maven-repo=".length()));
             }
             i = inc(i, args);
         }
@@ -238,8 +265,11 @@ public class POMCleaner extends POMTransformer {
                 cleaner.addPublishedRules(publishedRulesFile);
             }
         }
-        if (ignoreRulesFile != null && ignoreRulesFile.exists()) {
-            cleaner.addIgnoreRules(ignoreRulesFile);
+
+        if (mavenRepo != null) {
+            Repository repository = new Repository(mavenRepo);
+            cleaner.setRepository(repository);
+            cleaner.addPluginRulesFromRepository();
         }
 
         cleaner.setKeepAllElements(keepAllElements);

@@ -37,8 +37,17 @@ syntax()
    echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
    echo -e "\t  extra rules use to remove certain dependencies from the cleaned POM"
    echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
+   echo -e "\t-c<rules> --clean-ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  rules use to remove certain dependencies from the cleaned POM,"
+   echo -e "\t  in addition to the ignore rules specified previously. This is"
+   echo -e "\t  useful in situations such as when the Maven clean target requires more"
+   echo -e "\t  dependencies or plugins to ignore than the build target"
+   echo -e "\t  Optional, the default location is debian/maven.cleanIgnoreRules"
    echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
    echo -e "\t  do not even convert versions to the default 'debian' version"
+   echo -e "\t-m<repo root>--maven-repo=<repo root>: location of the Maven repository,"
+   echo -e "\t  used to force the versions of the Maven plugins used in the current"
+   echo -e "\t  POM file with the versions found in the repository"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    echo -e ""
@@ -108,7 +117,7 @@ syntax()
    exit 1
 }
 
-ARGS="p package o no-parent k keep-pom-version e set-version r rules u published-rules i ignore-rules s no-rules v verbose n no-act" parseargs "$@"
+ARGS="p package o no-parent k keep-pom-version e set-version r rules u published-rules i ignore-rules c clean-ignore-rules s no-rules v verbose n no-act m maven-repo" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
@@ -120,7 +129,9 @@ SETVERSION=$(getarg e set-version)
 RULES=$(getarg r rules)
 PUBLISHED_RULES=$(getarg u published-rules)
 IGNORE_RULES=$(getarg i ignore-rules)
+CLEAN_IGNORE_RULES=$(getarg c clean-ignore-rules)
 NORULES=$(getarg s no-rules)
+MAVEN_REPO=$(getarg m maven-repo)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
@@ -146,14 +157,23 @@ if [ -z "$IGNORE_RULES" ]; then
         IGNORE_RULES="debian/maven.ignoreRules"
     fi
 fi
-
+if [ -z "$CLEAN_IGNORE_RULES" ]; then
+    if [ -f debian/maven.cleanIgnoreRules ]; then
+        CLEAN_IGNORE_RULES="debian/maven.cleanIgnoreRules"
+    fi
+fi
 if [ -z "$RULES" ]; then
     if [ -f debian/maven.rules ]; then
         RULES="debian/maven.rules"
     fi
 fi
+if [ -z "$MAVEN_REPO" ]; then
+    if [ -f /usr/share/maven-repo ]; then
+        MAVEN_REPO="/usr/share/maven-repo"
+    fi
+fi
 
-CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${NORULES:+--no-rules}"
+CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--ignore-rules=$CLEAN_IGNORE_RULES} ${NORULES:+--no-rules} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO}"
 
 if [ -z "$NOACT" ]; then
 	java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.POMCleaner $CLEAN_ARGS $POM $TARGET $POM_PROPS

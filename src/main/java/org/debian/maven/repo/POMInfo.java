@@ -1,5 +1,6 @@
 package org.debian.maven.repo;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +20,7 @@ public class POMInfo {
     public static final String PLUGINS = "Plugins";
     public static final String PLUGIN_MANAGEMENT = "PluginManagement";
     public static final String EXTENSIONS = "Extensions";
+    public static final String MODULES = "Modules";
 
     private String originalParentVersion;
     private Dependency originalPom;
@@ -35,6 +37,7 @@ public class POMInfo {
     private List profileDependencyManagement;
     private List profilePluginDependencies;
     private Map properties;
+    private POMInfo parentPOM;
 
     public Dependency getOriginalPom() {
         return originalPom;
@@ -229,11 +232,27 @@ public class POMInfo {
         result.setProfilePluginDependencies(Dependency.applyRules(getProfilePluginDependencies(), rules));
         result.setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
         result.setProperties(getProperties());
+        result.setModules(getModules());
 
         return result;
     }
 
+    public void applyRulesOnDependenciesAndPlugins(Collection rules) {
+        setDependencies(Dependency.applyRules(getDependencies(), rules));
+        setDependencyManagement(Dependency.applyRules(getDependencyManagement(), rules));
+        setExtensions(Dependency.applyRules(getExtensions(), rules));
+        setPlugins(Dependency.applyRules(getPlugins(), rules));
+        setPluginDependencies(Dependency.applyRules(getPluginDependencies(), rules));
+        setPluginManagement(Dependency.applyRules(getPluginManagement(), rules));
+        setProfileDependencies(Dependency.applyRules(getProfileDependencies(), rules));
+        setProfilePluginDependencies(Dependency.applyRules(getProfilePluginDependencies(), rules));
+        setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
+        setProperties(getProperties());
+        setModules(getModules());
+    }
+
     public void mergeManagement(POMInfo parentPOM) {
+        this.parentPOM = parentPOM;
         if (parentPOM != null) {
             mergeManagement(dependencyManagement, parentPOM.getDependencyManagement());
             mergeManagement(pluginManagement, parentPOM.getPluginManagement());
@@ -254,6 +273,26 @@ public class POMInfo {
             }
             target.add(parentDep);
         }
+    }
+
+    public String getVersionFromManagementDependency(Dependency dependency) {
+        List allManagementLists = new ArrayList();
+        allManagementLists.addAll(getDependencyList(DEPENDENCY_MANAGEMENT_LIST));
+        allManagementLists.addAll(getDependencyList(PLUGIN_MANAGEMENT));
+        for (Iterator i = allManagementLists.iterator(); i.hasNext();) {
+            Dependency mgtDep = (Dependency)i.next();
+            if (mgtDep.getGroupId().equals(dependency.getGroupId()) &&
+                    mgtDep.getArtifactId().equals(dependency.getArtifactId()) ) {
+                if (mgtDep.getVersion() != null) {
+                    return mgtDep.getVersion();
+                }
+            }
+        }
+
+        if (parentPOM != null) {
+            return parentPOM.getVersionFromManagementDependency(dependency);
+        }
+        return null;
     }
 
     private void resolveVersions(List deps, List management) {
@@ -300,6 +339,9 @@ public class POMInfo {
         }
         if (EXTENSIONS.equals(listSelector)) {
             return getExtensions();
+        }
+        if (MODULES.equals(listSelector)) {
+            return getModules();
         }
         return null;
     }
