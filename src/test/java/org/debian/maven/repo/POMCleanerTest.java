@@ -206,6 +206,26 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    /**
+     * Test of cleanPom method, of class POMCleaner.
+     */
+    public void testCleanServletApiPom() throws Exception {
+        pomProperties = new File(testDir, "pom.properties");
+        usePom("servlet-api.pom");
+        boolean noParent = true;
+        POMCleaner instance = new POMCleaner();
+        instance.addDefaultRules();
+        instance.addRule(new DependencyRule("s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/"));
+        instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libservlet2.5-java");
+        assertXMLEqual(read("servlet-api.cleaned"), read(updatedPom));
+        Properties pomInfo = new Properties();
+        pomInfo.load(new FileInputStream(pomProperties));
+        assertEquals("javax.servlet", pomInfo.get("groupId"));
+        assertEquals("servlet-api", pomInfo.get("artifactId"));
+        assertEquals("jar", pomInfo.get("type"));
+        assertEquals("2.5", pomInfo.get("version"));
+        assertEquals("2.5", pomInfo.get("debianVersion"));
+    }
 
     /**
      * Test of main method, of class DebianPOM.

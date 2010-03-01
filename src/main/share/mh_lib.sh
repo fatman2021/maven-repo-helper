@@ -4,12 +4,17 @@
 # - package selection
 #
 
-MH_VERSION=${MH_VERSION:-0.7}
+MH_VERSION=${MH_VERSION:-1.0.2}
 CLASSPATH=/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar:/usr/share/java/maven-repo-helper.jar
 JAVA_OPTIONS="-Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.XMLOutputFactoryBase -Djavax.xml.stream.XMLInputFactory=com.bea.xml.stream.MXParserFactory"
 
 parseargs()
 {
+   # clean arguments from a previous run
+   set | grep "^opt_.*=" | echo $(sed -e 's/\(opt_.*\)=.*$/unset \1;/') > .cleanargs
+   . .cleanargs
+   rm .cleanargs
+
    ARGC=0
    ARGV=()
    while [ -n "$1" ]; do

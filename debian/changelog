@@ -1,3 +1,11 @@
+maven-repo-helper (1.0.2) unstable; urgency=low
+
+  * A leak of environment variables activated the no-rules option
+    on mh_cleanpom, preventing mh_installjar to work properly
+    in some cases (Closes: #570863)
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 01 Mar 2010 00:46:16 +0100
+
 maven-repo-helper (1.0.1) unstable; urgency=low
 
   * Bump up Standards-Version to 3.8.4
