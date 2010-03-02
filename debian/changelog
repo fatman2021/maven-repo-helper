@@ -1,3 +1,10 @@
+maven-repo-helper (1.0.3) unstable; urgency=low
+
+  * mh_installpoms: Fix call to mh_installpom.
+    Use MH_ARGS instead of (non-existing) MH_OPTS variable.
+
+ -- Damien Raude-Morvan <drazzib@debian.org>  Tue, 02 Mar 2010 21:09:04 +0100
+
 maven-repo-helper (1.0.2) unstable; urgency=low
 
   * A leak of environment variables activated the no-rules option
