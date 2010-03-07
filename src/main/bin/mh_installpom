@@ -61,7 +61,7 @@ NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
+CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
 
 mkdir -p debian/tmp 2> /dev/null
 
