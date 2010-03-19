@@ -1,3 +1,10 @@
+maven-repo-helper (1.0.5) unstable; urgency=low
+
+  * mh_installjar: Add new -e/--set-version switchs and handle
+    them as we already do in mh_installpom.
+
+ -- Damien Raude-Morvan <drazzib@debian.org>  Fri, 19 Mar 2010 22:34:26 +0100
+
 maven-repo-helper (1.0.4) unstable; urgency=low
 
   * Fix "ignores the --no-parent option in the .poms file" (Closes: #573049)

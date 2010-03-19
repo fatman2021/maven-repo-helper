@@ -26,6 +26,8 @@ syntax()
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
+   echo -e "\t  do not use the version declared in the POM file."
    echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
    echo -e "\t  special properties. Optional, the default location is"
    echo -e "\t  debian/maven.rules"
@@ -64,6 +66,7 @@ fi
 RULES=$(getarg r rules)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+SETVERSION=$(getarg e set-version)
 JAVALIB=$(getarg l java-lib)
 USJ_JAR_NAME=$(getarg n usj-name)
 NO_USJ_VERSIONLESS=$(getarg s no-usj-versionless)
@@ -75,7 +78,7 @@ POM="${ARGV[0]}"
 JAR="${ARGV[1]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-CLEAN_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES}"
+CLEAN_ARGS="--package=${PACKAGE} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES}"
 
 mkdir -p debian/tmp 2> /dev/null
 
