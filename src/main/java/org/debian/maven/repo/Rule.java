@@ -19,8 +19,9 @@ public class Rule {
             pattern = Pattern.compile(st.nextToken());
             replace = st.nextToken();
         } else {
-            pattern = Pattern.compile(rule.replace(".", "\\.").replace("*", "(.*)"));
-            replace = rule.replace("*", "$1");
+            String pat = escapeParameters(rule.replace(".", "\\.").replace("*", "(.*)"));
+	    pattern = Pattern.compile(pat);
+            replace = escapeGroupMatch(rule).replace("*", "$1");
         }
     }
 
@@ -42,7 +43,6 @@ public class Rule {
                 m.appendReplacement(sb, replace);
             }
         }
-       // m.appendTail(sb);
         return sb.toString();
     }
 
@@ -80,5 +80,25 @@ public class Rule {
 
     public String toString() {
         return rule;
+    }
+    
+    /**
+     * Escape (ie. preprend \\) characters which can be specials chars for regexp.
+     * 
+     * @param value Input chars
+     * @return Escaped output chars
+     */
+    private String escapeParameters(String value) {
+	return escapeGroupMatch(value).replace("{", "\\{").replace("}", "\\}");
+    }
+    
+    /**
+     * Escape (ie. preprend \\) characters which can be group identifiers for replace
+     * 
+     * @param value Input chars
+     * @return Escaped output chars
+     */
+    private String escapeGroupMatch(String value) {
+	return value.replace("$", "\\$");
     }
 }

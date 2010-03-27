@@ -63,7 +63,6 @@
 						</goals>
 					</execution>
 				</executions>
-				<version>2.1</version>
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>

@@ -327,7 +327,8 @@ public class POMTransformer extends POMReader {
                                     int index = inc(dependencyIndexes, POMInfo.EXTENSIONS);
                                     dependency = (Dependency) info.getExtensions().get(index);
                                 }
-                                if (!acceptDependency(dependency, info)) {
+                                // Skip dependency if we can't find it (== null)
+                                if (dependency == null || !acceptDependency(dependency, info)) {
                                     inIgnoredElement++;
                                     inLevel--;
                                     path.remove(path.size() - 1);

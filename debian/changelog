@@ -1,3 +1,11 @@
+maven-repo-helper (1.0.6) UNRELEASED; urgency=low
+
+  * Rule.java: harden our handling of version string (from pom.xml)
+    to cope with specials chars.
+  * POMTransformer: If we can't find a dependency, just skip it.
+
+ -- Damien Raude-Morvan <drazzib@debian.org>  Sat, 27 Mar 2010 03:13:11 +0100
+
 maven-repo-helper (1.0.5) unstable; urgency=low
 
   * mh_installjar: Add new -e/--set-version switchs and handle
