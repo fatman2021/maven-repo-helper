@@ -37,4 +37,4 @@ Description: Helper tools for including Maven metatada in Debian packages
  Packages built with Maven (using maven-debian-helper) will benefit as
  many of their dependencies are already packaged in Debian but they are
  missing the necessary metadata (Maven POM) which is required by Maven
- when its using dependencies.
+ when it is using dependencies.

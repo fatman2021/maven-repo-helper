@@ -46,11 +46,17 @@ NOACT=$(getarg n no-act)
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
 MH_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
 
-cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
-    if [ ! -z "$POM" ]; then
-        if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+if [ -z "$NOACT" ]; then
+    cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
+        # Remove comments
+        POM=${POM##\#*}
+        if [[ ! -z "$POM" ]]; then
+            if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
 	        echo -e "\tmh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $POM"
-		fi
-        mh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $POM
-    fi
-done
+            fi
+            if [[ ! "--ignore" == "$OPT1" ]]; then
+                mh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $POM
+            fi
+        fi
+    done
+fi

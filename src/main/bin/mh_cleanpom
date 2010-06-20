@@ -1,5 +1,7 @@
 #!/bin/bash --
 
+set -e
+
 . /usr/share/maven-repo-helper/mh_lib.sh
 
 syntax()
@@ -12,9 +14,9 @@ syntax()
    echo -e "\t[pom] is the location of the POM file to clean."
    echo -e "\t  Default to pom.xml or debian/pom.xml"
    echo -e "\t[target] is where the cleaned POM is written to."
-   echo -e "\t  Default to debian/tmp/pom.xml"
+   echo -e "\t  Default to debian/.mh/pom.xml"
    echo -e "\t[pom-props] is where the POM properties file will be written."
-   echo -e "\t  Default to debian/tmp/pom.properties"
+   echo -e "\t  Default to debian/.mh/pom.properties"
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
@@ -25,8 +27,6 @@ syntax()
    echo -e "\t  convert all other versions in dependencies and plugins"
    echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
    echo -e "\t  do not use the version declared in the POM file."
-   echo -e "\t-k --keep-all-elements: keep all elements in the POM, do a version"
-   echo -e "\t  transformation only, don't delete the build and other elements."
    echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
    echo -e "\t  extra rules to apply when cleaning the POM."
    echo -e "\t  Optional, the default location is debian/maven.rules"
@@ -137,8 +137,8 @@ PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
-TARGET="${ARGV[1]:-debian/tmp/pom.xml}"
-POM_PROPS="${ARGV[2]:-debian/tmp/pom.properties}"
+TARGET="${ARGV[1]:-debian/.mh/pom.xml}"
+POM_PROPS="${ARGV[2]:-debian/.mh/pom.properties}"
 
 if [ -z "$POM" ]; then
     if [ -f debian/pom.xml ]; then

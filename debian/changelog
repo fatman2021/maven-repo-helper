@@ -1,3 +1,20 @@
+maven-repo-helper (1.1) unstable; urgency=low
+
+  * Add mh_patchpom, useful in some situations to patch
+    individual POM files
+  * Add mh_linkrepojar, to create a link from a jar present in the
+    Maven repository
+  * Correctly identify <extension> tag used by Maven (Closes: #584512)
+  * Add documentation for the package and in particular for the syntax
+    of the debian/<package>.poms file (Closes: #586151)
+  * All mh_* scripts now use debian/.mh/ as their temporary work folder
+    instead of debian/tmp, this better satisfies the Debian policies.
+  * Add mh_cleantmp to remove the temporary files produced when using
+    any other mh_* script
+  * Fix typo in package description (Closes: #586573)
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Fri, 21 May 2010 00:11:48 +0200
+
 maven-repo-helper (1.0.6) unstable; urgency=low
 
   * Rule.java: harden our handling of version string (from pom.xml)

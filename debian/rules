@@ -15,27 +15,30 @@ JAVA_OPTIONS         := -Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.X
 
 # Generation of man pages
 SCRIPTS       := $(wildcard src/main/bin/mh_*)
-MAN_PAGES     := $(addprefix debian/tmp/doc/,$(addsuffix .1, $(notdir $(SCRIPTS))))
+MAN_PAGES     := $(addprefix debian/.mh/doc/,$(addsuffix .1, $(notdir $(SCRIPTS))))
 mh_checkrepo_description = "Checks the Maven repository."
+mh_clean_description = "Cleans the temporary files created by the other mh_* utilities."
 mh_cleanpom_description = "Cleans a POM file."
 mh_genrules_description = "Generates the debian/rules file with Maven support."
 mh_installjar_description = "Installs a jar into /usr/share/maven-repo."
 mh_installpom_description = "Installs a POM file into /usr/share/maven-repo."
 mh_installpoms_description = "Installs all POMs for the package into /usr/share/maven-repo."
 mh_linkjar_description = "Installs a link to the jar into /usr/share/maven-repo."
+mh_linkrepojar_description = "Installs a link from the jar in /usr/share/maven-repo."
 mh_lspoms_description = "Generates a list of POMs for the package."
+mh_patchpom_description = "Patches one POM file using the Maven dependency rules."
 mh_patchpoms_description = "Patches the POM files using the Maven dependency rules."
 mh_unpatchpoms_description = "Undo the patches on the POM files."
-debian/tmp/mh_lib.sh : src/main/share/mh_lib.sh
-	mkdir -p debian/tmp
-	cp src/main/share/mh_lib.sh debian/tmp/mh_lib.sh
-debian/tmp/mh_% : src/main/bin/mh_% debian/tmp/mh_lib.sh
-	mkdir -p debian/tmp
+debian/.mh/mh_lib.sh : src/main/share/mh_lib.sh
+	mkdir -p debian/.mh
+	cp src/main/share/mh_lib.sh debian/.mh/mh_lib.sh
+debian/.mh/mh_% : src/main/bin/mh_% debian/.mh/mh_lib.sh
+	mkdir -p debian/.mh
 	cp $< $@
-	perl -i -pe 's,\. /usr/share/maven-repo-helper/mh_lib.sh,\. debian/tmp/mh_lib.sh,' $@
+	perl -i -pe 's,\. /usr/share/maven-repo-helper/mh_lib.sh,\. debian/.mh/mh_lib.sh,' $@
 	chmod +x $@
-debian/tmp/doc/mh_%.1 : debian/tmp/mh_% 
-	mkdir -p debian/tmp/doc
+debian/.mh/doc/mh_%.1 : debian/.mh/mh_% 
+	mkdir -p debian/.mh/doc
 	help2man -N -n $(mh_$*_description) -o $@ $<
 man-pages: $(MAN_PAGES)
 build/$(PACKAGE):: man-pages
@@ -47,11 +50,11 @@ binary-post-install/$(PACKAGE)::
 	dh_install -p$(PACKAGE) src/main/share/* /usr/share/$(PACKAGE)
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
-	mkdir -p debian/tmp
-	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --rules=debian/maven.rules pom.xml debian/tmp/$(PACKAGE)-debian.pom debian/tmp/pom.properties 
-	dh_install -p$(PACKAGE) --sourcedir=debian/tmp $(PACKAGE)-debian.pom \
+	mkdir -p debian/.mh
+	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --rules=debian/maven.rules pom.xml debian/.mh/$(PACKAGE)-debian.pom debian/.mh/pom.properties 
+	dh_install -p$(PACKAGE) --sourcedir=debian/.mh $(PACKAGE)-debian.pom \
 		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 
 clean::
-	-rm -rf debian/tmp
+	-rm -rf debian/.mh
 

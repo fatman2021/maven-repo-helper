@@ -71,14 +71,14 @@ JAR="${ARGV[1]}"
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
 CLEAN_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES}"
 
-mkdir -p debian/tmp 2> /dev/null
+mkdir -p debian/.mh 2> /dev/null
 
 if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties"
+    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
 fi
 
-mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/tmp/pom.xml debian/tmp/pom.properties
-source debian/tmp/pom.properties
+mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
+source debian/.mh/pom.properties
 
 groupPath=$(echo $groupId | tr . / )
 

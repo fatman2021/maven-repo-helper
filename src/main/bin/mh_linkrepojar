@@ -1,0 +1,91 @@
+#!/bin/bash --
+
+set -e
+
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_linkrepojar [option]... [pom] [link]..."
+   echo -e "Create symlinks from the jar in the Maven repository to any location,"
+   echo -e "usually to a file located in /usr/share/java."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t[pom] is the location of the POM associated with the jar to install."
+   echo -e "\t  GroupId, artifactId and version will be extracted from this file."
+   echo -e "\t[link] is a link to the jar to install, usually there should"
+   echo -e "\t  be a link to usr/share/java/$jar.jar and"
+   echo -e "\t  usr/share/java/$jar-$version.jar to comply with the Java packaging"
+   echo -e "\t  guidelines. Note that there is no need to specify those particular"
+   echo -e "\t  links if the --java-lib option is used."
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
+   echo -e "\t  special properties. Optional, the default location is"
+   echo -e "\t  debian/maven.rules"
+   echo -e "\t-c<classifier> --classifier=<classifier>: Optional, the classifier for"
+   echo -e "\t  the jar in the Maven repository. Empty by default."
+   echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   exit 1
+}
+
+ARGS="p package r rules c classifier v verbose n no-act" parseargs "$@"
+
+if [ "$ARGC" -lt "1" ]; then
+   syntax
+fi
+
+RULES=$(getarg r rules)
+PACKAGE=$(getarg p package)
+PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+CLASSIFIER=$(getarg c classifier)
+VERBOSE=$(getarg v verbose)
+NOACT=$(getarg n no-act)
+POM="${ARGV[0]}"
+
+DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
+CLEAN_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES}"
+
+mkdir -p debian/.mh 2> /dev/null
+
+if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
+fi
+
+mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
+source debian/.mh/pom.properties
+
+groupPath=$(echo $groupId | tr . / )
+
+VERSIONED_JAR_NAME="${artifactId}-${version}.jar"
+if [ ! -z "$CLASSIFIER" ]; then
+    VERSIONED_JAR_NAME="${artifactId}-${version}-${CLASSIFIER}.jar"
+fi
+
+MVN_VERSIONED_DIR=usr/share/maven-repo/${groupPath}/${artifactId}/${version}
+MVN_VERSIONED_JAR=$MVN_VERSIONED_DIR/$VERSIONED_JAR_NAME
+
+link_jar ()
+{
+	local src=$1
+	local dest=$2
+
+	if [[ "$src" == "$dest" ]]; then
+		return
+	fi
+
+	if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+		echo -e "\tdh_link $DH_OPTS -p${PACKAGE} ${src} ${dest}"
+	fi
+	dh_link $DH_OPTS -p${PACKAGE} ${src} ${dest}
+}
+
+# Create the links supplied on the argument list
+for (( i=1; i < $ARGC; i++ )); do
+    LINK_JAR="${ARGV[i]}"
+    link_jar "$MVN_VERSIONED_JAR" "$LINK_JAR"
+done
+

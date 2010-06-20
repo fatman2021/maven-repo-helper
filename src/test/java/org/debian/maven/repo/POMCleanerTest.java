@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.util.Properties;
 
 /**
- *
  * @author ludo
  */
 public class POMCleanerTest extends TestBase {
@@ -228,6 +227,28 @@ public class POMCleanerTest extends TestBase {
     }
 
     /**
+     * Test of cleanPom method, of class POMCleaner.
+     */
+    public void testCleanHibernateValidatorPom() throws Exception {
+        pomProperties = new File(testDir, "pom.properties");
+        usePom("hibernate-validator.pom");
+        boolean noParent = true;
+        POMCleaner instance = new POMCleaner();
+        instance.addDefaultRules();
+        instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon wagon-webdav jar *"));
+        instance.addIgnoreRule(new DependencyRule("org.jboss.maven.plugins maven-jdocbook-plugin maven-plugin *"));
+        instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libhibernate-validator-java");
+        assertXMLEqual(read("hibernate-validator.cleaned"), read(updatedPom));
+        Properties pomInfo = new Properties();
+        pomInfo.load(new FileInputStream(pomProperties));
+        assertEquals("org.hibernate", pomInfo.get("groupId"));
+        assertEquals("hibernate-validator-parent", pomInfo.get("artifactId"));
+        assertEquals("pom", pomInfo.get("type"));
+        assertEquals("4.0.2.GA", pomInfo.get("version"));
+        assertEquals("debian", pomInfo.get("debianVersion"));
+    }
+
+    /**
      * Test of main method, of class DebianPOM.
      */
     public void testMain() throws Exception {
@@ -236,7 +257,7 @@ public class POMCleanerTest extends TestBase {
         usePom("maven.xml");
         useFile("maven.rules", specialDependencies);
         String[] args = {"--no-parent", "-pmaven2", "-r" + specialDependencies.getAbsolutePath(),
-            pom.getAbsolutePath(), updatedPom.getAbsolutePath(), pomProperties.getAbsolutePath() };
+                pom.getAbsolutePath(), updatedPom.getAbsolutePath(), pomProperties.getAbsolutePath()};
         POMCleaner.main(args);
         assertXMLEqual(read("maven.cleaned"), read(updatedPom));
     }
