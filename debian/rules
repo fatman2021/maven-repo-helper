@@ -46,8 +46,8 @@ build/$(PACKAGE):: man-pages
 binary-post-install/$(PACKAGE)::
 	mv build/$(PACKAGE)-$(VERSION).jar build/$(PACKAGE)-debian.jar
 	dh_install -p$(PACKAGE) build/$(PACKAGE)-debian.jar /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
-	dh_install -p$(PACKAGE) src/main/bin /usr
-	dh_install -p$(PACKAGE) src/main/share/* /usr/share/$(PACKAGE)
+	dh_install -p$(PACKAGE) src/main/bin/mh_* /usr/bin
+	dh_install -p$(PACKAGE) src/main/share/mh_* /usr/share/$(PACKAGE)
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/.mh
