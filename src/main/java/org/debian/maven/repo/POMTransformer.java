@@ -578,6 +578,9 @@ public class POMTransformer extends POMReader {
         for (int i = 0; i < nbNamespace; i++) {
             String nsPrefix = parser.getNamespacePrefix(i);
             String nsURI = parser.getNamespaceURI(i);
+            if (nsPrefix == null) {
+                nsPrefix = "";
+            }
             writer.writeNamespace(nsPrefix, nsURI);
         }
         int nbAttributes = parser.getAttributeCount();

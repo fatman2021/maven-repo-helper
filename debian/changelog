@@ -1,3 +1,9 @@
+maven-repo-helper (1.2) UNRELEASED; urgency=low
+
+  * Fix 'illegal NCName' error when gcj is used to run the mh_* scripts
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 28 Jun 2010 23:13:51 +0200
+
 maven-repo-helper (1.1) unstable; urgency=low
 
   * Add mh_patchpom, useful in some situations to patch
