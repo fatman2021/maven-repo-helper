@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.ant</groupId>
+	<artifactId>ant-parent</artifactId>
+	<version>1.7.1</version>
+	<packaging>pom</packaging>
+	<properties>
+		<debian.originalVersion>1.7.1</debian.originalVersion>
+		<debian.package>ant</debian.package>
+		<debian.mavenRules><![CDATA[s/ant/org.apache.ant/ * * s/.*/debian/ *]]></debian.mavenRules>
+	</properties>
+	
+	<description>master POM</description>
+	<name>Apache Ant</name>
+	<url>http://ant.apache.org/</url>
+	<inceptionYear>2000</inceptionYear>
+	<organization>
+		<name>Apache Software Foundation</name>
+	</organization>
+	<scm>
+		<connection>scm:svn:http://svn.apache.org/repos/asf/ant/core/trunk</connection>
+		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/jant/core/trunk</developerConnection>
+		<url>http://svn.apache.org/repos/asf/ant/core/trunk</url>
+	</scm>
+	<mailingLists>
+		<mailingList>
+			<name>Ant Developers List</name>
+			<subscribe>dev-subscribe@ant.apache.org</subscribe>
+			<unsubscribe>dev-unsubscribe@ant.apache.org</unsubscribe>
+			<post>dev@ant.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/ant-dev</archive>
+		</mailingList>
+		<mailingList>
+			<name>Ant Users List</name>
+			<subscribe>user-subscribe@ant.apache.org</subscribe>
+			<unsubscribe>user-unsubscribe@ant.apache.org</unsubscribe>
+			<post>user@ant.apache.org</post>
+			<archive>http://mail-archives.apache.org/mod_mbox/ant-user</archive>
+		</mailingList>
+	</mailingLists>
+	<issueManagement>
+		<system>bugzilla</system>
+		<url>http://issues.apache.org/bugzilla/</url>
+	</issueManagement>
+	<modules>
+		<module>ant</module>
+		<module>ant-antlr</module>
+		<module>ant-apache-bcel</module>
+		<module>ant-apache-bsf</module>
+		<module>ant-apache-log4j</module>
+		<module>ant-apache-oro</module>
+		<module>ant-apache-regexp</module>
+		<module>ant-apache-resolver</module>
+		<module>ant-commons-logging</module>
+		<module>ant-commons-net</module>
+		<module>ant-jai</module>
+		<module>ant-javamail</module>
+		<module>ant-jdepend</module>
+		<module>ant-jmf</module>
+		<module>ant-jsch</module>
+		<module>ant-junit</module>
+		<module>ant-launcher</module>
+		<module>ant-netrexx</module>
+		<module>ant-nodeps</module>
+		<module>ant-starteam</module>
+		<module>ant-stylebook</module>
+		<module>ant-swing</module>
+		<module>ant-testutil</module>
+		<module>ant-trax</module>
+		<module>ant-weblogic</module>
+	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.x</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

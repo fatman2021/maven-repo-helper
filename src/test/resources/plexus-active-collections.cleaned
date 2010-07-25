@@ -8,6 +8,9 @@
 	<properties>
 		<debian.originalVersion>1.0-beta-2</debian.originalVersion>
 		<debian.package>libplexus-active-collections-java</debian.package>
+		<debian.junit.junit.originalVersion>3.8.1</debian.junit.junit.originalVersion>
+		<debian.org.codehaus.plexus.plexus-component-api.originalVersion>1.0-alpha-22</debian.org.codehaus.plexus.plexus-component-api.originalVersion>
+		<debian.org.codehaus.plexus.plexus-container-default.originalVersion>1.0-alpha-22</debian.org.codehaus.plexus.plexus-container-default.originalVersion>
 	</properties>
 
 	<name>Plexus Container-Backed Active Collections</name>

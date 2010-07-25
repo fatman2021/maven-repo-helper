@@ -63,6 +63,9 @@
 						</goals>
 					</execution>
 				</executions>
+				<!-- version is inserted because of the implicit rules coming from the repository
+				     (it may change if the version of antlr-maven-plugin is upgraded in the repository,
+				     so update this value) -->
 				<version>2.1</version>
 			</plugin>
 			<plugin>

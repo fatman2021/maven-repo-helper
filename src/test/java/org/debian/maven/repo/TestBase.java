@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,6 +70,20 @@ public class TestBase extends XMLTestCase {
 
     protected void usePom(String resource) throws IOException {
         useFile(resource, pom);
+    }
+
+    protected File getFileInClasspath(String resource) {
+        if (! resource.startsWith("/")) {
+            resource = "/" + resource;
+        }
+        URL url = this.getClass().getResource(resource);
+        File f;
+        try {
+          f = new File(url.toURI());
+        } catch(URISyntaxException e) {
+          f = new File(url.getPath());
+        }
+        return f;
     }
 
     protected Reader read(String resource) {

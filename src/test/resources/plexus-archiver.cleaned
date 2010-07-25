@@ -8,6 +8,7 @@
 	<properties>
 		<debian.originalVersion>1.0-alpha-12</debian.originalVersion>
 		<debian.package>libplexus-archiver-java</debian.package>
+		<debian.org.codehaus.plexus.plexus-io.originalVersion>1.0-alpha-4</debian.org.codehaus.plexus.plexus-io.originalVersion>
 	</properties>
 
 	<name>Plexus Archiver Component</name>

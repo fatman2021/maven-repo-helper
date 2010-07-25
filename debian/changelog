@@ -1,6 +1,16 @@
-maven-repo-helper (1.2) UNRELEASED; urgency=low
+maven-repo-helper (1.2) unstable; urgency=low
 
   * Fix 'illegal NCName' error when gcj is used to run the mh_* scripts
+  * Expand more Maven properties in POM files.
+  * Support <property/> syntax in <properties> tag
+  * Handle better configuration elements in plugins (ignore them)
+  * Add support for plugin elements in <profile> tags
+  * Add support for dependency classifiers
+  * Add support for <reporting> tags and their plugins
+  * Fix some XML issues when gcj is used
+  * Add new unit tests and fix several small issues
+  * Insert the original versions of the dependencies in the cleaned poms,
+    this will help a future mh_upgrade tool
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 28 Jun 2010 23:13:51 +0200
 

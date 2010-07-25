@@ -4,7 +4,7 @@ import java.util.StringTokenizer;
 
 /**
  *
- * @author ludo
+ * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class DependencyRule implements Comparable {
 
@@ -17,6 +17,7 @@ public class DependencyRule implements Comparable {
     private Rule typeRule;
     private Rule versionRule;
     private Rule scopeRule;
+    private Rule classifierRule;
 
     public DependencyRule(String def) {
         StringTokenizer st = new StringTokenizer(def, " \t", false);
@@ -39,6 +40,11 @@ public class DependencyRule implements Comparable {
             versionRule = new Rule(st.nextToken());
         } else {
             versionRule = new Rule("s/.*/debian/");
+        }
+        if (st.hasMoreTokens()) {
+            classifierRule = new Rule(st.nextToken());
+        } else {
+            classifierRule = new Rule("*");
         }
         if (st.hasMoreTokens()) {
             scopeRule = new Rule(st.nextToken());
@@ -67,9 +73,14 @@ public class DependencyRule implements Comparable {
         return versionRule;
     }
 
+    public Rule getClassifierRule() {
+        return classifierRule;
+    }
+
     public boolean matches(Dependency dependency) {
         return groupRule.match(dependency.getGroupId()) && artifactRule.match(dependency.getArtifactId()) && typeRule.match(dependency.getType()) 
-                && versionRule.match(dependency.getVersion()) && scopeRule.match(dependency.getScope());
+                && versionRule.match(dependency.getVersion()) && scopeRule.match(dependency.getScope())
+                && classifierRule.match(dependency.getClassifier());
     }
 
     public Dependency apply(Dependency dependency) {
@@ -78,7 +89,8 @@ public class DependencyRule implements Comparable {
                 typeRule.apply(dependency.getType()),
                 versionRule.apply(dependency.getVersion()),
                 scopeRule.apply(dependency.getScope()),
-                dependency.isOptional());
+                dependency.isOptional(),
+                classifierRule.apply(dependency.getClassifier()));
     }
 
     /**
@@ -114,6 +126,12 @@ public class DependencyRule implements Comparable {
         if (!versionRule.isGeneric() && other.versionRule.isGeneric()) {
             return -1;
         }
+        if (classifierRule.isGeneric() && !other.classifierRule.isGeneric()) {
+            return 1;
+        }
+        if (!classifierRule.isGeneric() && other.classifierRule.isGeneric()) {
+            return -1;
+        }
         if (scopeRule.isGeneric() && !other.scopeRule.isGeneric()) {
             return 1;
         }
@@ -143,6 +161,9 @@ public class DependencyRule implements Comparable {
         if (this.versionRule != other.versionRule && (this.versionRule == null || !this.versionRule.equals(other.versionRule))) {
             return false;
         }
+        if (this.classifierRule != other.classifierRule && (this.classifierRule == null || !this.classifierRule.equals(other.classifierRule))) {
+            return false;
+        }
         if (this.scopeRule != other.scopeRule && (this.scopeRule == null || !this.scopeRule.equals(other.scopeRule))) {
             return false;
         }
@@ -155,17 +176,18 @@ public class DependencyRule implements Comparable {
         hash = 73 * hash + (this.artifactRule != null ? this.artifactRule.hashCode() : 0);
         hash = 73 * hash + (this.typeRule != null ? this.typeRule.hashCode() : 0);
         hash = 73 * hash + (this.versionRule != null ? this.versionRule.hashCode() : 0);
+        hash = 73 * hash + (this.classifierRule != null ? this.classifierRule.hashCode() : 0);
         hash = 73 * hash + (this.scopeRule != null ? this.scopeRule.hashCode() : 0);
         return hash;
     }
 
     public String toPatternString() {
         return groupRule.getPattern() + ":" + artifactRule.getPattern() + ":" + typeRule.getPattern() + ":" + versionRule.getPattern()
-                + ":" + scopeRule.getPattern();
+                + ":" + classifierRule.getPattern() + ":" + scopeRule.getPattern();
     }
 
     public String toString() {
-        return groupRule + " " + artifactRule + " " + typeRule + " " + versionRule + " " + scopeRule;
+        return groupRule + " " + artifactRule + " " + typeRule + " " + versionRule + " " + classifierRule + " " + scopeRule;
     }
 
 }

@@ -13,6 +13,7 @@
 	<properties>
 		<debian.originalVersion>1.0-beta-5</debian.originalVersion>
 		<debian.package>libwagon-java</debian.package>
+		<debian.org.apache.maven.wagon.wagon-http-shared.originalVersion>1.0-beta-5</debian.org.apache.maven.wagon.wagon-http-shared.originalVersion>
 	</properties>
 
 	<name>Maven Wagon Lightweight HTTP Provider</name>

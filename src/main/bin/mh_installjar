@@ -90,6 +90,10 @@ mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properti
 source debian/.mh/pom.properties
 
 groupPath=$(echo $groupId | tr . / )
+if [ -z "$CLASSIFIER" ]; then
+    # Use the classifier from the POM
+    CLASSIFIER=$classifier
+fi
 
 if [ ! -e $JAR ]; then
     echo "Cannot find the jar to install: $JAR"

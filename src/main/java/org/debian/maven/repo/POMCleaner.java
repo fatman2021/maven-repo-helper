@@ -3,12 +3,11 @@ package org.debian.maven.repo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Cleans up a POM for inclusion in the /usr/share/maven-repo/ repository.
@@ -57,6 +56,7 @@ public class POMCleaner extends POMTransformer {
             pomProps.put("type", info.getThisPom().getType());
             pomProps.put("version", info.getOriginalVersion());
             pomProps.put("debianVersion", info.getThisPom().getVersion());
+            pomProps.put("classifier", info.getThisPom().getClassifier());
             FileOutputStream pomWriter = new FileOutputStream(pomProperties);
             pomProps.store(pomWriter, "POM properties");
             pomWriter.close();
@@ -90,6 +90,24 @@ public class POMCleaner extends POMTransformer {
             return false;
         }
         return "pom".equals(info.getThisPom().getType()) || !"test".equals(dependency.getScope());
+    }
+
+    protected void writeDebianProperties(XMLStreamWriter writer, int inLevel, POMInfo original, POMInfo info, String debianPackage) throws XMLStreamException {
+        super.writeDebianProperties(writer, inLevel, original, info, debianPackage);
+        Map dependencyVersions = new TreeMap();
+        for (Iterator i = original.getDependencies().iterator(); i.hasNext(); ) {
+            Dependency dependency = (Dependency) i.next();
+            if (dependency.getVersion() != null) {
+                dependencyVersions.put(dependency.getGroupId() + "." + dependency.getArtifactId(), dependency.getVersion());
+            }
+        }
+        for (Iterator i = dependencyVersions.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry depVer = (Map.Entry) i.next();
+            indent(writer, inLevel + 1);
+            writer.writeStartElement("debian." + depVer.getKey() + ".originalVersion");
+            writer.writeCharacters(depVer.getValue().toString());
+            writer.writeEndElement();
+        }
     }
 
     public static void main(String[] args) {
@@ -191,8 +209,8 @@ public class POMCleaner extends POMTransformer {
         String debianPackage = "";
         String setVersion = null;
         File rulesFile = null;
-        File publishedRulesFile = new File("debian/maven.publishedRules");
-        File ignoreRulesFile = new File("debian/maven.ignoreRules");
+        File publishedRulesFile = null;
+        File ignoreRulesFile = null;
         File mavenRepo = null;
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
@@ -224,12 +242,6 @@ public class POMCleaner extends POMTransformer {
                 } else {
                     ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
                 }
-                if (ignoreRulesFile.exists()) {
-                    cleaner.addIgnoreRules(ignoreRulesFile);
-                } else {
-                    System.err.println("Cannot find file: " + ignoreRulesFile);
-                }
-
             } else if (arg.startsWith("-e")) {
                 setVersion = arg.substring(2);
             } else if (arg.startsWith("--set-version=")) {
@@ -251,25 +263,35 @@ public class POMCleaner extends POMTransformer {
         }
 
         if (!noRules) {
-            cleaner.addDefaultRules();
             if (rulesFile != null) {
                 if (!rulesFile.exists()) {
                     if (verbose) {
                         System.err.println("Cannot find file: " + rulesFile);
                     }
                 } else {
-                    cleaner.addRules(rulesFile);
+                    cleaner.getRules().setRulesFile(rulesFile);
                 }
             }
-            if (publishedRulesFile != null && publishedRulesFile.exists()) {
-                cleaner.addPublishedRules(publishedRulesFile);
+
+            if (ignoreRulesFile != null) {
+                if (ignoreRulesFile.exists()) {
+                    cleaner.getIgnoreRules().setRulesFile(ignoreRulesFile);
+                } else {
+                    System.err.println("Cannot find file: " + ignoreRulesFile);
+                }
             }
+
+            if (publishedRulesFile != null && publishedRulesFile.exists()) {
+                cleaner.getPublishedRules().setRulesFile(publishedRulesFile);
+            }
+
+            cleaner.addDefaultRules();
         }
 
         if (mavenRepo != null) {
             Repository repository = new Repository(mavenRepo);
             cleaner.setRepository(repository);
-            cleaner.addPluginRulesFromRepository();
+            cleaner.usePluginVersionsFromRepository();
         }
 
         cleaner.setKeepAllElements(keepAllElements);

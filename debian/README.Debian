@@ -8,7 +8,7 @@ projects.
 
 /usr/share/maven-repo contains a Maven-compatible repository but entirely managed by Debian.
 
-One differenciating feature of this repository is that you will find for most artifacts only 2 versions: one current version, and a 
+One differentiating feature of this repository is that you will find for most artifacts only 2 versions: one current version, and a
 symbolic version, usually named 'debian'. The reason for this is simple: the Debian project tries to keep the number of versions
 for its libraries to its minimum, that's in order to ease the maintenance burden and make upgrades of shared libraries easier.
 So that's why there is usually one current version of the library. The symbolic (or debian) version of the library is there in
@@ -111,7 +111,7 @@ Other configuration files are used by mh_installjar and mh_installpoms. All thos
 This file contains the substitution rules to apply on any reference to an artifact present on the original POM during the cleanup phase, that is before adding the POM to the Debian Maven repository.
 
 Its syntax is:
-<rule for artifact groupId> <rule for artifact id> <rule for artifact type> <rule for artifact version> [optional rule for artifact classifier]
+<rule for artifact groupId> <rule for artifact id> <rule for artifact type> <rule for artifact version> [optional rule for artifact classifier] [optional rule for artifact scope]
 
 where a rule can be:
   * - to match any element and leave it unchanged

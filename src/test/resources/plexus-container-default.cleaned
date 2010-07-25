@@ -8,7 +8,10 @@
   <properties>
     <debian.originalVersion>1.0-alpha-9-stable-1</debian.originalVersion>
     <debian.package>libplexus-container-default-java</debian.package>
-    <debian.mavenRules><![CDATA[org.codehaus.plexus plexus-container-default jar s/1\.0-alpha-.*/1.0-alpha/ *]]></debian.mavenRules>
+    <debian.mavenRules><![CDATA[org.codehaus.plexus plexus-container-default jar s/1\.0-alpha-.*/1.0-alpha/ * *]]></debian.mavenRules>
+    <debian.classworlds.classworlds.originalVersion>1.1-alpha-2</debian.classworlds.classworlds.originalVersion>
+    <debian.junit.junit.originalVersion>3.8.1</debian.junit.junit.originalVersion>
+    <debian.org.codehaus.plexus.plexus-utils.originalVersion>1.0.4</debian.org.codehaus.plexus.plexus-utils.originalVersion>
   </properties>
   <name>Default Plexus Container</name>
 

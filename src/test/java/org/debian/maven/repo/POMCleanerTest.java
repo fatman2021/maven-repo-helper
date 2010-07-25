@@ -16,6 +16,17 @@ public class POMCleanerTest extends TestBase {
     private File pomProperties;
     private File specialDependencies;
 
+    private POMCleaner instance;
+
+    public void setUp() {
+        super.setUp();
+        instance = new POMCleaner();
+        instance.getRules().setRulesFile(null);
+        instance.getIgnoreRules().setRulesFile(null);
+        instance.getPublishedRules().setRulesFile(null);
+    }
+
+
     public void tearDown() {
         super.tearDown();
         if (specialDependencies != null && specialDependencies.exists()) {
@@ -35,7 +46,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("maven.xml");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "maven2");
@@ -56,7 +66,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("modello-core.xml");
         boolean noParent = false;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libmodello-java");
         assertXMLEqual(read("modello-core.cleaned"), read(updatedPom));
@@ -87,7 +96,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("wagon-http-lightweight.xml");
         boolean noParent = false;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libwagon-java");
         assertXMLEqual(read("wagon-http-lightweight.cleaned"), read(updatedPom));
@@ -107,7 +115,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("plexus-container-default.xml");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libplexus-container-default-java");
@@ -128,7 +135,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("plexus-active-collections.pom");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha.*/1.0-alpha/"));
@@ -151,7 +157,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("plexus-archiver.pom");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libplexus-archiver-java");
         assertXMLEqual(read("plexus-archiver.cleaned"), read(updatedPom));
@@ -171,7 +176,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("slf4j.xml");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libslf4j-java");
         assertXMLEqual(read("slf4j.cleaned"), read(updatedPom));
@@ -191,7 +195,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("commons-validator.xml");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libcommons-validator-java");
@@ -212,7 +215,6 @@ public class POMCleanerTest extends TestBase {
         pomProperties = new File(testDir, "pom.properties");
         usePom("servlet-api.pom");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/"));
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libservlet2.5-java");
@@ -229,16 +231,15 @@ public class POMCleanerTest extends TestBase {
     /**
      * Test of cleanPom method, of class POMCleaner.
      */
-    public void testCleanHibernateValidatorPom() throws Exception {
+    public void testCleanHibernateValidatorParentPom() throws Exception {
         pomProperties = new File(testDir, "pom.properties");
-        usePom("hibernate-validator.pom");
+        usePom("hibernate-validator-parent.pom");
         boolean noParent = true;
-        POMCleaner instance = new POMCleaner();
         instance.addDefaultRules();
         instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon wagon-webdav jar *"));
         instance.addIgnoreRule(new DependencyRule("org.jboss.maven.plugins maven-jdocbook-plugin maven-plugin *"));
         instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, null, "libhibernate-validator-java");
-        assertXMLEqual(read("hibernate-validator.cleaned"), read(updatedPom));
+        assertXMLEqual(read("hibernate-validator-parent.cleaned"), read(updatedPom));
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.hibernate", pomInfo.get("groupId"));

@@ -9,7 +9,7 @@
   <properties>
     <debian.originalVersion>2.5</debian.originalVersion>
     <debian.package>libservlet2.5-java</debian.package>
-    <debian.mavenRules><![CDATA[s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/ *]]></debian.mavenRules>
+    <debian.mavenRules><![CDATA[s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/ * *]]></debian.mavenRules>
   </properties>
 
   <description>javax.servlet package</description>

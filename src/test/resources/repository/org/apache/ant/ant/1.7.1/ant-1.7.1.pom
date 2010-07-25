@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.ant</groupId>
+	<artifactId>ant</artifactId>
+	<version>1.7.1</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.apache.ant</groupId>
+		<artifactId>ant-parent</artifactId>
+		<version>1.7.1</version>
+	</parent>
+	<properties>
+		<debian.originalVersion>1.7.1</debian.originalVersion>
+		<debian.package>ant</debian.package>
+		<debian.mavenRules><![CDATA[s/ant/org.apache.ant/ * * s/.*/debian/ *]]></debian.mavenRules>
+	</properties>
+	
+	<name>org.apache.tools.ant</name>
+	<description>Apache Ant</description>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.ant</groupId>
+			<artifactId>ant-launcher</artifactId>
+			<version>debian</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>debian</version>
+			<optional>true</optional>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>debian</version>
+			<optional>true</optional>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+</project>

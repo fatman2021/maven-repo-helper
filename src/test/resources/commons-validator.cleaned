@@ -8,6 +8,12 @@
 	<properties>
 		<debian.originalVersion>1.3.1</debian.originalVersion>
 		<debian.package>libcommons-validator-java</debian.package>
+		<debian.commons-beanutils.commons-beanutils.originalVersion>1.7.0</debian.commons-beanutils.commons-beanutils.originalVersion>
+		<debian.commons-digester.commons-digester.originalVersion>1.6</debian.commons-digester.commons-digester.originalVersion>
+		<debian.commons-logging.commons-logging.originalVersion>1.0.4</debian.commons-logging.commons-logging.originalVersion>
+		<debian.junit.junit.originalVersion>3.8.1</debian.junit.junit.originalVersion>
+		<debian.oro.oro.originalVersion>2.0.8</debian.oro.oro.originalVersion>
+		<debian.xml-apis.xml-apis.originalVersion>2.0.2</debian.xml-apis.xml-apis.originalVersion>
 	</properties>
 
 	<name>Validator</name>

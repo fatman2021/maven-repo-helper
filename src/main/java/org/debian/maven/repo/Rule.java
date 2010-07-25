@@ -4,6 +4,10 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ *
+ * @author Ludovic Claude <ludovicc@users.sourceforge.net>
+ */
 public class Rule {
     private static Pattern generic = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.)");
 
@@ -27,13 +31,18 @@ public class Rule {
 
     public boolean match(String s) {
         if (s == null) {
-            return isGeneric();
+            return matchesNull();
         }
         return pattern.matcher(s).matches();
     }
 
     public String apply(String s) {
         if (s == null) {
+            if (matchesNull()) {
+                if (replace.indexOf("$1") < 0) {
+                    return replace;
+                }
+            }
             return null;
         }
         Matcher m = pattern.matcher(s);
@@ -47,7 +56,12 @@ public class Rule {
     }
 
     public boolean isGeneric() {
-        return generic.matcher(pattern.pattern()).find();
+        return matchesNull() || generic.matcher(pattern.pattern()).find();
+    }
+
+    public boolean matchesNull() {
+        String patternString = pattern.pattern();
+        return ".*".equals(patternString) || "(.*)".equals(patternString);
     }
 
     public String getPattern() {

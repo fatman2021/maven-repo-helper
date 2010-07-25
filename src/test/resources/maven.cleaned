@@ -115,6 +115,7 @@
 		<wagonVersion>1.0-beta-5</wagonVersion>
 		<debian.originalVersion>2.1.0-SNAPSHOT</debian.originalVersion>
         <debian.package>maven2</debian.package>
+		<debian.junit.junit.originalVersion>3.8.1</debian.junit.junit.originalVersion>
 	</properties>
 	<dependencies>
 		<dependency>

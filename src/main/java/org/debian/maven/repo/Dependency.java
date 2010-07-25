@@ -4,14 +4,11 @@
  */
 package org.debian.maven.repo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  *
- * @author ludo
+ * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class Dependency {
 
@@ -21,9 +18,7 @@ public class Dependency {
     private String version;
     private boolean optional;
     private String scope;
-
-    public Dependency() {
-    }
+    private String classifier;
 
     public Dependency(String groupId, String artifactId, String type, String version) {
         this.groupId = groupId;
@@ -31,15 +26,18 @@ public class Dependency {
         this.type = type;
         this.version = version;
         this.scope = "runtime";
+        this.classifier = "";
     }
 
-    public Dependency(String groupId, String artifactId, String type, String version, String scope, boolean optional) {
+    public Dependency(String groupId, String artifactId, String type, String version, String scope, boolean optional,
+                      String classifier) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.type = type;
         this.version = version;
         this.scope = scope;
         this.optional = optional;
+        this.classifier = (classifier == null) ? "" : classifier;
     }
 
     public String getArtifactId() {
@@ -90,6 +88,14 @@ public class Dependency {
         this.scope = scope;
     }
 
+    public String getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(String classifier) {
+        this.classifier = (classifier == null) ? "" : classifier;
+    }
+
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -110,6 +116,10 @@ public class Dependency {
         if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
             return false;
         }
+        // Ignore scope and optional as they are content-free and indicate more the context
+        if ((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier)) {
+            return false;
+        }
         return true;
     }
 
@@ -128,6 +138,10 @@ public class Dependency {
             return false;
         }
         if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        // Classifier is still important here as it can influence greatly the contents of the artifact (a source artifact is very different from a normal artifact)
+        if ((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier)) {
             return false;
         }
         return true;
@@ -178,4 +192,17 @@ public class Dependency {
         return result;
     }
 
+    public static List applyIgnoreRules(List dependencies, Set ignoreRules) {
+        if (dependencies == null) {
+            return null;
+        }
+        List result = new ArrayList();
+        for (Iterator i = dependencies.iterator(); i.hasNext();) {
+            Dependency dependency = (Dependency) i.next();
+            if (dependency.findMatchingRule(ignoreRules) == null) {
+                result.add(dependency);
+            }
+        }
+        return result;
+    }
 }

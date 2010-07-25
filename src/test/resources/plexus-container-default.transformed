@@ -12,7 +12,7 @@
 	</parent>
 	<properties>
 		<debian.originalVersion>1.0-alpha-9-stable-1</debian.originalVersion>
-		<debian.mavenRules><![CDATA[org.codehaus.plexus plexus-container-default jar s/1\.0-alpha-.*/1.0-alpha/ *]]></debian.mavenRules>
+		<debian.mavenRules><![CDATA[org.codehaus.plexus plexus-container-default jar s/1\.0-alpha-.*/1.0-alpha/ * *]]></debian.mavenRules>
 	</properties>
 
 	<name>Default Plexus Container</name>

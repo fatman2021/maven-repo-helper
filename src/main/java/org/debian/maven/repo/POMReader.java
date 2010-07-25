@@ -45,9 +45,12 @@ public class POMReader {
         List plugins = new ArrayList();
         List pluginManagement = new ArrayList();
         List pluginDependencies = new ArrayList();
+        List reportingPlugins = new ArrayList();
         List profileDependencies = new ArrayList();
         List profileDependencyManagement = new ArrayList();
+        List profilePlugins = new ArrayList();
         List profilePluginDependencies = new ArrayList();
+        List profileReportingPlugins = new ArrayList();
         List modules = new ArrayList();
 
         Map properties = new TreeMap();
@@ -69,7 +72,10 @@ public class POMReader {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT: {
                     element = parser.getLocalName();
-                    if (isReadIgnoredElement(element) || inIgnoredElement > 0) {
+                    if (isReadIgnoredElement(element) || 
+                            (inPlugin > 0 && ("executions".equals(element) || "configuration".equals(element)) || "goals".equals(element) || "reportSets".equals(element)) ||
+                            (inDependency > 0 && "exclusions".equals(element)) ||
+                            inIgnoredElement > 0) {
                         inIgnoredElement++;
                     } else {
                         inLevel++;
@@ -108,10 +114,22 @@ public class POMReader {
                             inPlugin++;
                             String parentElement = (String) path.get(path.size() - 2);
                             String parentParentElement = (String) path.get(path.size() - 3);
+                            String parentParentParentElement = null;
+                            if (path.size() > 4) {
+                                parentParentParentElement = (String) path.get(path.size() - 4);
+                            }
                             currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
                             if ("plugins".equals(parentElement)) {
                                 if ("pluginManagement".equals(parentParentElement)) {
                                     pluginManagement.add(currentDependency);
+                                } else if ("reporting".equals(parentParentElement)) {
+                                    if ("profile".equals(parentParentParentElement)) {
+                                        profileReportingPlugins.add(currentDependency);
+                                    } else {
+                                        reportingPlugins.add(currentDependency);
+                                    }
+                                } else if ("profile".equals(parentParentParentElement)) {
+                                    profilePlugins.add(currentDependency);
                                 } else {
                                     plugins.add(currentDependency);
                                 }
@@ -130,11 +148,13 @@ public class POMReader {
                             inModule++;
                         } else if (inLevel == 2 && "parent".equals(element)) {
                             inParent++;
-                            parent = new Dependency();
-                            parent.setType("pom");
+                            parent = new Dependency(null, null, "pom", null);
                         } else if (inParent > 0) {
                             inParent++;
                         } else if (inLevel == 2 && "properties".equals(element)) {
+                            inProperties++;
+                        } else if (inProperties == 1) {
+                            properties.put(element, "true");
                             inProperties++;
                         } else if (inProperties > 0) {
                             inProperties++;
@@ -182,6 +202,8 @@ public class POMReader {
                             currentDependency.setOptional("true".equals(value));
                         } else if ("scope".equals(element)) {
                             currentDependency.setScope(value);
+                        } else if ("classifier".equals(element)) {
+                            currentDependency.setClassifier(value);
                         }
                     } else if (inModule > 1) {
                         modules.add(value);
@@ -246,6 +268,9 @@ public class POMReader {
             inferedProperties.put("parent.groupId", parent.getGroupId());
             inferedProperties.put("parent.artifactId", parent.getArtifactId());
             inferedProperties.put("parent.version", parent.getVersion());
+            inferedProperties.put("project.parent.groupId", parent.getGroupId());
+            inferedProperties.put("project.parent.artifactId", parent.getArtifactId());
+            inferedProperties.put("project.parent.version", parent.getVersion());
         }
         
         expandProperties(thisPom, inferedProperties);
@@ -254,9 +279,12 @@ public class POMReader {
         expendProperties(plugins, inferedProperties);
         expendProperties(pluginManagement, inferedProperties);
         expendProperties(pluginDependencies, inferedProperties);
+        expendProperties(reportingPlugins, inferedProperties);
         expendProperties(profileDependencies, inferedProperties);
         expendProperties(profileDependencyManagement, inferedProperties);
+        expendProperties(profilePlugins, inferedProperties);
         expendProperties(profilePluginDependencies, inferedProperties);
+        expendProperties(profileReportingPlugins, inferedProperties);
 
         POMInfo info = new POMInfo();
         if (properties.get("debian.originalVersion") != null) {
@@ -274,9 +302,12 @@ public class POMReader {
         info.setPlugins(plugins);
         info.setPluginManagement(pluginManagement);
         info.setPluginDependencies(pluginDependencies);
+        info.setReportingPlugins(reportingPlugins);
         info.setProfileDependencies(profileDependencies);
         info.setProfileDependencyManagement(profileDependencyManagement);
+        info.setProfilePlugins(profilePlugins);
         info.setProfilePluginDependencies(profilePluginDependencies);
+        info.setProfileReportingPlugins(profileReportingPlugins);
         info.setProperties(properties);
         return info;
     }
