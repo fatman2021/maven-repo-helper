@@ -1,3 +1,10 @@
+maven-repo-helper (1.3) UNRELEASED; urgency=low
+
+  [ Peter Collingbourne ]
+  * Document the correct order of attributes in rules files
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Sat, 07 Aug 2010 01:48:57 +0100
+
 maven-repo-helper (1.2) unstable; urgency=low
 
   * Fix 'illegal NCName' error when gcj is used to run the mh_* scripts

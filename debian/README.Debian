@@ -179,7 +179,7 @@ want to ignore in a Debian context. The <parent> element is not affected, but ca
 
 The syntax of this file is similar to debian/maven.rules, but more relaxed as we are interested here only in elements that match:
 
-<rule for artifact groupId> [rule for artifact id] [rule for artifact type] [rule for artifact version] [rule for artifact classifier]
+<rule for artifact groupId> [rule for artifact id] [rule for artifact type] [rule for artifact version] [rule for artifact classifier] [rule for artifact scope]
 
 Any element, except the first is optional and replaced automatically by * to match anything, but if it omitted then all following
 elements must also be omitted.
