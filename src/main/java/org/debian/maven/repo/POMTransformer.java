@@ -229,8 +229,10 @@ public class POMTransformer extends POMReader {
                 try {
                     repository.registerPom(targetPom, info);
                 } catch (DependencyNotFoundException e) {
-                    System.err.println("[ERROR] Cannot find parent dependency " + e.getDependency() +
-                            ", use --no-parent option to resolve this issue or install the parent POM in the Maven repository");
+                    if (!noParent) {
+                        System.err.println("[ERROR] Cannot find parent dependency " + e.getDependency() +
+                                ", use --no-parent option to resolve this issue or install the parent POM in the Maven repository");
+                    }
                 }
             }
 
