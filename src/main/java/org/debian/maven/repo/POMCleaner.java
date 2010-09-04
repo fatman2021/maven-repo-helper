@@ -122,13 +122,20 @@ public class POMCleaner extends POMTransformer {
             System.out.println("    this library");
             System.out.println("  -r<rules>, --rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to apply when cleaning the POM");
+            System.out.println("  -R<rule>, --extra-rule=<rule>: extra rule to apply when cleaning the POM");
+            System.out.println("    May occur multiple times, instead of or in addition to -r");
             System.out.println("  -u<rules>, --published-rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to publish in the property debian.mavenRules in the cleaned POM");
+            System.out.println("  -U<rule>, --extra-published-rule=<rule>: extra rule to publish");
+            System.out.println("    May occur multiple times, instead of or in addition to -u");
             System.out.println("  -i<rules>, --ignore-rules=<rules>: path to the file containing the");
             System.out.println("    extra rules use to remove certain dependencies from the transformed POM");
             System.out.println("    This option can be repeated, in order to have multiple sets of");
             System.out.println("    dependencies to ignore, useful in situations such as when the Maven clean");
             System.out.println("    target requires more dependencies or plugins to ignore than the build target");
+            System.out.println("  -I<rule>, --extra-ignore-rule=<rule>: extra rule used to remove dependencies");
+            System.out.println("    from the transformed POM");
+            System.out.println("    May occur multiple times, instead of or in addition to -i");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
             System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
@@ -197,6 +204,11 @@ public class POMCleaner extends POMTransformer {
             System.out.println();
             System.out.println("  The default rule (* * * s/.*/debian/) replaces any version number with");
             System.out.println("  the 'debian' version and always applies last if there was no other matches.");
+            System.out.println();
+            System.out.println("  Any rules given on the command line (using -R/--extra-rule,");
+            System.out.println("  -U/--extra-published-rule or -I/--extra-ignore-rule) are applied");
+            System.out.println("  in the order given, in between the rules given in the rules file");
+            System.out.println("  (if any) and the default rules.");
             return;
         }
         POMCleaner cleaner = new POMCleaner();
@@ -212,6 +224,9 @@ public class POMCleaner extends POMTransformer {
         File publishedRulesFile = null;
         File ignoreRulesFile = null;
         File mavenRepo = null;
+        ArrayList rulesExtra = new ArrayList();
+        ArrayList publishedRulesExtra = new ArrayList();
+        ArrayList ignoreRulesExtra = new ArrayList();
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
@@ -232,16 +247,28 @@ public class POMCleaner extends POMTransformer {
                 rulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--rules=")) {
                 rulesFile = new File(arg.substring("--rules=".length()));
+            } else if (arg.startsWith("-R")) {
+                rulesExtra.add(arg.substring(2));
+            } else if (arg.startsWith("--extra-rule=")) {
+                rulesExtra.add(arg.substring("--extra-rule=".length()));
             } else if (arg.startsWith("-u")) {
                 publishedRulesFile = new File(arg.substring(2));
             } else if (arg.startsWith("--published-rules=")) {
                 publishedRulesFile = new File(arg.substring("--published-rules=".length()));
+            } else if (arg.startsWith("-U")) {
+                publishedRulesExtra.add(arg.substring(2));
+            } else if (arg.startsWith("--extra-published-rule=")) {
+                publishedRulesExtra.add(arg.substring("--extra-published-rule=".length()));
             } else if (arg.startsWith("-i") || arg.startsWith("--ignore-rules=")) {
                 if (arg.startsWith("-i")) {
                     ignoreRulesFile = new File(arg.substring(2));
                 } else {
                     ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
                 }
+            } else if (arg.startsWith("-I")) {
+                ignoreRulesExtra.add(arg.substring(2));
+            } else if (arg.startsWith("--extra-ignore-rule=")) {
+                ignoreRulesExtra.add(arg.substring("--extra-ignore-rule=".length()));
             } else if (arg.startsWith("-e")) {
                 setVersion = arg.substring(2);
             } else if (arg.startsWith("--set-version=")) {
@@ -272,6 +299,7 @@ public class POMCleaner extends POMTransformer {
                     cleaner.getRules().setRulesFile(rulesFile);
                 }
             }
+            cleaner.getRules().addAll(rulesExtra);
 
             if (ignoreRulesFile != null) {
                 if (ignoreRulesFile.exists()) {
@@ -280,10 +308,12 @@ public class POMCleaner extends POMTransformer {
                     System.err.println("Cannot find file: " + ignoreRulesFile);
                 }
             }
+            cleaner.getIgnoreRules().addAll(ignoreRulesExtra);
 
             if (publishedRulesFile != null && publishedRulesFile.exists()) {
                 cleaner.getPublishedRules().setRulesFile(publishedRulesFile);
             }
+            cleaner.getPublishedRules().addAll(publishedRulesExtra);
 
             cleaner.addDefaultRules();
         }
