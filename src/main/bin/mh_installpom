@@ -25,6 +25,8 @@ syntax()
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: package to act on "
    echo -e "\t-o --no-parent: don't inherit from a parent POM"
+   echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
+   echo -e "\t  a POM's own attributes in debian.mavenRules"
    echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
    echo -e "\t  do not use the version declared in the POM file."
    echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
@@ -43,13 +45,14 @@ syntax()
    exit 1
 }
 
-ARGS="p package o no-parent r rules u published-rules i ignore-rules e set-version v verbose n no-act" parseargs "$@"
+ARGS="p package o no-parent no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
 fi
 
 NOPARENT=$(getarg o no-parent)
+NO_PUBLISH_USED_RULE=$(getarg no-publish-used-rule)
 RULES=$(getarg r rules)
 PUBLISHED_RULES=$(getarg u published-rules)
 IGNORE_RULES=$(getarg i ignore-rules)
@@ -61,7 +64,7 @@ NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
+CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
 
 mkdir -p debian/.mh 2> /dev/null
 

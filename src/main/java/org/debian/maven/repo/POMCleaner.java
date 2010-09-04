@@ -138,6 +138,8 @@ public class POMCleaner extends POMTransformer {
             System.out.println("    May occur multiple times, instead of or in addition to -i");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
+            System.out.println("  --no-publish-used-rule: don't publish the rule used to transform");
+            System.out.println("    a POM's own attributes in debian.mavenRules");
             System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
             System.out.println("    do not use the version declared in the POM file.");
             System.out.println("  --keep-pom-version: keep the original version of the POM but, ");
@@ -235,6 +237,8 @@ public class POMCleaner extends POMTransformer {
                 noParent = true;
             } else if ("--no-rules".equals(arg)) {
                 noRules = true;
+            } else if ("--no-publish-used-rule".equals(arg)) {
+                cleaner.setPublishUsedRule(false);
             } else if ("--keep-pom-version".equals(arg)) {
                 keepPomVersion = true;
             } else if ("--keep-all-elements".equals(arg)) {

@@ -49,6 +49,7 @@ public class POMTransformer extends POMReader {
     private boolean verbose;
     private boolean isDebianBuild;
     private boolean isBuildWithoutDoc;
+    private boolean publishUsedRule = true;
     private ListOfPOMs listOfPOMs;
 
     public POMTransformer() {
@@ -84,6 +85,14 @@ public class POMTransformer extends POMReader {
 
     public void setDebianBuild(boolean isDebianBuild) {
         this.isDebianBuild = isDebianBuild;
+    }
+
+    public boolean publishUsedRule() {
+        return publishUsedRule;
+    }
+
+    public void setPublishUsedRule(boolean publishUsedRule) {
+        this.publishUsedRule = publishUsedRule;
     }
 
     public DependencyRuleSet getRules() {
@@ -680,7 +689,7 @@ public class POMTransformer extends POMReader {
             writer.writeCharacters(debianPackage);
             writer.writeEndElement();
         }
-        if (info.getOriginalPom() != null) {
+        if (publishUsedRule && info.getOriginalPom() != null) {
             DependencyRule usedRule = info.getOriginalPom().findMatchingRule(rules.getRules());
             if (usedRule != null && !usedRule.equals(DependencyRule.TO_DEBIAN_VERSION_RULE) && !usedRule.equals(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE)) {
                 addPublishedRule(usedRule);
@@ -757,6 +766,8 @@ public class POMTransformer extends POMReader {
             System.out.println("    May occur multiple times, instead of or in addition to -i");
             System.out.println("  --no-rules: don't apply any rules for converting versions, ");
             System.out.println("    do not even convert versions to the default 'debian' version");
+            System.out.println("  --no-publish-used-rule: don't publish the rule used to transform");
+            System.out.println("    a POM's own attributes in debian.mavenRules");
             System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
             System.out.println("    do not use the version declared in the POM file.");
             System.out.println("  --keep-pom-version: keep the original version of the POMs but, ");
@@ -807,6 +818,8 @@ public class POMTransformer extends POMReader {
                 noParent = true;
             } else if ("--no-rules".equals(arg)) {
                 noRules = true;
+            } else if ("--no-publish-used-rule".equals(arg)) {
+                transformer.setPublishUsedRule(false);
             } else if ("--keep-pom-version".equals(arg)) {
                 keepPomVersion = true;
             } else if (arg.equals("--debian-build")) {

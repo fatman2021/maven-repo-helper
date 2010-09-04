@@ -5,6 +5,7 @@ maven-repo-helper (1.2.1) UNRELEASED; urgency=low
   * Escape all $ characters in usage messages
   * Fix a long option quoting bug
   * Add support for extra rule options on the command line
+  * Add a --no-publish-used-rule option
 
   [ Ludovic Claude ]
   * mh_transformpoms: Remove warning about missing parent dependency
