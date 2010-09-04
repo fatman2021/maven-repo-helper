@@ -11,9 +11,7 @@ JAVA_OPTIONS="-Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.XMLOutputFa
 parseargs()
 {
    # clean arguments from a previous run
-   set | grep "^opt_.*=" | echo $(sed -e 's/\(opt_.*\)=.*$/unset \1;/') > .cleanargs
-   . .cleanargs
-   rm .cleanargs
+   unset "${!opt_@}"
 
    ARGC=0
    ARGV=()
