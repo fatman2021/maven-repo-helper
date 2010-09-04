@@ -1,6 +1,7 @@
 package org.debian.maven.repo;
 
 import java.io.*;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -68,6 +69,17 @@ public class DependencyRuleSet {
 
     public void add(DependencyRule rule) {
         getRules().add(rule);
+    }
+
+    public void addAll(Collection newRules) {
+        for (Iterator i = newRules.iterator(); i.hasNext();) {
+            Object rule = i.next();
+            if (rule instanceof DependencyRule) {
+                add((DependencyRule) rule);
+            } else {
+                add(new DependencyRule((String) rule));
+            }
+        }
     }
 
     public boolean isVerbose() {
