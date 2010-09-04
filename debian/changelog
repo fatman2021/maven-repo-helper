@@ -3,6 +3,7 @@ maven-repo-helper (1.2.1) UNRELEASED; urgency=low
   [ Peter Collingbourne ]
   * Document the correct order of attributes in rules files
   * Escape all $ characters in usage messages
+  * Fix a long option quoting bug
 
   [ Ludovic Claude ]
   * mh_transformpoms: Remove warning about missing parent dependency

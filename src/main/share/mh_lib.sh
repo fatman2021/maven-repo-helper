@@ -25,12 +25,12 @@ parseargs()
          syntax
       elif [ "-" = "${1:1:1}" ]; then
       # long opt
-         optn=$(echo $1 | sed -n 's/^--\([^=]*\)\(=.*\)*$/\1/p' | sed 's/-/_/g')
+         optn=$(echo "$1" | sed -n 's/^--\([^=]*\)\(=.*\)*$/\1/p' | sed 's/-/_/g')
          if [ -z "$optn" ] || ! echo $ARGS | sed 's/-/_/g' | grep $optn >/dev/null; then
             echo "Invalid option: $optn"
             syntax
          fi
-         optv=$(echo $1 | sed -n 's/^[^=]*=\(.*\)$/\1/p')
+         optv=$(echo "$1" | sed -n 's/^[^=]*=\(.*\)$/\1/p')
          if [ -z "$optv" ]; then
             optv=true
          fi
