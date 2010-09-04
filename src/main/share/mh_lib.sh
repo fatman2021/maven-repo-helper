@@ -32,7 +32,8 @@ parseargs()
          if [ -z "$optv" ]; then
             optv=true
          fi
-         export opt_$optn="$optv"
+         export -a opt_$optn
+         eval opt_$optn'+=("$optv")'
       elif [ "-" = "${1:0:1}" ]; then
       # short opt
          optn="${1:1:1}"
@@ -44,7 +45,8 @@ parseargs()
          if [ -z "$optv" ]; then
             optv=true
          fi
-         export opt_$optn="$optv"
+         export -a opt_$optn
+         eval opt_$optn'+=("$optv")'
       else
       # not-opt arg
          ARGV[$ARGC]="$1"
@@ -60,8 +62,8 @@ getarg()
 {
    while [ -n "$1" ]; do
       optn=$(echo "opt_$1" | sed 's/-/_/g')
-      if [ -n "${!optn}" ]; then
-         echo ${!optn}
+      if [ -n "${!optn[0]}" ]; then
+         echo ${!optn[0]}
          return
       fi
       shift
