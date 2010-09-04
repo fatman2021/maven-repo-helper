@@ -69,3 +69,16 @@ getarg()
       shift
    done
 }
+
+getargs()
+{
+   echo -n '('
+   while [ -n "$1" ]; do
+      optn=$(echo "opt_$1" | sed 's/-/_/g')
+      if [ -n "${!optn[0]}" ]; then
+         echo -n '"${'$optn'[@]}" '
+      fi
+      shift
+   done
+   echo ')'
+}
