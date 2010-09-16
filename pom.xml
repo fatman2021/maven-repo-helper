@@ -5,7 +5,7 @@
     <artifactId>maven-repo-helper</artifactId>
     <name>Maven Repo helper</name>
     <packaging>jar</packaging>
-    <version>1.2.1</version>
+    <version>1.3</version>
     <description>Provides support for managing the Maven repository in a Debian distribution.</description>
 
     <inceptionYear>2009</inceptionYear>
