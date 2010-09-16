@@ -16,6 +16,7 @@ maven-repo-helper (1.3) unstable; urgency=low
     debian/maven.cleanIgnoreRules) are used in addition to the rules defined in
     --ignore-rules (or debian/maven.ignoreRules), so there is no need anymore
     to duplicate the list of rules to ignore when --clean-ignore-rules is used.
+  * Removed small bugs in mh_make (Closes: #591513)
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 16 Sep 2010 23:18:57 +0200
 
