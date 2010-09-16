@@ -224,11 +224,11 @@ public class POMCleaner extends POMTransformer {
         String setVersion = null;
         File rulesFile = null;
         File publishedRulesFile = null;
-        File ignoreRulesFile = null;
         File mavenRepo = null;
-        ArrayList rulesExtra = new ArrayList();
-        ArrayList publishedRulesExtra = new ArrayList();
-        ArrayList ignoreRulesExtra = new ArrayList();
+        List rulesExtra = new ArrayList();
+        List publishedRulesExtra = new ArrayList();
+        List ignoreRulesExtra = new ArrayList();
+        List ignoreRulesFiles = new ArrayList();
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
@@ -265,9 +265,9 @@ public class POMCleaner extends POMTransformer {
                 publishedRulesExtra.add(arg.substring("--extra-published-rule=".length()));
             } else if (arg.startsWith("-i") || arg.startsWith("--ignore-rules=")) {
                 if (arg.startsWith("-i")) {
-                    ignoreRulesFile = new File(arg.substring(2));
+                    ignoreRulesFiles.add(new File(arg.substring(2)));
                 } else {
-                    ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
+                    ignoreRulesFiles.add(new File(arg.substring("--ignore-rules=".length())));
                 }
             } else if (arg.startsWith("-I")) {
                 ignoreRulesExtra.add(arg.substring(2));
@@ -305,11 +305,22 @@ public class POMCleaner extends POMTransformer {
             }
             cleaner.getRules().addAll(rulesExtra);
 
-            if (ignoreRulesFile != null) {
-                if (ignoreRulesFile.exists()) {
-                    cleaner.getIgnoreRules().setRulesFile(ignoreRulesFile);
-                } else {
-                    System.err.println("Cannot find file: " + ignoreRulesFile);
+            if (!ignoreRulesFiles.isEmpty()) {
+                boolean firstIgnoreRule = true;
+                for (Iterator irf = ignoreRulesFiles.iterator(); irf.hasNext(); ) {
+                    File ignoreRulesFile = (File) irf.next();
+                    if (ignoreRulesFile.exists()) {
+                        if (firstIgnoreRule) {
+                            cleaner.getIgnoreRules().setRulesFile(ignoreRulesFile);
+                        } else {
+                            DependencyRuleSet tmpIgnoreRules = new DependencyRuleSet("Additional ignore rules");
+                            tmpIgnoreRules.setRulesFile(ignoreRulesFile);
+                            cleaner.getIgnoreRules().addAll(tmpIgnoreRules);
+                        }
+                        firstIgnoreRule = false;
+                    } else {
+                        System.err.println("Cannot find file: " + ignoreRulesFile);
+                    }
                 }
             }
             cleaner.getIgnoreRules().addAll(ignoreRulesExtra);

@@ -10,7 +10,7 @@ import java.util.*;
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
-public class Dependency {
+public class Dependency implements Comparable {
 
     private String groupId;
     private String artifactId;
@@ -160,6 +160,35 @@ public class Dependency {
         return groupId + ":" + artifactId + ":" + type + ":" + version;
     }
 
+    public int compareTo(Object o) {
+        Dependency dependency = (Dependency) o; 
+        if (this.groupId != dependency.groupId) {
+            if (this.groupId == null) return -1;
+            if (! this.groupId.equals(dependency.groupId)) {
+                return this.groupId.compareTo(dependency.groupId);
+            }
+        }
+        if (this.artifactId != dependency.artifactId) {
+            if (this.artifactId == null) return -1;
+            if (! this.artifactId.equals(dependency.artifactId)) {
+                return this.artifactId.compareTo(dependency.artifactId);
+            }
+        }
+        if (this.type != dependency.type) {
+            if (this.type == null) return -1;
+            if (! this.type.equals(dependency.type)) {
+                return this.type.compareTo(dependency.type);
+            }
+        }
+        if (this.version != dependency.version) {
+            if (this.version == null) return -1;
+            if (! this.version.equals(dependency.version)) {
+                return this.version.compareTo(dependency.version);
+            }
+        }
+        return 0;
+    }
+
     public Dependency applyRules(Collection rules) {
         for (Iterator i = rules.iterator(); i.hasNext();) {
             DependencyRule rule = (DependencyRule) i.next();
@@ -205,4 +234,5 @@ public class Dependency {
         }
         return result;
     }
+
 }

@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 Uploaders: Ludovic Claude <ludovic.claude@laposte.net>, Damien Raude-Morvan <drazzib@debian.org>
 Build-Depends: debhelper (>= 7), cdbs, default-jdk, ant, help2man, libstax-java
-Standards-Version: 3.8.4
+Standards-Version: 3.9.1
 Vcs-Svn: svn://svn.debian.org/svn/pkg-java/trunk/maven-repo-helper/
 Vcs-Browser: http://svn.debian.org/wsvn/pkg-java/trunk/maven-repo-helper/
 Homepage: https://launchpad.net/maven-packaging-support

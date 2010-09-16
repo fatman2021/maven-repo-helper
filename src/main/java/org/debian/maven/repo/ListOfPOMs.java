@@ -42,6 +42,16 @@ public class ListOfPOMs {
         pomOptions = null;
     }
 
+    public String getFirstPOM() {
+        if (pomList == null) {
+            readPomsFile();
+        }
+        if (!pomList.isEmpty()) {
+            return (String) pomList.get(0);
+        }
+        return null;
+    }
+
     public void foreachPoms(POMHandler handler) {
         if (pomList == null) {
             readPomsFile();

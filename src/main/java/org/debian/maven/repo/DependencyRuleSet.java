@@ -1,10 +1,7 @@
 package org.debian.maven.repo;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +68,13 @@ public class DependencyRuleSet {
         getRules().add(rule);
     }
 
+    public void addAll(DependencyRuleSet newRules) {
+        for (Iterator i = newRules.iterator(); i.hasNext();) {
+            DependencyRule rule = (DependencyRule) i.next();
+            add(rule);
+        }
+    }
+
     public void addAll(Collection newRules) {
         for (Iterator i = newRules.iterator(); i.hasNext();) {
             Object rule = i.next();
@@ -81,6 +85,18 @@ public class DependencyRuleSet {
             }
         }
     }
+
+    public Set findMatchingRules(Dependency dependency) {
+        Set matchingRules = new HashSet();
+        for (Iterator i = rules.iterator(); i.hasNext();) {
+            DependencyRule rule = (DependencyRule) i.next();
+            if (rule.matches(dependency)) {
+                matchingRules.add(rule);
+            }
+        }
+        return matchingRules;
+    }
+
 
     public boolean isVerbose() {
         return verbose;

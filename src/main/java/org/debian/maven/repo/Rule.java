@@ -14,6 +14,7 @@ public class Rule {
     private Pattern pattern;
     private String replace;
     private String rule;
+    private String description;
 
     public Rule(String rule) {
         this.rule = rule;
@@ -24,7 +25,7 @@ public class Rule {
             replace = st.nextToken();
         } else {
             String pat = escapeParameters(rule.replace(".", "\\.").replace("*", "(.*)"));
-	    pattern = Pattern.compile(pat);
+            pattern = Pattern.compile(pat);
             replace = escapeGroupMatch(rule).replace("*", "$1");
         }
     }
@@ -67,7 +68,15 @@ public class Rule {
     public String getPattern() {
         return pattern.pattern();
     }
-    
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -95,24 +104,24 @@ public class Rule {
     public String toString() {
         return rule;
     }
-    
+
     /**
      * Escape (ie. preprend \\) characters which can be specials chars for regexp.
-     * 
+     *
      * @param value Input chars
      * @return Escaped output chars
      */
     private String escapeParameters(String value) {
-	return escapeGroupMatch(value).replace("{", "\\{").replace("}", "\\}");
+        return escapeGroupMatch(value).replace("{", "\\{").replace("}", "\\}");
     }
-    
+
     /**
      * Escape (ie. preprend \\) characters which can be group identifiers for replace
-     * 
+     *
      * @param value Input chars
      * @return Escaped output chars
      */
     private String escapeGroupMatch(String value) {
-	return value.replace("$", "\\$");
+        return value.replace("$", "\\$");
     }
 }
