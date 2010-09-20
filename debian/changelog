@@ -1,4 +1,4 @@
-maven-repo-helper (1.3) unstable; urgency=low
+maven-repo-helper (1.3) experimental; urgency=low
 
   [ Peter Collingbourne ]
   * Document the correct order of attributes in rules files
