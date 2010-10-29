@@ -1,28 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.codehaus.modello</groupId>
-  <artifactId>modello-core</artifactId>
-  <version>1.0-alpha-22</version>
-  <packaging>jar</packaging>
-  <name>Modello Core</name>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.codehaus.modello</groupId>
+	<artifactId>modello-core</artifactId>
+	<version>1.0-alpha-22</version>
+	<packaging>jar</packaging>
+	<parent>
+		<groupId>org.codehaus.modello</groupId>
+		<artifactId>modello</artifactId>
+		<version>1.0-alpha-22</version>
+	</parent>
+	<properties>
+		<debian.originalVersion>1.0-alpha-22</debian.originalVersion>
+		<debian.package>libmodello-java</debian.package>
+	</properties>
 
-  <parent>
-    <groupId>org.codehaus.modello</groupId>
-    <artifactId>modello</artifactId>
-    <version>1.0-alpha-22</version>
-  </parent>
-
-  <properties>
-    <debian.originalVersion>1.0-alpha-22</debian.originalVersion>
-    <debian.package>libmodello-java</debian.package>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-container-default</artifactId>
-    </dependency>
-  </dependencies>
-
+	<name>Modello Core</name>
+	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-container-default</artifactId>
+		</dependency>
+	</dependencies>
 </project>

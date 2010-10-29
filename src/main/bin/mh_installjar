@@ -54,10 +54,13 @@ syntax()
    echo -e "\t  the jar. Empty by default."
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e "\t--skip-clean-pom: don't clean the pom, assume that a previous action ran"
+   echo -e "\t  mh_cleanpom with the correct options."
    exit 1
 }
 
-ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act" parseargs "$@"
+# The following elements are options which just need to be ignored: no-parent has-package-version keep-elements
+ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
@@ -74,6 +77,7 @@ TARGET_JAR_PATH=$(getarg d dest-jar)
 CLASSIFIER=$(getarg c classifier)
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
+SKIP_CLEAN_POM=$(getarg skip-clean-pom)
 POM="${ARGV[0]}"
 JAR="${ARGV[1]}"
 
@@ -82,11 +86,14 @@ CLEAN_ARGS="--package=${PACKAGE} ${SETVERSION:+--set-version=$SETVERSION} ${RULE
 
 mkdir -p debian/.mh 2> /dev/null
 
-if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
+if [ -z "$SKIP_CLEAN_POM" ]; then
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+        echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
+    fi
+
+    mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
 fi
 
-mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
 source debian/.mh/pom.properties
 
 groupPath=$(echo $groupId | tr . / )

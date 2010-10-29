@@ -21,10 +21,10 @@ public class RepositoryTest extends TestBase {
         Repository repo = getRepository();
         repo.scan();
 
-        assertEquals(8, repo.getResolvedPoms().size());
+        assertEquals(24, repo.getResolvedPoms().size());
         assertEquals(0, repo.getUnresolvedPoms().size());
         assertEquals(0, repo.getPomsWithMissingParent().size());
-        assertEquals(0, repo.getPomsWithMissingVersions().size());
+        assertEquals(2, repo.getPomsWithMissingVersions().size());
 
         Dependency dependency = new Dependency("org.apache.ant", "ant-apache-bcel", "jar", "debian");
         POMInfo pom = repo.getPOM(dependency);
@@ -38,16 +38,16 @@ public class RepositoryTest extends TestBase {
         Repository repo = getRepository();
         repo.scan();
 
-        File pomFile = getFileInClasspath("antlr3-tools.xml");
+        File pomFile = getFileInClasspath("hibernate-validator.pom");
         POMInfo pom = getAntlrPom(repo, pomFile);
         try {
             repo.registerPom(pomFile, pom);
         } catch (DependencyNotFoundException ignore) {}
 
-        assertEquals(8, repo.getResolvedPoms().size());
+        assertEquals(24, repo.getResolvedPoms().size());
         assertEquals(1, repo.getUnresolvedPoms().size());
         assertEquals(1, repo.getPomsWithMissingParent().size());
-        assertEquals(1, repo.getPomsWithMissingVersions().size());
+        assertEquals(3, repo.getPomsWithMissingVersions().size());
 
         assertEquals(pom, repo.getPOM(pom.getThisPom()));
         assertEquals(pom, repo.searchMatchingPOM(pom.getThisPom()));

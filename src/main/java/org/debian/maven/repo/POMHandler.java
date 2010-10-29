@@ -7,7 +7,7 @@ import java.io.File;
  */
 public interface POMHandler {
 
-    void handlePOM(File pomFile, boolean noParent) throws Exception;
+    void handlePOM(File pomFile, boolean noParent, boolean hasPackageVersion) throws Exception;
 
     void ignorePOM(File pomFile) throws Exception;
     

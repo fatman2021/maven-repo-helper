@@ -1,13 +1,6 @@
 package org.debian.maven.repo;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  *
@@ -253,7 +246,12 @@ public class POMInfo {
         return rules;
     }
 
-    public POMInfo applyRules(Collection rules) {
+    /**
+     * Create a new POM from the current POM, and apply all rules on the dependencies and parent POM
+     * @param rules The list of rules to apply
+     * @see #applyRulesOnParent(java.util.Collection, Repository) 
+     */
+    public POMInfo newPOMFromRules(Collection rules, Repository repository) {
         if (rules.isEmpty()) {
             return this;
         }
@@ -261,10 +259,6 @@ public class POMInfo {
         POMInfo result = new POMInfo();
         result.setOriginalPom(getThisPom());
         result.setThisPom(getThisPom().applyRules(rules));
-        if (getParent() != null) {
-            result.setOriginalParentVersion(getParent().getVersion());
-            result.setParent(getParent().applyRules(rules));
-        }
         result.setDependencies(Dependency.applyRules(getDependencies(), rules));
         result.setDependencyManagement(Dependency.applyRules(getDependencyManagement(), rules));
         result.setExtensions(Dependency.applyRules(getExtensions(), rules));
@@ -278,10 +272,28 @@ public class POMInfo {
         result.setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
         result.setProfileReportingPlugins(Dependency.applyRules(getProfileReportingPlugins(), rules));
 
-        result.setProperties(getProperties());
+        result.setProperties(new TreeMap(getProperties()));
         result.setModules(getModules());
 
+        result.setParent(getParent());
+        result.applyRulesOnParent(rules, repository);
+
         return result;
+    }
+
+    public void applyRulesOnParent(Collection rules, Repository repository) {
+        if (getParent() != null) {
+            //System.out.println(this.getThisPom() + ": Apply rules on parent " + getParent() + " using repository " + repository);
+            setOriginalParentVersion(getParent().getVersion());
+            setParent(getParent().applyRules(rules));
+            if (repository != null) {
+                POMInfo parentPOM = repository.getPOM(getParent());
+                mergeManagement(parentPOM);
+            } else {
+                // Always apply rules
+                //System.out.println(this.getThisPom() + ": Parent is not registered in repository, apply rules anyway");
+            }
+        }
     }
 
     public void applyRulesOnDependenciesAndPlugins(Collection rules) {
@@ -332,11 +344,11 @@ public class POMInfo {
             Dependency parentDep = (Dependency)i.next();
             for (Iterator j = target.iterator(); j.hasNext();) {
                 Dependency dependency = (Dependency)j.next();
-                if (dependency.equals(parentDep)) {
+                if (dependency.equalsIgnoreVersion(parentDep)) {
                     continue nextParentDep;
                 }
             }
-            target.add(parentDep);
+            target.add(new Dependency(parentDep));
         }
     }
 
@@ -423,4 +435,12 @@ public class POMInfo {
         return null;
     }
 
+    public List getAllDependencies(String listType) {
+        List dependencies = new ArrayList(getDependencyList(listType));
+        if (getParent() != null) {
+            List parentDependencies = parentPOM.getAllDependencies(listType);
+            dependencies.addAll(parentDependencies);
+        }
+        return dependencies;
+    }
 }

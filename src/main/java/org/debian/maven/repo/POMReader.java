@@ -72,7 +72,7 @@ public class POMReader {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT: {
                     element = parser.getLocalName();
-                    if (isReadIgnoredElement(element) || 
+                    if (isReadIgnoredElement(element) ||
                             (inPlugin > 0 && ("executions".equals(element) || "configuration".equals(element)) || "goals".equals(element) || "reportSets".equals(element)) ||
                             (inDependency > 0 && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {

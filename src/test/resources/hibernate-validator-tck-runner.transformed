@@ -10,7 +10,7 @@
 		<artifactId>hibernate-validator-parent</artifactId>
 		<version>4.0.2.GA</version>
 	</parent>
-
+	
 	<name>Hibernate Validator TCK Runner</name>
 	<description>Aggregates dependencies and run's the JSR-303 TCK</description>
 	<dependencies>
@@ -52,6 +52,7 @@
 		<validation.provider>org.hibernate.validator.HibernateValidator</validation.provider>
 		<remote.debug>
 		</remote.debug>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>4.0.2.GA</debian.originalVersion>
 		<debian.package>libhibernate-validator-java</debian.package>
 	</properties>

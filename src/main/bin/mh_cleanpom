@@ -22,6 +22,8 @@ syntax()
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: name of the Debian package containing"
    echo -e "\t  this library"
+   echo -e "\t-h --has-package-version: flag that indicates that this POM has the"
+   echo -e "\t  same version as the package, this helps packagers of depending packages"
    echo -e "\t-o --no-parent: don't inherit from a parent POM"
    echo -e "\t-k --keep-pom-version: keep the original version of the POM but,"
    echo -e "\t  convert all other versions in dependencies and plugins"
@@ -59,6 +61,9 @@ syntax()
    echo -e "\t-m<repo root>--maven-repo=<repo root>: location of the Maven repository,"
    echo -e "\t  used to force the versions of the Maven plugins used in the current"
    echo -e "\t  POM file with the versions found in the repository"
+   echo -e "\t--keep-elements=<elem1,elem2>: keep the elements listed here"
+   echo -e "\t  even if they are normally removed by the clean operation."
+   echo -e "\t  Such elements are build,reports,reporting,prerequisites,profiles."
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    echo -e ""
@@ -134,7 +139,7 @@ syntax()
    exit 1
 }
 
-ARGS="p package o no-parent k keep-pom-version e set-version r rules R extra-rule u published-rules U extra-published-rule i ignore-rules I extra-ignore-rule c clean-ignore-rules s no-rules no-publish-used-rule v verbose n no-act m maven-repo" parseargs "$@"
+ARGS="p package o no-parent k keep-pom-version e set-version r rules R extra-rule u published-rules U extra-published-rule i ignore-rules I extra-ignore-rule c clean-ignore-rules s no-rules no-publish-used-rule v verbose n no-act m maven-repo h has-package-version keep-elements" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
@@ -160,6 +165,8 @@ NOACT=$(getarg n no-act)
 POM="${ARGV[0]}"
 TARGET="${ARGV[1]:-debian/.mh/pom.xml}"
 POM_PROPS="${ARGV[2]:-debian/.mh/pom.properties}"
+HAS_PACKAGE_VERSION=$(getarg h has-package-version)
+KEEP_ELEMENTS=$(getarg keep-elements)
 
 if [ -z "$POM" ]; then
     if [ -f debian/pom.xml ]; then
@@ -194,7 +201,7 @@ if [ -z "$MAVEN_REPO" ]; then
     fi
 fi
 
-CLEAN_ARGS=(--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${KEEPVERSION:+--keep-pom-version} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--ignore-rules=$CLEAN_IGNORE_RULES} ${NORULES:+--no-rules} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO} "${EXTRA_RULES[@]/#/--extra-rule=}" "${EXTRA_PUBLISHED_RULES[@]/#/--extra-published-rule=}" "${EXTRA_IGNORE_RULES[@]/#/--extra-ignore-rule=}")
+CLEAN_ARGS=(--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${HAS_PACKAGE_VERSION:+--has-package-version} ${KEEPVERSION:+--keep-pom-version} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--ignore-rules=$CLEAN_IGNORE_RULES} ${NORULES:+--no-rules} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO} "${EXTRA_RULES[@]/#/--extra-rule=}" "${EXTRA_PUBLISHED_RULES[@]/#/--extra-published-rule=}" "${EXTRA_IGNORE_RULES[@]/#/--extra-ignore-rule=}" ${KEEP_ELEMENTS:+--keep-elements=$KEEP_ELEMENTS})
 
 if [ -z "$NOACT" ]; then
 	java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.POMCleaner "${CLEAN_ARGS[@]}" $POM $TARGET $POM_PROPS

@@ -23,8 +23,9 @@ public class POMCleaner extends POMTransformer {
                 "distributionManagement", "profiles", "ciManagement", "prerequisites",
                 "repositories", "pluginRepositories", "reports", "reporting", "modelVersion",
                 "parent"});
-
     private boolean keepAllElements = false;
+    private boolean isPOM = false;
+    private Collection keepElements = new ArrayList();
 
     public POMCleaner() {
     }
@@ -37,8 +38,13 @@ public class POMCleaner extends POMTransformer {
         this.keepAllElements = keepAllElements;
     }
 
+    public void addElementToKeep(String element) {
+        keepElements.add(element);
+    }
+
     public void cleanPom(File originalPom, File targetPom, File pomProperties,
-            boolean noParent, boolean keepPomVersion, String setVersion, String debianPackage) {
+            boolean noParent, boolean hasPackageVersion, boolean keepPomVersion,
+            String setVersion, String debianPackage) {
 
         if (targetPom.getParentFile() != null) {
             targetPom.getParentFile().mkdirs();
@@ -48,7 +54,7 @@ public class POMCleaner extends POMTransformer {
         }
 
         try {
-            POMInfo info = transformPom(originalPom, targetPom, noParent, keepPomVersion, setVersion, debianPackage);
+            POMInfo info = transformPom(originalPom, targetPom, noParent, hasPackageVersion, keepPomVersion, setVersion, debianPackage);
 
             Properties pomProps = new Properties();
             pomProps.put("groupId", info.getThisPom().getGroupId());
@@ -75,12 +81,27 @@ public class POMCleaner extends POMTransformer {
             addIgnoreRule(new DependencyRule(pom.getThisPom().getGroupId() + " "
                     + pom.getThisPom().getArtifactId() + " maven-plugin s/.*/"
                     + pom.getThisPom().getVersion() + "/"));
+        } else if (pom.getThisPom().getType().equals("pom")) {
+            isPOM = true;
         }
     }
 
-    protected boolean isWriteIgnoredElement(String element) {
-        if (keepAllElements) {
-            return super.isWriteIgnoredElement(element);
+    protected boolean isWriteIgnoredElement(String element, List path, Dependency dependency) {
+        boolean ignore = super.isWriteIgnoredElement(element, path, dependency);
+        if (keepAllElements || ignore) {
+            return ignore;
+        }
+        if (keepElements.contains(element)) {
+            return false;
+        }
+        if (path.size() > 2 && keepElements.contains(path.get(1))) {
+            if ("version".equals(element)) {
+                String parent = (String) path.get(path.size() - 1);
+                if ("plugin".equals(parent) || "extension".equals(parent) || "dependency".equals(parent)) {
+                    return true;
+                }
+            }
+            
         }
         return WRITE_IGNORED_ELEMENTS.contains(element);
     }
@@ -92,21 +113,15 @@ public class POMCleaner extends POMTransformer {
         return "pom".equals(info.getThisPom().getType()) || !"test".equals(dependency.getScope());
     }
 
-    protected void writeDebianProperties(XMLStreamWriter writer, int inLevel, POMInfo original, POMInfo info, String debianPackage) throws XMLStreamException {
-        super.writeDebianProperties(writer, inLevel, original, info, debianPackage);
+    protected void createDebianProperties(POMInfo info, POMInfo original, String debianPackage, int inLevel) throws XMLStreamException {
+        super.createDebianProperties(info, original, debianPackage, inLevel);
         Map dependencyVersions = new TreeMap();
         for (Iterator i = original.getDependencies().iterator(); i.hasNext(); ) {
             Dependency dependency = (Dependency) i.next();
             if (dependency.getVersion() != null) {
-                dependencyVersions.put(dependency.getGroupId() + "." + dependency.getArtifactId(), dependency.getVersion());
+                String versionProperty = "debian." + dependency.getGroupId() + "." + dependency.getArtifactId() + ".originalVersion";
+                info.getProperties().put(versionProperty, dependency.getVersion());
             }
-        }
-        for (Iterator i = dependencyVersions.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry depVer = (Map.Entry) i.next();
-            indent(writer, inLevel + 1);
-            writer.writeStartElement("debian." + depVer.getKey() + ".originalVersion");
-            writer.writeCharacters(depVer.getValue().toString());
-            writer.writeEndElement();
         }
     }
 
@@ -120,6 +135,8 @@ public class POMCleaner extends POMTransformer {
             System.out.println("  -o, --no-parent: don't inherit from a parent POM");
             System.out.println("  -p<package>, --package=<package>: name of the Debian package containing");
             System.out.println("    this library");
+            System.out.println("  -h --has-package-version: flag that indicates that this POM has the");
+            System.out.println("    same version as the package, this helps packagers of depending packages");
             System.out.println("  -r<rules>, --rules=<rules>: path to the file containing the");
             System.out.println("    extra rules to apply when cleaning the POM");
             System.out.println("  -R<rule>, --extra-rule=<rule>: extra rule to apply when cleaning the POM");
@@ -146,6 +163,9 @@ public class POMCleaner extends POMTransformer {
             System.out.println("    convert all other versions in dependencies and plugins");
             System.out.println("  --keep-all-elements: keep all elements in the POM, do a version");
             System.out.println("    transformation only, don't delete the build and other elements.");
+            System.out.println("  --keep-elements=<elem1,elem2>: keep the elements listed here");
+            System.out.println("    even if they are normally removed by the clean operation.");
+            System.out.println("    Such elements are build,reports,reporting,prerequisites,profiles.");
             System.out.println("  -m<repo root>--maven-repo=<repo root>: location of the Maven repository,");
             System.out.println("    used to force the versions of the Maven plugins used in the current");
             System.out.println("    POM file with the versions found in the repository");
@@ -218,6 +238,7 @@ public class POMCleaner extends POMTransformer {
         boolean verbose = false;
         boolean noParent = false;
         boolean noRules = false;
+        boolean hasPackageVersion = false;
         boolean keepPomVersion = false;
         boolean keepAllElements = false;
         String debianPackage = "";
@@ -239,10 +260,18 @@ public class POMCleaner extends POMTransformer {
                 noRules = true;
             } else if ("--no-publish-used-rule".equals(arg)) {
                 cleaner.setPublishUsedRule(false);
+            } else if ("--has-package-version".equals(arg) || "-h".equals(arg)) {
+                hasPackageVersion = true;
             } else if ("--keep-pom-version".equals(arg)) {
                 keepPomVersion = true;
             } else if ("--keep-all-elements".equals(arg)) {
                 keepAllElements = true;
+            } else if (arg.startsWith("--keep-elements=")) {
+                String keepElements = arg.substring("--keep-elements=".length());
+                StringTokenizer st = new StringTokenizer(keepElements, ",");
+                while (st.hasMoreTokens()) {
+                    cleaner.addElementToKeep(st.nextToken());
+                }
             } else if (arg.startsWith("-p")) {
                 debianPackage = arg.substring(2);
             } else if (arg.startsWith("--package=")) {
@@ -340,7 +369,7 @@ public class POMCleaner extends POMTransformer {
         }
 
         cleaner.setKeepAllElements(keepAllElements);
-        cleaner.cleanPom(originalPom, targetPom, pomProperties, noParent,
+        cleaner.cleanPom(originalPom, targetPom, pomProperties, noParent, hasPackageVersion,
                 keepPomVersion, setVersion, debianPackage);
     }
 

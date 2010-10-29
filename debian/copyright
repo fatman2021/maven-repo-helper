@@ -5,7 +5,7 @@ Source: https://launchpad.net/maven-packaging-support/
 
 Files: *
 Copyright: 2009, Ludovic Claude  <ludovic.claude@laposte.net>
-License: BSD
+License: Apache-2.0
 
 Files: src/test/resources/slf4j.xml
 Copyright: 2004-2005, SLF4J.ORG
@@ -29,18 +29,9 @@ Files: src/test/resources/*.xml src/test/resources/org/apache/maven/project/pom-
 Copyright: 2001-2009, Apache Software foundation
 License: Apache-2.0
 
-Copyright: 2009, Ludovic Claude  <ludovic.claude@laposte.net>
-License: BSD
-  On Debian GNU/Linux system you can find the complete text of the
-  BSD license in '/usr/share/common-licenses/BSD'
-
 Files: debian/*
 Copyright: 2009, Ludovic Claude <ludovic.claude@laposte.net>
-License: BSD
-
-License: BSD
-  On Debian GNU/Linux system you can find the complete text of the
-  BSD license in '/usr/share/common-licenses/BSD'
+License: Apache-2.0
 
 License: Apache-2.0
   On Debian GNU/Linux system you can find the complete text of the

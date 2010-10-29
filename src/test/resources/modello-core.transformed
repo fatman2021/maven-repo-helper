@@ -11,10 +11,11 @@
 		<version>debian</version>
 	</parent>
 	<properties>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>1.0-alpha-22</debian.originalVersion>
 		<debian.package>libmodello-java</debian.package>
 	</properties>
-
+	
 	<name>Modello Core</name>
 	<dependencies>
 		<dependency>
@@ -30,7 +31,7 @@
 	<build>
 		<plugins>
 			<plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
+				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>

@@ -6,11 +6,12 @@
 	<version>debian</version>
 	<packaging>jar</packaging>
 	<properties>
+		<debian.hasPackageVersion/>
+		<debian.org.codehaus.plexus.plexus-io.originalVersion>1.0-alpha-4</debian.org.codehaus.plexus.plexus-io.originalVersion>
 		<debian.originalVersion>1.0-alpha-12</debian.originalVersion>
 		<debian.package>libplexus-archiver-java</debian.package>
-		<debian.org.codehaus.plexus.plexus-io.originalVersion>1.0-alpha-4</debian.org.codehaus.plexus.plexus-io.originalVersion>
 	</properties>
-
+	
 	<name>Plexus Archiver Component</name>
 	<contributors>
 		<contributor>
@@ -24,12 +25,12 @@
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
 			<artifactId>plexus-container-default</artifactId>
-        		<version>debian</version>
+			<version>debian</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
 			<artifactId>plexus-utils</artifactId>
-        		<version>debian</version>
+			<version>debian</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>

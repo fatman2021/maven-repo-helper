@@ -40,6 +40,16 @@ public class Dependency implements Comparable {
         this.classifier = (classifier == null) ? "" : classifier;
     }
 
+    public Dependency(Dependency dependency) {
+        this.groupId = dependency.groupId;
+        this.artifactId = dependency.artifactId;
+        this.type = dependency.type;
+        this.version = dependency.version;
+        this.scope = dependency.scope;
+        this.optional = dependency.optional;
+        this.classifier = dependency.classifier;
+    }
+
     public String getArtifactId() {
         return artifactId;
     }
@@ -196,7 +206,7 @@ public class Dependency implements Comparable {
                 return rule.apply(this);
             }
         }
-        return this;
+        return new Dependency(this);
     }
 
     public DependencyRule findMatchingRule(Collection rules) {
@@ -229,7 +239,7 @@ public class Dependency implements Comparable {
         for (Iterator i = dependencies.iterator(); i.hasNext();) {
             Dependency dependency = (Dependency) i.next();
             if (dependency.findMatchingRule(ignoreRules) == null) {
-                result.add(dependency);
+                result.add(new Dependency(dependency));
             }
         }
         return result;

@@ -1,3 +1,28 @@
+maven-repo-helper (1.4) UNRELEASED; urgency=low
+
+  * Better support for inserting properties in the transformed or cleaned
+    POM files. Avoid duplicate properties and allow definition of new
+    properties.
+  * add support for --has-package-version and --keep-elements in the
+    <package>.poms file, for mh_install add --artifact, --java-lib,
+    --usj-name, --usj-version, --no-usj-versionless, --dest-jar
+  * update README.Debian and document the new options.
+  * change license from BSD to Apache 2.0, there's no need to have so many
+    different licenses in this package, MIT and Apache2.0 are already used.
+  * Keep comments in the POM files as much as possible (Closes: #574045)
+  * mh_cleanpom: keep <build>, <report> and <reporting> elements if the type
+    of the POM file is 'pom'.
+  * mh_cleanpom, mh_patchpom: plugin configuration elements containing
+    dependencies such as:
+    <resourceBundle>org.apache:apache-jar-resource-bundle:1.x</resourceBundle>
+    are detected and rules are applied to them
+  * mh_patchpom: --keep-pom-version option keeps the version of the parent POM
+    except when the parent is already registered in the Maven repository
+  * new mh_install command to install in one go the pom files and all jars in
+    the Maven repository
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Fri, 17 Sep 2010 00:07:36 +0200
+
 maven-repo-helper (1.3) experimental; urgency=low
 
   [ Peter Collingbourne ]

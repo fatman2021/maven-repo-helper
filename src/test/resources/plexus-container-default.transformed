@@ -11,15 +11,15 @@
 		<version>debian</version>
 	</parent>
 	<properties>
+		<debian.mavenRules>org.codehaus.plexus plexus-container-default jar s/1\.0-alpha-.*/1.0-alpha/ * *</debian.mavenRules>
 		<debian.originalVersion>1.0-alpha-9-stable-1</debian.originalVersion>
-		<debian.mavenRules><![CDATA[org.codehaus.plexus plexus-container-default jar s/1\.0-alpha-.*/1.0-alpha/ * *]]></debian.mavenRules>
 	</properties>
-
+	
 	<name>Default Plexus Container</name>
 	<build>
 		<plugins>
 			<plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
+				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<excludes>
 						<exclude>**/Test*.java</exclude>
@@ -30,9 +30,9 @@
 		</plugins>
 		<extensions>
 			<extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav</artifactId>
-                <version>debian</version>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav</artifactId>
+				<version>debian</version>
 			</extension>
 		</extensions>
 	</build>

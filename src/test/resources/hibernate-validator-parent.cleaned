@@ -6,10 +6,11 @@
 	<version>debian</version>
 	<packaging>pom</packaging>
 	<properties>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>4.0.2.GA</debian.originalVersion>
 		<debian.package>libhibernate-validator-java</debian.package>
 	</properties>
-
+	
 	<name>Hibernate Validator Parent</name>
 	<url>http://validator.hibernate.org</url>
 	<description>Hibernate's Bean Validation (JSR-303) reference implementation.</description>

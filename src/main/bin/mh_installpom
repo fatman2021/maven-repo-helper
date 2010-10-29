@@ -24,7 +24,12 @@ syntax()
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
    echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-h --has-package-version: flag that indicates that this POM has the"
+   echo -e "\t  same version as the package, this helps packagers of depending packages"
    echo -e "\t-o --no-parent: don't inherit from a parent POM"
+   echo -e "\t--keep-elements=<elem1,elem2>: keep the elements listed here"
+   echo -e "\t  even if they are normally removed by the clean operation."
+   echo -e "\t  Such elements are build,reports,reporting,prerequisites,profiles."
    echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
    echo -e "\t  a POM's own attributes in debian.mavenRules"
    echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
@@ -45,7 +50,8 @@ syntax()
    exit 1
 }
 
-ARGS="p package o no-parent no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act" parseargs "$@"
+# The following elements are options which just need to be ignored: artifact java-lib usj-name usj-version no-usj-versionless dest-jar 
+ARGS="p package o no-parent no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act h has-package-version keep-elements artifact java-lib usj-name usj-version no-usj-versionless dest-jar" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
@@ -61,10 +67,12 @@ PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
+HAS_PACKAGE_VERSION=$(getarg h has-package-version)
+KEEP_ELEMENTS=$(getarg keep-elements)
 POM="${ARGV[0]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
+CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${HAS_PACKAGE_VERSION:+--has-package-version} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${KEEP_ELEMENTS:+--keep-elements=$KEEP_ELEMENTS}"
 
 mkdir -p debian/.mh 2> /dev/null
 

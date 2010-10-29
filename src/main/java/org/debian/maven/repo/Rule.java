@@ -85,7 +85,7 @@ public class Rule {
             return false;
         }
         final Rule other = (Rule) obj;
-        if (this.pattern != other.pattern && (this.pattern == null || !this.pattern.equals(other.pattern))) {
+        if (this.pattern != other.pattern && (this.pattern == null || !this.pattern.pattern().equals(other.pattern.pattern()))) {
             return false;
         }
         if ((this.replace == null) ? (other.replace != null) : !this.replace.equals(other.replace)) {
@@ -96,7 +96,7 @@ public class Rule {
 
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + (this.pattern != null ? this.pattern.hashCode() : 0);
+        hash = 89 * hash + (this.pattern != null ? this.pattern.pattern().hashCode() : 0);
         hash = 89 * hash + (this.replace != null ? this.replace.hashCode() : 0);
         return hash;
     }

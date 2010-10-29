@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.slf4j</groupId>
 	<artifactId>slf4j-parent</artifactId>
 	<version>debian</version>
 	<packaging>pom</packaging>
 	<properties>
+		<debian.hasPackageVersion/>
+		<debian.junit.junit.originalVersion>3.8.1</debian.junit.junit.originalVersion>
 		<debian.originalVersion>1.5.6</debian.originalVersion>
 		<debian.package>libslf4j-java</debian.package>
-		<debian.junit.junit.originalVersion>3.8.1</debian.junit.junit.originalVersion>
 	</properties>
-
+	
 	<name>SLF4J</name>
 	<url>http://www.slf4j.org</url>
 	<organization>

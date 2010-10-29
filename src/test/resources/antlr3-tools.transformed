@@ -8,15 +8,23 @@
 	<parent>
 		<groupId>org.antlr</groupId>
 		<artifactId>antlr-master</artifactId>
-		<version>3.2</version>
+		<version>3.x</version>
 	</parent>
 	<properties>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>3.2</debian.originalVersion>
 		<debian.package>libantlr3-java</debian.package>
 	</properties>
-
+	
 	<name>ANTLR Grammar Tool</name>
 	<url>http://antlr.org</url>
+	<!--
+
+    Inherit from the ANTLR master pom, which tells us what
+    version we are and allows us to inherit dependencies
+    and so on.
+
+    -->
 	<dependencies>
 		<dependency>
 			<groupId>org.antlr</groupId>
@@ -31,6 +39,17 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<!--
+
+    Tell Maven which other artifacts we need in order to
+    build, run and test the ANTLR Tool. The ANTLR Tool uses earlier versions
+    of ANTLR at runtime (for the moment), uses the current
+    released version of ANTLR String template, but obviously is
+    reliant on the latest snapshot of the runtime, which will either be
+    taken from the antlr-snapshot repository, or your local .m2
+    repository if you built and installed that locally.
+
+    -->
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>

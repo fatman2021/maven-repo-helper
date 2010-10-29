@@ -50,15 +50,15 @@ DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
 MH_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
 
 if [ -z "$NOACT" ]; then
-    cat debian/$PACKAGE.poms | while read POM OPT1 OPT2; do
+    cat debian/$PACKAGE.poms | while read POM OPT1 OPT2 OPT3 OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10; do
         # Remove comments
         POM=${POM##\#*}
         if [[ ! -z "$POM" ]]; then
             if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-	        echo -e "\tmh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $POM"
+	        echo -e "\tmh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $POM"
             fi
             if [[ ! "--ignore" == "$OPT1" ]]; then
-                mh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $POM
+                mh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $POM
             fi
         fi
     done

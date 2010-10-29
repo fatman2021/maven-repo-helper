@@ -36,6 +36,8 @@ when you are packaging software, the goal is to keep the number of errors and wa
 mh_installjar and mh_installpoms are the main tools to use when you want to install an artifact and its metadata in the repository.
 They take care of putting the files at the correct locations, maintain the integrity of the repository and cleanup the POM files
 before their inclusion in the repository.
+mh_install does the job of mh_installpoms and mh_installjar in one go, but requires additional information in the .poms file
+to work (--artifact=<path> option for each jar to install)
 mh_installpom, mh_linkjar, mh_linkrepojar are also available for some special needs when installing an artifact in the repository.
 The maven.mk CDBS script provided by maven-debian-helper can also install artifacts with the correct transformations to the repository.
 
@@ -100,9 +102,32 @@ module2/pom.xml
 
 * debian/<package>.poms (where <package> is the name of the binary package):
 
-This file lists the POM files in the source tree which need to be installed in the repository, and indicates with the --no-parent option that if the POM inherits from a parent POM, then this inheritance relationship will be removed in the cleaned POM. Removing the parent inheritence can often simplify the packaging, as the parent POM mostly does not contain any useful information - we need only the list of dependencies in our repository, the other details for the build are irrelevant.
-In this file you can also add --ignore after the name of the POM files for each module that you want to ignore. This option is only
-useful when building the package with Maven and the maven.mk CDBS script provided by maven-debian-helper.
+This file lists the POM files in the source tree which need to be installed in the repository, and you provide options for each POMs:
+--ignore: to ignore the module built with this POM, and to not install the POM and its artifacts in the repository
+--no-parent: if the POM inherits from a parent POM, then this inheritance relationship will be removed in the cleaned POM.
+  Removing the parent inheritance can often simplify the packaging, as quite often the parent POM does not contain any
+  useful information - we need only the list of dependencies in our repository, the other details for the build are irrelevant.
+  But do take care of the configuration for plugins or properties defined in the parent POM, as they can be useful when the
+  package uses Maven for its build and will be a motivating factor to keep the parent POM.
+--package=<package>: to install the POM and its artifacts in a different Debian package than the first package
+  defined in debian/control
+--has-package-version: to indicate that the original version of the POM is the same as the upstream part
+  of the version for the package. This will indicate that version constraints are possible on the packages
+  that depend on the current package. For example, the POM for junit:junit:3.8.1 is packaged in the
+  junit package which has the Debian version 3.8.1-1. This POM will be registered in the Debian repository
+  with the version 3.x, but if a package depends on junit, then we can automatically
+  insert in its Depends: or Build-Depends: junit (>= 3.8.1). This can be done using the substitution var
+  ${maven:Depends} or using mh_make to generate the control file for the package, or both.
+  See maven-debian-helper package for more details.
+--keep-elements=<elem1,elem2>: a list of XML elements to keep in the POM during a clean operation with mh_cleanpom or mh_installpom
+  Typical elements are amongst build,reports,reporting,prerequisites,profiles.
+--artifact=<path>: path to the build artifact associated with this POM, it will be installed when using the command mh_install.
+  A good practice is to use paths with wildcards to work around changing versions, for example --artifact=target/junit-*.jar
+--java-lib: install the jar into /usr/share/java to comply with Debian packaging guidelines
+--usj-name=<name>: name to use when installing the library in /usr/share/java
+--usj-version=<version>: version to use when installing the library in /usr/share/java
+--no-usj-versionless: don't install the versionless link in /usr/share/java
+--dest-jar=<path>: the destination for the real jar
 
 Other configuration files are used by mh_installjar and mh_installpoms. All those files are optional.
 

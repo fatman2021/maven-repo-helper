@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-resources-plugin</artifactId>
+	<version>2.3</version>
+	<packaging>maven-plugin</packaging>
+	<properties>
+		<debian.originalVersion>2.3</debian.originalVersion>
+		<debian.package>libmaven-resources-plugin-java</debian.package>
+	</properties>
+	
+	<name>Maven Resources Plugin</name>
+	<description>The Resources Plugin handles the copying of project resources to the output
+    directory. There are two different kinds of resources: main resources and test resources. The
+    difference is that the main resources are the resources associated to the main
+    source code while the test resources are associated to the test source code.
+    Thus, this allows the separation of resources for the main source code and its
+    unit tests.</description>
+	<inceptionYear>2001</inceptionYear>
+	<scm>
+		<connection>scm:svn:http://svn.apache.org/repos/asf/maven/plugins/tags/maven-resources-plugin-2.3</connection>
+		<developerConnection>scm:svn:https://svn.apache.org/repos/asf/maven/plugins/tags/maven-resources-plugin-2.3</developerConnection>
+		<url>http://svn.apache.org/viewvc/maven/plugins/tags/maven-resources-plugin-2.3</url>
+	</scm>
+	<issueManagement>
+		<system>JIRA</system>
+		<url>http://jira.codehaus.org/browse/MRESOURCES</url>
+	</issueManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-plugin-api</artifactId>
+			<version>debian</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven</groupId>
+			<artifactId>maven-project</artifactId>
+			<version>debian</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>debian</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.shared</groupId>
+			<artifactId>maven-filtering</artifactId>
+			<version>debian</version>
+		</dependency>
+	</dependencies>
+</project>

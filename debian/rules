@@ -20,6 +20,7 @@ mh_checkrepo_description = "Checks the Maven repository."
 mh_clean_description = "Cleans the temporary files created by the other mh_* utilities."
 mh_cleanpom_description = "Cleans a POM file."
 mh_genrules_description = "Generates the debian/rules file with Maven support."
+mh_install_description = "Installs the POM files and the artifacts into /usr/share/maven-repo."
 mh_installjar_description = "Installs a jar into /usr/share/maven-repo."
 mh_installpom_description = "Installs a POM file into /usr/share/maven-repo."
 mh_installpoms_description = "Installs all POMs for the package into /usr/share/maven-repo."
@@ -51,7 +52,7 @@ binary-post-install/$(PACKAGE)::
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/.mh
-	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --rules=debian/maven.rules pom.xml debian/.mh/$(PACKAGE)-debian.pom debian/.mh/pom.properties 
+	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --has-package-version --rules=debian/maven.rules pom.xml debian/.mh/$(PACKAGE)-debian.pom debian/.mh/pom.properties 
 	dh_install -p$(PACKAGE) --sourcedir=debian/.mh $(PACKAGE)-debian.pom \
 		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 

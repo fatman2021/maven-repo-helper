@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.maven.wagon</groupId>
 	<artifactId>wagon-http-lightweight</artifactId>
@@ -11,11 +11,12 @@
 		<version>debian</version>
 	</parent>
 	<properties>
+		<debian.hasPackageVersion/>
+		<debian.org.apache.maven.wagon.wagon-http-shared.originalVersion>1.0-beta-5</debian.org.apache.maven.wagon.wagon-http-shared.originalVersion>
 		<debian.originalVersion>1.0-beta-5</debian.originalVersion>
 		<debian.package>libwagon-java</debian.package>
-		<debian.org.apache.maven.wagon.wagon-http-shared.originalVersion>1.0-beta-5</debian.org.apache.maven.wagon.wagon-http-shared.originalVersion>
 	</properties>
-
+	
 	<name>Maven Wagon Lightweight HTTP Provider</name>
 	<description>Wagon that gets and puts artifacts through http using standard Java library</description>
 	<dependencies>

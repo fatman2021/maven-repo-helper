@@ -11,10 +11,11 @@
 		<version>4.0.2.GA</version>
 	</parent>
 	<properties>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>4.0.2.GA</debian.originalVersion>
 		<debian.package>libhibernate-validator-java</debian.package>
 	</properties>
-
+	
 	<name>Hibernate Validator</name>
 	<distributionManagement>
 		<site>
@@ -23,6 +24,9 @@
 		</site>
 	</distributionManagement>
 	<dependencies>
+		<!--
+        Compile time dependencies
+        -->
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
@@ -38,6 +42,9 @@
 			<artifactId>jtype</artifactId>
 			<version>debian</version>
 		</dependency>
+		<!--
+        Runtime dependencies
+        -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
@@ -45,12 +52,18 @@
 			<optional>true</optional>
 			<version>debian</version>
 		</dependency>
+		<!--
+        Optional dependencies
+        -->
 		<dependency>
 			<groupId>org.hibernate.java-persistence</groupId>
 			<artifactId>jpa-api</artifactId>
 			<version>debian</version>
 			<optional>true</optional>
 		</dependency>
+		<!--
+        Test dependencies
+        -->
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
@@ -198,6 +211,8 @@
 					<options>
 						<xincludeSupported>true</xincludeSupported>
 						<xmlTransformerType>saxon</xmlTransformerType>
+						<!-- needed for uri-resolvers; can be ommitted if using 'current' uri scheme -->
+						<!--     could also locate the docbook dependency and inspect its version... -->
 						<docbookVersion>1.72.0</docbookVersion>
 						<localeSeparator>-</localeSeparator>
 					</options>

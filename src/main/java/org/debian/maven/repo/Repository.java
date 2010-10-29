@@ -323,6 +323,9 @@ public class Repository {
     }
 
     private void scan(File[] files) {
+        if (files == null) {
+            return;
+        }
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if (file.isDirectory()) {

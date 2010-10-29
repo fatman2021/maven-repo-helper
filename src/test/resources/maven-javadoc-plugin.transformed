@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -27,9 +45,11 @@
 		<doxiaVersion>1.0-alpha-11</doxiaVersion>
 		<doxia-sitetoolsVersion>1.0-alpha-11</doxia-sitetoolsVersion>
 		<wagonVersion>1.0-beta-2</wagonVersion>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>2.5</debian.originalVersion>
 	</properties>
 	<dependencies>
+		<!-- maven -->
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
@@ -75,26 +95,31 @@
 			<artifactId>maven-archiver</artifactId>
 			<version>debian</version>
 		</dependency>
+		<!-- Doxia -->
 		<dependency>
 			<groupId>org.apache.maven.doxia</groupId>
 			<artifactId>doxia-sink-api</artifactId>
 			<version>debian</version>
 		</dependency>
+		<!-- Doxia-sitetools -->
 		<dependency>
 			<groupId>org.apache.maven.doxia</groupId>
 			<artifactId>doxia-site-renderer</artifactId>
 			<version>debian</version>
 		</dependency>
+		<!-- wagon -->
 		<dependency>
 			<groupId>org.apache.maven.wagon</groupId>
 			<artifactId>wagon-provider-api</artifactId>
 			<version>debian</version>
 		</dependency>
+		<!-- misc -->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>debian</version>
 		</dependency>
+		<!-- Plexus -->
 		<dependency>
 			<groupId>org.codehaus.plexus</groupId>
 			<artifactId>plexus-container-default</artifactId>
@@ -120,6 +145,7 @@
 			<artifactId>maven-toolchain</artifactId>
 			<version>debian</version>
 			<exclusions>
+				<!-- Using org.codehaus.plexus:plexus-utils instead of -->
 				<exclusion>
 					<groupId>plexus</groupId>
 					<artifactId>plexus-utils</artifactId>
@@ -147,6 +173,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
+				<!-- TODO: remove when maven-plugins parent pom 12 is released -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
@@ -246,11 +273,13 @@
 						<artifactId>maven-changes-plugin</artifactId>
 						<version>2.0</version>
 						<configuration>
+							<!-- For JIRA-report -->
 							<columnNames>Type,Key,Summary,Assignee,Status,Resolution,Fix Version</columnNames>
 							<onlyCurrentVersion>true</onlyCurrentVersion>
 							<resolutionIds>Closed</resolutionIds>
 							<sortColumnNames>Type,Key</sortColumnNames>
 							<maxEntries>1000</maxEntries>
+							<!-- MCHANGES-124 -->
 						</configuration>
 						<reportSets>
 							<reportSet>
@@ -260,6 +289,7 @@
 							</reportSet>
 						</reportSets>
 					</plugin>
+					<!-- TODO: remove when maven-plugins parent pom 12 is released -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-plugin-plugin</artifactId>

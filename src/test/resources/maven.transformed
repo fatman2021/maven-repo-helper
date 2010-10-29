@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd">
-        <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.maven</groupId>
 	<artifactId>maven</artifactId>
 	<version>debian</version>
 	<packaging>pom</packaging>
-
+	
 	<name>Maven</name>
 	<description>Maven is a project development management and comprehension tool. Based on the concept of a project object model: builds, dependency management, documentation creation, site publication, and distribution publication are all controlled from the declarative file. Maven can be extended by plugins to utilise a number of other development tools for reporting or the build process.</description>
 	<url>http://maven.apache.org</url>
@@ -61,6 +79,7 @@
 				<otherArchive>http://maven.commits.markmail.org/</otherArchive>
 			</otherArchives>
 		</mailingList>
+		<!-- duplication from parent pom - temporary until they inherit properly -->
 		<mailingList>
 			<name>Maven Announcements List</name>
 			<post>announce@maven.apache.org</post>
@@ -176,8 +195,11 @@
 					<artifactId>clirr-maven-plugin</artifactId>
 					<version>2.2.1</version>
 					<configuration>
+						<!-- needed for release: default value "(,${project.version})" for 2.0.10 is 2.0.10-SNAPSHOT -->
 						<comparisonVersion>2.0.9</comparisonVersion>
 						<excludes>
+							<!-- TODO: These represent method ADDITIONS from 2.0.9, and should be removed after
+                   2.0.10 is released. -->
 							<exclude>org/apache/maven/lifecycle/LifecycleExecutor*</exclude>
 							<exclude>org/apache/maven/artifact/metadata/AbstractArtifactMetadata*</exclude>
 							<exclude>org/apache/maven/artifact/metadata/ArtifactMetadataSource*</exclude>
@@ -187,6 +209,7 @@
 							<exclude>org/apache/maven/project/inheritance/ModelInheritanceAssembler*</exclude>
 							<exclude>org/apache/maven/execution/MavenExecutionRequest*</exclude>
 							<exclude>org/apache/maven/plugin/DefaultPluginManager*</exclude>
+							<!-- these are differences in methods that SHOULD BE PRIVATE -->
 							<exclude>org/apache/maven/settings/io/xpp3/SettingsXpp3Reader*</exclude>
 							<exclude>org/apache/maven/artifact/repository/metadata/io/xpp3/MetadataXpp3Reader*</exclude>
 							<exclude>org/apache/maven/model/io/xpp3/MavenXpp3Reader*</exclude>
@@ -225,8 +248,10 @@
 	<properties>
 		<mavenVersion>2.1.0-SNAPSHOT</mavenVersion>
 		<wagonVersion>1.0-beta-5</wagonVersion>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>2.1.0-SNAPSHOT</debian.originalVersion>
 	</properties>
+	<!--start-->
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -236,7 +261,10 @@
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
+		<!--end-->
 		<dependencies>
+			<!-- Maven -->
+			<!--start-->
 			<dependency>
 				<groupId>org.apache.maven</groupId>
 				<artifactId>maven-plugin-descriptor</artifactId>
@@ -327,6 +355,7 @@
 				<artifactId>maven-toolchain</artifactId>
 				<version>debian</version>
 			</dependency>
+			<!--end-->
 			<dependency>
 				<groupId>commons-cli</groupId>
 				<artifactId>commons-cli</artifactId>
@@ -342,6 +371,7 @@
 				<artifactId>doxia-logging-api</artifactId>
 				<version>debian</version>
 			</dependency>
+			<!-- Plexus -->
 			<dependency>
 				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-interpolation</artifactId>
@@ -409,7 +439,9 @@
 				<version>debian</version>
 			</dependency>
 		</dependencies>
+		<!--start-->
 	</dependencyManagement>
+	<!--end-->
 	<distributionManagement>
 		<site>
 			<id>apache.website</id>
@@ -421,6 +453,7 @@
 			<id>quality-checks</id>
 			<build>
 				<plugins>
+					<!-- This is here until it is enabled in the parent -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>clirr-maven-plugin</artifactId>
@@ -441,6 +474,7 @@
 			<id>release</id>
 			<build>
 				<plugins>
+					<!-- This is here until it is enabled in the parent -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>clirr-maven-plugin</artifactId>
@@ -474,6 +508,13 @@
 		</profile>
 		<profile>
 			<id>reporting-aggregate</id>
+			<!-- To generate aggregate reports -->
+			<!-- To deploy both aggregate reports for top-level project and standalone reports for modules, call
+           mvn site -Preporting
+           mvn site:deploy
+           mvn site -Preporting-aggregate
+           mvn -N site:deploy
+      -->
 			<reporting>
 				<plugins>
 					<plugin>

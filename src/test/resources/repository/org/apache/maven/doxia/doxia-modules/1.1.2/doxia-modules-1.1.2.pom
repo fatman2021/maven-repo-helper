@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.apache.maven.doxia</groupId>
+	<artifactId>doxia-modules</artifactId>
+	<version>1.1.2</version>
+	<packaging>pom</packaging>
+	<parent>
+		<groupId>org.apache.maven.doxia</groupId>
+		<artifactId>doxia</artifactId>
+		<version>1.1.2</version>
+	</parent>
+	<properties>
+		<debian.originalVersion>1.1.2</debian.originalVersion>
+		<debian.package>libdoxia-java</debian.package>
+	</properties>
+	
+	<name>Doxia :: Modules</name>
+	<description>Doxia modules for several markup languages.</description>
+	<modules>
+		<module>doxia-module-apt</module>
+		<module>doxia-module-confluence</module>
+		<module>doxia-module-docbook-simple</module>
+		<module>doxia-module-fml</module>
+		<module>doxia-module-fo</module>
+		<module>doxia-module-itext</module>
+		<module>doxia-module-latex</module>
+		<module>doxia-module-rtf</module>
+		<module>doxia-module-twiki</module>
+		<module>doxia-module-xdoc</module>
+		<module>doxia-module-xhtml</module>
+	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.maven.doxia</groupId>
+			<artifactId>doxia-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.doxia</groupId>
+			<artifactId>doxia-sink-api</artifactId>
+		</dependency>
+	</dependencies>
+</project>
