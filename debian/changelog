@@ -1,4 +1,4 @@
-maven-repo-helper (1.4) UNRELEASED; urgency=low
+maven-repo-helper (1.4) experimental; urgency=low
 
   * Better support for inserting properties in the transformed or cleaned
     POM files. Avoid duplicate properties and allow definition of new
