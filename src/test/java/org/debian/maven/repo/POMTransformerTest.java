@@ -28,7 +28,7 @@ public class POMTransformerTest extends TestBase {
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.addRule(new DependencyRule("org.apache.maven.plugins maven-assembly-plugin maven-plugin s/.*/2.2/"));
-        instance.transformPom(pom, updatedPom, noParent, true, false, null, null);
+        instance.transformPom(pom, updatedPom, noParent, true, false, false, null, null);
         assertXMLEqual(read("maven.transformed"), read(updatedPom));
     }
 
@@ -37,7 +37,7 @@ public class POMTransformerTest extends TestBase {
         boolean noParent = false;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
-        instance.transformPom(pom, updatedPom, noParent, true, false, null, "maven2");
+        instance.transformPom(pom, updatedPom, noParent, true, false, false, null, "maven2");
         assertXMLEqual(read("maven-core.transformed"), read(updatedPom));
     }
 
@@ -51,15 +51,16 @@ public class POMTransformerTest extends TestBase {
         instance.addRule(new DependencyRule("org.codehaus.mojo clirr-maven-plugin * *"));
         instance.addRule(new DependencyRule("org.apache.bcel bcel jar s/5\\..*/5.x/"));
         instance.addRule(new DependencyRule("* maven-plugin-plugin maven-plugin s/.*/2.5/"));
-        instance.transformPom(pom, updatedPom, noParent, true, false, null, null);
+        POMInfo transformedPOM = instance.transformPom(pom, updatedPom, noParent, true, false, false, null, null);
         assertXMLEqual(read("maven-javadoc-plugin.transformed"), read(updatedPom));
+        assertNull(transformedPOM.getParent());
     }
 
     public void testTransformModelloPom() throws Exception {
         usePom("modello-core.xml");
         boolean noParent = false;
         instance.addDefaultRules();
-        instance.transformPom(pom, updatedPom, noParent, true, false, null, "libmodello-java");
+        instance.transformPom(pom, updatedPom, noParent, true, false, false, null, "libmodello-java");
         assertXMLEqual(read("modello-core.transformed"), read(updatedPom));
     }
 
@@ -76,7 +77,7 @@ public class POMTransformerTest extends TestBase {
         boolean noParent = false;
         instance.setRepository(getRepository());
         instance.addDefaultRules();
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libdoxia-java");
+        instance.transformPom(pom, updatedPom, noParent, true, true, false, null, "libdoxia-java");
         assertXMLEqual(read("doxia-module-fml.transformed"), read(updatedPom));
     }
 
@@ -91,7 +92,7 @@ public class POMTransformerTest extends TestBase {
         instance.addRule(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
         instance.addRule(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
         instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libantlr3-java");
+        instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libantlr3-java");
         assertXMLEqual(read("antlr3.transformed"), read(updatedPom));
     }
 
@@ -111,7 +112,7 @@ public class POMTransformerTest extends TestBase {
         instance.addIgnoreModule(pom, "gunit");
         instance.addIgnoreModule(pom, "gunit-maven-plugin");
 
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libantlr3-java");
+        instance.transformPom(pom, updatedPom, noParent, true, true, false, null, "libantlr3-java");
         assertXMLEqual(read("antlr3-parent.transformed"), read(updatedPom));
     }
 
@@ -137,7 +138,7 @@ public class POMTransformerTest extends TestBase {
         instance.addIgnoreModule(pom, "gunit");
         instance.addIgnoreModule(pom, "gunit-maven-plugin");
 
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libantlr3-java");
+        instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libantlr3-java");
         assertXMLEqual(read("antlr3-tools.transformed"), read(updatedPom));
     }
 
@@ -149,7 +150,7 @@ public class POMTransformerTest extends TestBase {
         instance.addDefaultRules();
         instance.usePluginVersionsFromRepository();
 
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libhibernate-validator-java");
+        instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libhibernate-validator-java");
         assertXMLEqual(read("hibernate-validator-tck-runner.transformed"), read(updatedPom));
     }
 
@@ -161,7 +162,7 @@ public class POMTransformerTest extends TestBase {
         instance.addDefaultRules();
         instance.usePluginVersionsFromRepository();
 
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libhibernate-validator-java");
+        instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libhibernate-validator-java");
         assertXMLEqual(read("hibernate-validator.transformed"), read(updatedPom));
     }
 
@@ -174,8 +175,9 @@ public class POMTransformerTest extends TestBase {
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));
         instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
 
-        instance.transformPom(pom, updatedPom, noParent, true, true, null, "libplexus-utils2-java");
+        POMInfo transformedPOM = instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libplexus-utils2-java");
         assertXMLEqual(read("plexus-utils2.transformed"), read(updatedPom));
+        assertEquals("2.x", transformedPOM.getParent().getVersion());
     }
 
     public void testTransformAntlrMavenPluginPom() throws Exception {
@@ -190,7 +192,7 @@ public class POMTransformerTest extends TestBase {
         instance.addRule(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing-tools * s/.*/debian/ *"));
         instance.addRule(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-test-tools * s/.*/debian/ *"));
 
-        POMInfo transformedPom = instance.transformPom(pom, updatedPom, noParent, true, true, null, "libantlr-maven-plugin-java");
+        POMInfo transformedPom = instance.transformPom(pom, updatedPom, noParent, true, true, false, null, "libantlr-maven-plugin-java");
         assertXMLEqual(read("antlr-maven-plugin.transformed"), read(updatedPom));
         assertEquals("2.3", ((Dependency) transformedPom.getPluginManagement().get(2)).getVersion());
     }

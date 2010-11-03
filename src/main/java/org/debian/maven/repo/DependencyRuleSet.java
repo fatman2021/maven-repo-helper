@@ -15,6 +15,7 @@ public class DependencyRuleSet {
     private File rulesFile;
     private Set rules;
     private boolean verbose;
+    private boolean warnRulesFileNotFound = true;
     private String name;
     private String description;
 
@@ -54,6 +55,22 @@ public class DependencyRuleSet {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public boolean isWarnRulesFileNotFound() {
+        return warnRulesFileNotFound;
+    }
+
+    public void setWarnRulesFileNotFound(boolean warnRulesFileNotFound) {
+        this.warnRulesFileNotFound = warnRulesFileNotFound;
     }
 
     public Iterator iterator() {
@@ -97,15 +114,6 @@ public class DependencyRuleSet {
         return matchingRules;
     }
 
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
     public void save() {
         try {
             PrintWriter out = new PrintWriter(new FileWriter(getRulesFile()));
@@ -128,8 +136,12 @@ public class DependencyRuleSet {
             return;
         }
         if (!rulesFile.exists()) {
-            if (verbose) {
-                System.out.println("Rules file does not exist: " + rulesFile.getAbsolutePath());
+            if (verbose && warnRulesFileNotFound) {
+                String descr = description;
+                if (description == null || description.isEmpty()) {
+                    descr = "Rules";
+                }
+                System.out.println(descr + " file does not exist: " + rulesFile.getAbsolutePath());
             }
             return;
         }

@@ -135,6 +135,13 @@ public class ListOfPOMs {
         return options;
     }
 
+    public boolean contains(File pomFile) {
+        if (pomFile.getAbsolutePath().startsWith(baseDir.getAbsolutePath())) {
+            return getPOMOptions(pomFile) != null;
+        }
+        return false;
+    }
+
     private void readPomsFile() {
         if (pomList == null) {
             pomList = new ArrayList();

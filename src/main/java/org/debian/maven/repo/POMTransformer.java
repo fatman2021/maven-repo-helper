@@ -183,13 +183,26 @@ public class POMTransformer extends POMReader {
         addRule(new DependencyRule(pom.getGroupId() + " " + pom.getArtifactId() + " " + pom.getType() + " " + pom.getVersion()));
     }
 
+    public boolean keepParentVersion(File pomFile, boolean noParent, boolean keepPomVersion) throws Exception {
+        boolean keepParentVersion = !noParent && keepPomVersion;
+        if (keepParentVersion && repository != null) {
+            POMInfo pom = readPom(pomFile);
+            if (pom.getThisPom().getType().equals("pom") && pom.getParent() != null) {
+                keepParentVersion = listOfPOMs.contains(pomFile) ||
+                        repository.searchMatchingPOM(pom.getParent()) == null;
+            }
+        }
+        return keepParentVersion;
+    }
+
     public void transformPoms(final String debianPackage, final boolean keepPomVersion,
             final String setVersion) {
         listOfPOMs.foreachPoms(new POMHandler() {
 
             public void handlePOM(File pomFile, boolean noParent, boolean hasPackageVersion) throws Exception {
                 File targetFile = new File(pomFile.getAbsolutePath() + ".new");
-                transformPom(pomFile, targetFile, noParent, hasPackageVersion, keepPomVersion, setVersion, debianPackage);
+                boolean keepParentVersion = keepParentVersion(pomFile, noParent, keepPomVersion);
+                transformPom(pomFile, targetFile, noParent, hasPackageVersion, keepPomVersion, keepParentVersion, setVersion, debianPackage);
                 pomFile.delete();
                 targetFile.renameTo(pomFile);
             }
@@ -200,16 +213,16 @@ public class POMTransformer extends POMReader {
     }
 
     public POMInfo transformPom(File originalPom, File targetPom) throws XMLStreamException, IOException {
-        return transformPom(originalPom, targetPom, false, false, false, null, null);
+        return transformPom(originalPom, targetPom, false, false, false, false, null, null);
     }
 
     public POMInfo transformPom(File originalPom, File targetPom,
-            boolean noParent, boolean hasPackageVersion, boolean keepPomVersion, String setVersion, String debianPackage) throws XMLStreamException, IOException {
-        return transformPom(originalPom, targetPom, noParent, hasPackageVersion, keepPomVersion, setVersion, debianPackage, false);
+            boolean noParent, boolean hasPackageVersion, boolean keepPomVersion, boolean keepParentVersion, String setVersion, String debianPackage) throws XMLStreamException, IOException {
+        return transformPom(originalPom, targetPom, noParent, hasPackageVersion, keepPomVersion, keepParentVersion, setVersion, debianPackage, false);
     }
 
     public POMInfo transformPom(File originalPom, File targetPom,
-            boolean noParent, boolean hasPackageVersion, boolean keepPomVersion, String setVersion, String debianPackage,
+            boolean noParent, boolean hasPackageVersion, boolean keepPomVersion, boolean keepParentVersion, String setVersion, String debianPackage,
             boolean ignoreRegisterErrors) throws XMLStreamException, IOException {
 
         if (targetPom.getParentFile() != null) {
@@ -226,6 +239,12 @@ public class POMTransformer extends POMReader {
                 original.getThisPom().setVersion(setVersion);
             }
 
+            if (keepParentVersion && original.getParent() != null) {
+                // Add a rule to also keep the parent version
+                automaticRules.add(new DependencyRule(original.getParent().getGroupId() + " "
+                    + original.getParent().getArtifactId() + " * * * *"));
+            }
+            /*
             if (original.getParent() != null && !noParent) {
                 if (repository == null && keepPomVersion) {
                     // Add a rule to also keep the parent version
@@ -246,7 +265,7 @@ public class POMTransformer extends POMReader {
                         }
                     }
                 }
-            }
+            } */
 
             transformingPom(original);
 
@@ -255,6 +274,9 @@ public class POMTransformer extends POMReader {
             POMInfo info = original.newPOMFromRules(allRules, repository);
             if (hasPackageVersion) {
                 info.getProperties().put("debian.hasPackageVersion", "true");
+            }
+            if (noParent) {
+                info.setParent(null);
             }
 
             if (repository != null) {

@@ -44,7 +44,7 @@ public class POMCleaner extends POMTransformer {
 
     public void cleanPom(File originalPom, File targetPom, File pomProperties,
             boolean noParent, boolean hasPackageVersion, boolean keepPomVersion,
-            String setVersion, String debianPackage) {
+            boolean keepParentVersion, String setVersion, String debianPackage) {
 
         if (targetPom.getParentFile() != null) {
             targetPom.getParentFile().mkdirs();
@@ -54,7 +54,7 @@ public class POMCleaner extends POMTransformer {
         }
 
         try {
-            POMInfo info = transformPom(originalPom, targetPom, noParent, hasPackageVersion, keepPomVersion, setVersion, debianPackage);
+            POMInfo info = transformPom(originalPom, targetPom, noParent, hasPackageVersion, keepPomVersion, keepParentVersion, setVersion, debianPackage);
 
             Properties pomProps = new Properties();
             pomProps.put("groupId", info.getThisPom().getGroupId());
@@ -159,7 +159,9 @@ public class POMCleaner extends POMTransformer {
             System.out.println("    a POM's own attributes in debian.mavenRules");
             System.out.println("  -e<version>, --set-version=<version>: set the version for the POM,");
             System.out.println("    do not use the version declared in the POM file.");
-            System.out.println("  --keep-pom-version: keep the original version of the POM but, ");
+            System.out.println("  --keep-pom-version: keep the original version of the POM but");
+            System.out.println("    convert all other versions in dependencies and plugins");
+            System.out.println("  --keep-parent-version: keep the version of the parent in the POM but");
             System.out.println("    convert all other versions in dependencies and plugins");
             System.out.println("  --keep-all-elements: keep all elements in the POM, do a version");
             System.out.println("    transformation only, don't delete the build and other elements.");
@@ -240,6 +242,7 @@ public class POMCleaner extends POMTransformer {
         boolean noRules = false;
         boolean hasPackageVersion = false;
         boolean keepPomVersion = false;
+        boolean keepParentVersion = false;
         boolean keepAllElements = false;
         String debianPackage = "";
         String setVersion = null;
@@ -264,6 +267,8 @@ public class POMCleaner extends POMTransformer {
                 hasPackageVersion = true;
             } else if ("--keep-pom-version".equals(arg)) {
                 keepPomVersion = true;
+            } else if ("--keep-parent-version".equals(arg)) {
+                keepParentVersion = true;
             } else if ("--keep-all-elements".equals(arg)) {
                 keepAllElements = true;
             } else if (arg.startsWith("--keep-elements=")) {
@@ -370,7 +375,7 @@ public class POMCleaner extends POMTransformer {
 
         cleaner.setKeepAllElements(keepAllElements);
         cleaner.cleanPom(originalPom, targetPom, pomProperties, noParent, hasPackageVersion,
-                keepPomVersion, setVersion, debianPackage);
+                keepPomVersion, keepParentVersion, setVersion, debianPackage);
     }
 
     private static int inc(int i, String[] args) {
