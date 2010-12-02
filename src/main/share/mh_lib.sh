@@ -4,7 +4,7 @@
 # - package selection
 #
 
-MH_VERSION=${MH_VERSION:-1.4}
+MH_VERSION=${MH_VERSION:-1.5}
 CLASSPATH=/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar:/usr/share/java/maven-repo-helper.jar
 JAVA_OPTIONS="-Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.XMLOutputFactoryBase -Djavax.xml.stream.XMLInputFactory=com.bea.xml.stream.MXParserFactory"
 
@@ -37,16 +37,19 @@ parseargs()
       elif [ "-" = "${1:0:1}" ]; then
       # short opt
          optn="${1:1:1}"
-         if [ -z "$optn" ] || ! echo $ARGS | sed 's/-/_/g' | grep $optn >/dev/null; then
+         if [ "$optn" = "O" ]; then
+            : # skip -O options passed by dh 7
+         elif [ -z "$optn" ] || ! echo $ARGS | sed 's/-/_/g' | grep $optn >/dev/null; then
             echo "Invalid option: $optn"
             syntax
+         else
+            optv="${1:2}"
+            if [ -z "$optv" ]; then
+               optv=true
+            fi
+            export -a opt_$optn
+            eval opt_$optn'+=("$optv")'
          fi
-         optv="${1:2}"
-         if [ -z "$optv" ]; then
-            optv=true
-         fi
-         export -a opt_$optn
-         eval opt_$optn'+=("$optv")'
       else
       # not-opt arg
          ARGV[$ARGC]="$1"
@@ -82,3 +85,24 @@ getargs()
    done
    echo ')'
 }
+
+findpackages()
+{
+   if [ -n "$opt_p" ]; then
+      echo $opt_p
+   elif [ -n "$opt_package" ]; then
+      echo $opt_package
+   elif [ -n "$opt_i" ] || [ -n "$opt_indep" ]; then
+      egrep '^(Package|Architecture)' debian/control | grep -B1 'Architecture: all'|sed -n '/^Package:/s/^[^:]*: *//p'
+   elif [ -n "$opt_a" ] || [ -n "$opt_arch" ]; then
+      egrep '^(Package|Architecture)' debian/control | grep -v 'Architecture: all' | grep -B1 Architecture|sed -n '/^Package:/s/^[^:]*: *//p'
+   else
+      sed -n '/^Package:/s/^[^:]*: *//p' debian/control
+   fi
+}
+
+firstpackage()
+{ 
+   findpackages | head -n1
+}
+

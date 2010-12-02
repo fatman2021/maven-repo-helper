@@ -1,5 +1,21 @@
 package org.debian.maven.repo;
 
+/*
+ * Copyright 2009 Ludovic Claude.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -13,7 +29,7 @@ public class ListOfPOMs {
     private static final Logger log = Logger.getLogger(ListOfPOMs.class.getName());
 
     private boolean verbose;
-    private File baseDir;
+    private File baseDir = new File(".");
     private File poms;
     private List pomList;
     private Map pomOptions;
@@ -175,6 +191,8 @@ public class ListOfPOMs {
                         options.setNoParent(true);
                     } else if (option.startsWith("--package=")) {
                         options.setDestPackage(option.substring("--package=".length()));
+                    } else if ("--has-package-version".equals(option)) {
+                        options.setHasPackageVersion(true);
                     } else if (option.startsWith("--keep-elements=")) {
                         options.setKeepElements(option.substring("--keep-elements=".length()));
                     } else if (option.startsWith("--artifact=")) {
@@ -189,6 +207,10 @@ public class ListOfPOMs {
                         options.setNoUsjVersionless(true);
                     } else if (option.startsWith("--dest-jar=")) {
                         options.setDestJar(option.substring("--dest-jar=".length()));
+                    } else if (option.startsWith("--classifier=")) {
+                        options.setUsjName(option.substring("--classifier=".length()));
+                    } else if ("--ignore-pom".equals(option)) {
+                        options.setIgnorePOM(true);
                     }
                 }
                 if (verbose) {
@@ -202,8 +224,11 @@ public class ListOfPOMs {
     }
 
     public void save() {
-        if (poms != null && !poms.exists()) {
+        if (poms != null) {
             try {
+                if (pomList == null) {
+                    readPomsFile();
+                }
                 PrintWriter out = new PrintWriter(new FileWriter(poms));
                 out.println("# List of POM files for the package");
                 out.println("# Format of this file is:");
@@ -213,6 +238,8 @@ public class ListOfPOMs {
                 out.println("#   --no-parent: remove the <parent> tag from the POM");
                 out.println("#   --package=<package>: an alternative package to use when installing this POM");
                 out.println("#      and its artifact");
+                out.println("#   --has-package-version: to indicate that the original version of the POM is the same as the upstream part");
+                out.println("#      of the version for the package.");
                 out.println("#   --keep-elements=<elem1,elem2>: a list of XML elements to keep in the POM");
                 out.println("#      during a clean operation with mh_cleanpom or mh_installpom");
                 out.println("#   --artifact=<path>: path to the build artifact associated with this POM,");
@@ -223,6 +250,10 @@ public class ListOfPOMs {
                 out.println("#   --usj-version=<version>: version to use when installing the library in /usr/share/java");
                 out.println("#   --no-usj-versionless: don't install the versionless link in /usr/share/java");
                 out.println("#   --dest-jar=<path>: the destination for the real jar");
+                out.println("#   it will be installed with mh_install.");
+                out.println("#   --classifier=<classifier>: Optional, the classifier for the jar. Empty by default.");
+                out.println("#   --ignore-pom: don't install the POM with mh_install or mh_installpoms. To use with POM files that are created");
+                out.println("#     temporarily for certain artifacts such as Javadoc jars.");
                 out.println("#");
                 for (Iterator i = pomList.iterator(); i.hasNext();) {
                     String pomPath = (String) i.next();
@@ -238,6 +269,7 @@ public class ListOfPOMs {
 
     public static class POMOptions {
         private boolean ignore;
+        private boolean ignorePOM;
         private boolean noParent;
         private boolean hasPackageVersion;
         private String destPackage;
@@ -248,6 +280,7 @@ public class ListOfPOMs {
         private String usjVersion;
         private String destJar;
         private boolean noUsjVersionless;
+        private String classifier;
 
         public boolean isIgnore() {
             return ignore;
@@ -255,6 +288,14 @@ public class ListOfPOMs {
 
         public void setIgnore(boolean ignore) {
             this.ignore = ignore;
+        }
+
+        public boolean isIgnorePOM() {
+            return ignorePOM;
+        }
+
+        public void setIgnorePOM(boolean ignorePOM) {
+            this.ignorePOM = ignorePOM;
         }
 
         public boolean isNoParent() {
@@ -337,6 +378,14 @@ public class ListOfPOMs {
             this.noUsjVersionless = noUsjVersionless;
         }
 
+        public String getClassifier() {
+            return classifier;
+        }
+
+        public void setClassifier(String classifier) {
+            this.classifier = classifier;
+        }
+
         public String toString() {
             if (ignore) {
                return " --ignore";
@@ -371,6 +420,12 @@ public class ListOfPOMs {
             }
             if (noUsjVersionless) {
                 options += " --no-usj-versionless";
+            }
+            if (classifier != null) {
+                options += " --classifier=" + classifier;
+            }
+            if (ignorePOM) {
+                options += " --ignore-pom";
             }
             return options;
         }

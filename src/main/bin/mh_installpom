@@ -1,5 +1,19 @@
 #!/bin/bash --
 
+# Copyright 2009 Ludovic Claude.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -e
 
 . /usr/share/maven-repo-helper/mh_lib.sh
@@ -45,13 +59,14 @@ syntax()
    echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e "\t-ignore-pom: read the POM but don't install it"
    echo -e ""
    echo -e "See also: mh_installpoms(1), mh_cleanpom(1)"
    exit 1
 }
 
-# The following elements are options which just need to be ignored: artifact java-lib usj-name usj-version no-usj-versionless dest-jar 
-ARGS="p package o no-parent no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act h has-package-version keep-elements artifact java-lib usj-name usj-version no-usj-versionless dest-jar" parseargs "$@"
+# The following elements are options which just need to be ignored: artifact java-lib usj-name usj-version no-usj-versionless dest-jar classifier
+ARGS="p package o no-parent no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act h has-package-version keep-elements artifact java-lib usj-name usj-version no-usj-versionless dest-jar ignore-pom classifier" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
@@ -69,6 +84,7 @@ VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
 HAS_PACKAGE_VERSION=$(getarg h has-package-version)
 KEEP_ELEMENTS=$(getarg keep-elements)
+IGNORE_POM=$(getarg ignore-pom)
 POM="${ARGV[0]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
@@ -88,6 +104,10 @@ groupPath=$(echo $groupId | tr . / )
 
 if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
     echo -e "\tmv debian/.mh/pom.xml debian/.mh/${artifactId}-${debianVersion}.pom"
+fi
+
+if [ -n "${IGNORE_POM}" ]; then
+    exit
 fi
 
 mv debian/.mh/pom.xml.keep debian/.mh/${artifactId}-${version}.pom

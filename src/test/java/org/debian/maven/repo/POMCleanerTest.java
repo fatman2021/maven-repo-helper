@@ -1,16 +1,25 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.debian.maven.repo;
+
+/*
+ * Copyright 2009 Ludovic Claude.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-/**
- * @author ludo
- */
 public class POMCleanerTest extends TestBase {
 
     private File pomProperties;
@@ -266,6 +275,34 @@ public class POMCleanerTest extends TestBase {
         assertEquals("jar", pomInfo.get("type"));
         assertEquals("2.0.5", pomInfo.get("version"));
         assertEquals("2.x", pomInfo.get("debianVersion"));
+    }
+
+    public void testCleanMojoParentPom() throws Exception {
+        pomProperties = new File(testDir, "pom.properties");
+        usePom("mojo-parent.pom");
+        boolean noParent = false;
+        instance.addDefaultRules();
+        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/ * *"));
+        instance.addRule(new DependencyRule("org.codehaus codehaus-parent pom s/.*/debian/ * *"));
+        instance.addRule(new DependencyRule("org.codehaus.mojo mojo-parent pom s/.*/debian/ * *"));
+        instance.addRule(new DependencyRule("org.apache.maven maven-plugin-api jar s/2\\..*/2.x/ * *"));
+        instance.addRule(new DependencyRule("org.apache.maven.doxia doxia-module-xhtml jar s/1\\..*/1.x/ * *"));
+        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-checkstyle-plugin * * * *"));
+        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-jxr-plugin * * * *"));
+        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-pmd-plugin * * * *"));
+        instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon wagon-webdav * * * *"));
+        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo cobertura-maven-plugin * * * *"));
+        instance.addElementToKeep("build");
+        instance.addElementToKeep("reporting");
+        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libmojo-parent-java");
+        assertXMLEqual(read("mojo-parent.cleaned"), read(updatedPom));
+        Properties pomInfo = new Properties();
+        pomInfo.load(new FileInputStream(pomProperties));
+        assertEquals("org.codehaus.mojo", pomInfo.get("groupId"));
+        assertEquals("mojo-parent", pomInfo.get("artifactId"));
+        assertEquals("pom", pomInfo.get("type"));
+        assertEquals("27", pomInfo.get("version"));
+        assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
     public void testMain() throws Exception {

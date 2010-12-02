@@ -1,15 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.debian.maven.repo;
+
+/*
+ * Copyright 2009 Ludovic Claude.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 import org.custommonkey.xmlunit.XMLUnit;
 
-/**
- *
- * @author ludo
- */
 public class POMTransformerTest extends TestBase {
 
     private POMTransformer instance;
@@ -92,8 +100,15 @@ public class POMTransformerTest extends TestBase {
         instance.addRule(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
         instance.addRule(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
         instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
-        instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libantlr3-java");
+        POMInfo transformedPOM = instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libantlr3-java");
         assertXMLEqual(read("antlr3.transformed"), read(updatedPom));
+        assertEquals("3.2", transformedPOM.getParent().getVersion());
+        assertEquals(1, transformedPOM.getDependencies().size());
+        assertTrue(transformedPOM.getDependencies().contains(new Dependency("org.antlr", "stringtemplate", "jar", "3.x")));
+        assertEquals(1, transformedPOM.getExtensions().size());
+        assertTrue(transformedPOM.getExtensions().contains(new Dependency("org.apache.maven.wagon", "wagon-ssh-external", "jar", "debian")));
+        assertEquals(1, transformedPOM.getPlugins().size());
+        assertTrue(transformedPOM.getPlugins().contains(new Dependency("org.apache.maven.plugins", "maven-compiler-plugin", "maven-plugin", "2.0.2")));
     }
 
     public void testTransformAntlr3ParentPom() throws Exception {
@@ -175,7 +190,7 @@ public class POMTransformerTest extends TestBase {
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));
         instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
 
-        POMInfo transformedPOM = instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "libplexus-utils2-java");
+        POMInfo transformedPOM = instance.transformPom(pom, updatedPom, noParent, true, true, false, null, "libplexus-utils2-java");
         assertXMLEqual(read("plexus-utils2.transformed"), read(updatedPom));
         assertEquals("2.x", transformedPOM.getParent().getVersion());
     }
@@ -195,6 +210,19 @@ public class POMTransformerTest extends TestBase {
         POMInfo transformedPom = instance.transformPom(pom, updatedPom, noParent, true, true, false, null, "libantlr-maven-plugin-java");
         assertXMLEqual(read("antlr-maven-plugin.transformed"), read(updatedPom));
         assertEquals("2.3", ((Dependency) transformedPom.getPluginManagement().get(2)).getVersion());
+    }
+
+    public void testTransformMavenPackagerUtilsPom() throws Exception {
+        usePom("maven-packager-utils.pom");
+        boolean noParent = false;
+
+        instance.addDefaultRules();
+        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
+        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+
+        POMInfo transformedPOM = instance.transformPom(pom, updatedPom, noParent, true, true, true, null, "maven-repo-helper");
+        assertXMLEqual(read("maven-packager-utils.transformed"), read(updatedPom));
+        assertEquals("1.2", transformedPOM.getParent().getVersion());
     }
 
     private Repository getRepository() {

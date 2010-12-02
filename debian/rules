@@ -24,6 +24,7 @@ mh_install_description = "Installs the POM files and the artifacts into /usr/sha
 mh_installjar_description = "Installs a jar into /usr/share/maven-repo."
 mh_installpom_description = "Installs a POM file into /usr/share/maven-repo."
 mh_installpoms_description = "Installs all POMs for the package into /usr/share/maven-repo."
+mh_installsite_description = "Installs site.xml into /usr/share/maven-repo."
 mh_linkjar_description = "Installs a link to the jar into /usr/share/maven-repo."
 mh_linkrepojar_description = "Installs a link from the jar in /usr/share/maven-repo."
 mh_lspoms_description = "Generates a list of POMs for the package."
@@ -49,6 +50,7 @@ binary-post-install/$(PACKAGE)::
 	dh_install -p$(PACKAGE) build/$(PACKAGE)-debian.jar /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 	dh_install -p$(PACKAGE) src/main/bin/mh_* /usr/bin
 	dh_install -p$(PACKAGE) src/main/share/mh_* /usr/share/$(PACKAGE)
+	dh_install -p$(PACKAGE) src/main/share/maven_repo_helper.pm /usr/share/perl5/Debian/Debhelper/Sequence
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/.mh

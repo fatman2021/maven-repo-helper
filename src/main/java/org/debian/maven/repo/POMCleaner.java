@@ -1,5 +1,21 @@
 package org.debian.maven.repo;
 
+/*
+ * Copyright 2009 Ludovic Claude.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -97,13 +113,16 @@ public class POMCleaner extends POMTransformer {
         if (path.size() > 2 && keepElements.contains(path.get(1))) {
             if ("version".equals(element)) {
                 String parent = (String) path.get(path.size() - 1);
-                if ("plugin".equals(parent) || "extension".equals(parent) || "dependency".equals(parent)) {
+                if ("plugin".equals(parent)) {
                     return true;
                 }
             }
             
         }
-        return WRITE_IGNORED_ELEMENTS.contains(element);
+//        if (WRITE_IGNORED_ELEMENTS.contains(element)) {
+//            System.out.println("Write ignored " + element + " " + printPath(path) + " for " + dependency);
+//        }
+        return path.size() == 1 && WRITE_IGNORED_ELEMENTS.contains(element);
     }
 
     protected boolean acceptDependency(Dependency dependency, POMInfo info) {

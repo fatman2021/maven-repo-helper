@@ -1,5 +1,21 @@
 package org.debian.maven.repo;
 
+/*
+ * Copyright 2009 Ludovic Claude.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,12 +60,14 @@ public class POMReader {
         List extensions = new ArrayList();
         List plugins = new ArrayList();
         List pluginManagement = new ArrayList();
+        List pluginManagementDependencies = new ArrayList();
         List pluginDependencies = new ArrayList();
         List reportingPlugins = new ArrayList();
         List profileDependencies = new ArrayList();
         List profileDependencyManagement = new ArrayList();
         List profilePlugins = new ArrayList();
         List profilePluginDependencies = new ArrayList();
+        List profilePluginManagement = new ArrayList();
         List profileReportingPlugins = new ArrayList();
         List modules = new ArrayList();
 
@@ -63,6 +81,7 @@ public class POMReader {
         int inDependency = 0;
         int inExtension = 0;
         int inPlugin = 0;
+        int inExclusion = 0;
         int inParent = 0;
         int inProperties = 0;
         String element = null;
@@ -80,7 +99,9 @@ public class POMReader {
                     } else {
                         inLevel++;
                         path.add(element);
-                        if ("dependency".equals(element)) {
+                        if ("exclusions".equals(element) || inExclusion > 0) {
+                            inExclusion++;
+                        } else if ("dependency".equals(element)) {
                             inDependency++;
                             currentDependency = new Dependency(null, null, "jar", null);
                             String parentElement = (String) path.get(path.size() - 2);
@@ -101,6 +122,8 @@ public class POMReader {
                                     String p5Element = (String) path.get(path.size() - 6);
                                     if ("project".equals(p5Element)) {
                                         pluginDependencies.add(currentDependency);
+                                    } else if ("build".equals(p5Element)) {
+                                        pluginManagementDependencies.add(currentDependency);
                                     } else if ("profile".equals(p5Element)) {
                                         profilePluginDependencies.add(currentDependency);
                                     }
@@ -115,13 +138,21 @@ public class POMReader {
                             String parentElement = (String) path.get(path.size() - 2);
                             String parentParentElement = (String) path.get(path.size() - 3);
                             String parentParentParentElement = null;
+                            String p4Element = null;
                             if (path.size() > 4) {
                                 parentParentParentElement = (String) path.get(path.size() - 4);
+                            }
+                            if (path.size() > 5) {
+                                p4Element = (String) path.get(path.size() - 5);
                             }
                             currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
                             if ("plugins".equals(parentElement)) {
                                 if ("pluginManagement".equals(parentParentElement)) {
-                                    pluginManagement.add(currentDependency);
+                                    if ("profile".equals(p4Element)) {
+                                        profilePluginManagement.add(currentDependency);
+                                    } else {
+                                        pluginManagement.add(currentDependency);
+                                    }
                                 } else if ("reporting".equals(parentParentElement)) {
                                     if ("profile".equals(parentParentParentElement)) {
                                         profileReportingPlugins.add(currentDependency);
@@ -169,7 +200,9 @@ public class POMReader {
                     } else {
                         inLevel--;
                         path.remove(path.size() - 1);
-                        if (inDependency > 0) {
+                        if (inExclusion > 0) {
+                            inExclusion--;
+                        } else if (inDependency > 0) {
                             inDependency--;
                         } else if (inPlugin > 0) {
                             inPlugin--;
@@ -189,7 +222,9 @@ public class POMReader {
 
                 case XMLStreamConstants.CHARACTERS: {
                     String value = parser.getText().trim();
-                    if (inDependency > 1 || inPlugin > 1 || inExtension > 1) {
+                    if (inIgnoredElement > 0 || inExclusion > 0) {
+                        // ignore
+                    } else if (inDependency > 1 || inPlugin > 1 || inExtension > 1) {
                         if ("groupId".equals(element)) {
                             currentDependency.setGroupId(value);
                         } else if ("artifactId".equals(element)) {
@@ -279,11 +314,13 @@ public class POMReader {
         expendProperties(plugins, inferedProperties);
         expendProperties(pluginManagement, inferedProperties);
         expendProperties(pluginDependencies, inferedProperties);
+        expendProperties(pluginManagementDependencies, inferedProperties);
         expendProperties(reportingPlugins, inferedProperties);
         expendProperties(profileDependencies, inferedProperties);
         expendProperties(profileDependencyManagement, inferedProperties);
         expendProperties(profilePlugins, inferedProperties);
         expendProperties(profilePluginDependencies, inferedProperties);
+        expendProperties(profilePluginManagement, inferedProperties);
         expendProperties(profileReportingPlugins, inferedProperties);
 
         POMInfo info = new POMInfo();
@@ -302,11 +339,13 @@ public class POMReader {
         info.setPlugins(plugins);
         info.setPluginManagement(pluginManagement);
         info.setPluginDependencies(pluginDependencies);
+        info.setPluginManagementDependencies(pluginManagementDependencies);
         info.setReportingPlugins(reportingPlugins);
         info.setProfileDependencies(profileDependencies);
         info.setProfileDependencyManagement(profileDependencyManagement);
         info.setProfilePlugins(profilePlugins);
         info.setProfilePluginDependencies(profilePluginDependencies);
+        info.setProfilePluginManagement(profilePluginManagement);
         info.setProfileReportingPlugins(profileReportingPlugins);
         info.setProperties(properties);
         return info;

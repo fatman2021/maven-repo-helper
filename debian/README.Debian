@@ -47,6 +47,9 @@ files are present.
 
 * Template debian/rules for installing a single artifact into the Maven repository: 
 =======================
+
+#!/usr/bin/make -f
+
 include /usr/share/cdbs/1/rules/debhelper.mk
 
 PACKAGE := $(DEB_SOURCE_PACKAGE)
@@ -70,9 +73,25 @@ You will need also at least a file called debian/<package>.poms (where <package>
 pom.xml
 =======================
 
+* Template debian/rules for installing a single artifact into the Maven repository using dh 7: 
+=======================
+
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with maven_repo_helper
+=======================
+
+You will need also at least a file called debian/<package>.poms (where <package> is the name of the binary package) and containing:
+=======================
+pom.xml --java-lib --artifact=build/module-*.jar
+=======================
 
 * Template debian/rules for installing multiple artifacts into the Maven repository: 
 =======================
+
+#!/usr/bin/make -f
+
 include /usr/share/cdbs/1/rules/debhelper.mk
 
 PACKAGE := $(DEB_SOURCE_PACKAGE)
@@ -98,6 +117,22 @@ You will need also at least a file called debian/<package>.poms (where <package>
 pom.xml --no-parent
 module1/pom.xml
 module2/pom.xml
+=======================
+
+* Template debian/rules for installing multiple artifacts into the Maven repository using dh 7:
+
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with maven_repo_helper
+=======================
+
+You will need also at least a file called debian/<package>.poms (where <package> is the name of the binary package) and containing:
+=======================
+# Remove the <parent> tag from the multiproject POM
+pom.xml --no-parent
+module1/pom.xml --java-lib --artifact=module1/target/module1-*.jar
+module2/pom.xml --java-lib --artifact=module2/target/module2-*.jar
 =======================
 
 * debian/<package>.poms (where <package> is the name of the binary package):
@@ -128,6 +163,9 @@ This file lists the POM files in the source tree which need to be installed in t
 --usj-version=<version>: version to use when installing the library in /usr/share/java
 --no-usj-versionless: don't install the versionless link in /usr/share/java
 --dest-jar=<path>: the destination for the real jar
+--classifier=<classifier>: the classifier for the jar, empty by default.
+--ignore-pom: don't install the POM with mh_install or mh_installpoms. To use with POM files that are created temporarily
+  for certain artifacts such as Javadoc jars.
 
 Other configuration files are used by mh_installjar and mh_installpoms. All those files are optional.
 

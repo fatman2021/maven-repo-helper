@@ -1,3 +1,18 @@
+maven-repo-helper (1.5) unstable; urgency=low
+
+  * Create mh_installsite to install site.xml into the Maven repository,
+    and integrate it with mh_install
+  * Avoid duplication between rules in maven.rules and maven.publishedRules,
+    as well as between maven.ignoreRules and maven.cleanIgnoreRules
+  * Fix ignore modules, make it work in more cases.
+  * mh_clean: clean also files listed in .mh_clean, similar to what jh_clean
+    does.
+  * add support for dh 7 and ant builds: use the following line in your
+    rules file:
+     dh $@ --with ant --with mavenrepohelper
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 11 Nov 2010 18:49:49 +0100
+
 maven-repo-helper (1.4) experimental; urgency=low
 
   * Better support for inserting properties in the transformed or cleaned

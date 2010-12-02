@@ -1,15 +1,23 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.debian.maven.repo;
 
 import java.util.Iterator;
 
-/**
+/*
+ * Copyright 2009 Ludovic Claude.
  *
- * @author ludo
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 public class POMReaderTest extends TestBase {
 
     /**
@@ -261,6 +269,80 @@ public class POMReaderTest extends TestBase {
         assertEquals("jdocbook-style", dependency.getType());
 
         assertEquals(0, info.getProperties().size());
+        assertEquals(0, info.getModules().size());
+    }
+
+    public void testReadMojoParent() throws Exception {
+        usePom("mojo-parent.pom");
+        POMReader instance = new POMReader();
+        POMInfo info = instance.readPom(pom);
+        assertNotNull(info.getParent());
+        assertEquals("org.codehaus", info.getParent().getGroupId());
+        assertEquals("codehaus-parent", info.getParent().getArtifactId());
+        assertEquals("3", info.getParent().getVersion());
+        assertEquals("pom", info.getParent().getType());
+
+        assertEquals("org.codehaus.mojo", info.getThisPom().getGroupId());
+        assertEquals("mojo-parent", info.getThisPom().getArtifactId());
+        assertEquals("27", info.getThisPom().getVersion());
+        assertEquals("pom", info.getThisPom().getType());
+
+        assertEquals(0, info.getDependencies().size());
+        assertEquals(2, info.getDependencyManagement().size());
+        Dependency dependency = (Dependency) info.getDependencyManagement().get(0);
+        assertEquals("org.apache.maven", dependency.getGroupId());
+        assertEquals("maven-plugin-api", dependency.getArtifactId());
+        assertEquals("2.0", dependency.getVersion());
+        assertEquals("jar", dependency.getType());
+
+        assertEquals(1, info.getExtensions().size());
+
+        assertEquals(24, info.getPluginManagement().size());
+        dependency = (Dependency) info.getPluginManagement().get(17);
+        assertEquals("org.apache.maven.plugins", dependency.getGroupId());
+        assertEquals("maven-site-plugin", dependency.getArtifactId());
+        assertEquals("2.1.1", dependency.getVersion());
+        assertEquals("maven-plugin", dependency.getType());
+        dependency = (Dependency) info.getPluginManagement().get(18);
+        assertEquals("org.apache.maven.plugins", dependency.getGroupId());
+        assertEquals("maven-source-plugin", dependency.getArtifactId());
+        assertEquals("2.1.2", dependency.getVersion());
+        assertEquals("maven-plugin", dependency.getType());
+
+        assertEquals(1, info.getPluginManagementDependencies().size());
+        dependency = (Dependency) info.getPluginManagementDependencies().get(0);
+        assertEquals("org.apache.maven.doxia", dependency.getGroupId());
+        assertEquals("doxia-module-xhtml", dependency.getArtifactId());
+        assertEquals("1.1.3", dependency.getVersion());
+        assertEquals("jar", dependency.getType());
+
+        assertEquals(2, info.getPlugins().size());
+        dependency = (Dependency) info.getPlugins().get(1);
+        assertEquals("org.codehaus.mojo", dependency.getGroupId());
+        assertEquals("cobertura-maven-plugin", dependency.getArtifactId());
+        assertEquals(null, dependency.getVersion());
+        assertEquals("maven-plugin", dependency.getType());
+
+        assertEquals(2, info.getReportingPlugins().size());
+        dependency = (Dependency) info.getReportingPlugins().get(1);
+        assertEquals("org.apache.maven.plugins", dependency.getGroupId());
+        assertEquals("maven-project-info-reports-plugin", dependency.getArtifactId());
+        assertEquals("2.2", dependency.getVersion());
+        assertEquals("maven-plugin", dependency.getType());
+
+        assertEquals(6, info.getProfilePlugins().size());
+        assertEquals(8, info.getProfileReportingPlugins().size());
+        assertEquals(1, info.getProfilePluginManagement().size());
+        assertEquals(0, info.getProfileDependencies().size());
+        assertEquals(0, info.getProfileDependencyManagement().size());
+
+        assertEquals(5, info.getProperties().size());
+        assertEquals("UTF-8", info.getProperties().get("project.build.sourceEncoding"));
+        assertEquals("UTF-8", info.getProperties().get("project.reporting.outputEncoding"));
+        assertEquals("1.4", info.getProperties().get("mojo.java.target"));
+        assertEquals("true", info.getProperties().get("surefire.redirectTestOutputToFile"));
+        assertEquals("true", info.getProperties().get("netbeans.checkstyle.format"));
+
         assertEquals(0, info.getModules().size());
     }
 

@@ -1,0 +1,119 @@
+#!/bin/bash --
+
+# Copyright 2009 Ludovic Claude.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -e
+
+. /usr/share/maven-repo-helper/mh_lib.sh
+
+syntax()
+{
+   echo -e "Usage: mh_installsite [option]... [pom] [site-file]"
+   echo -e "Installs the site.xml file in /usr/share/maven-repo, at the correct location for"
+   echo -e "Maven."
+   echo -e ""
+   echo -e "Where"
+   echo -e "\t[pom] is the location of the POM associated with the site.xml file to install."
+   echo -e "\t  GroupId, artifactId and version will be extracted from this file."
+   echo -e "\t[site-file] is the location of the site.xml to install."
+   echo -e "Options:"
+   echo -e "\t-h --help: show this text"
+   echo -e "\t-V --version: show the version"
+   echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
+   echo -e "\t  do not use the version declared in the POM file."
+   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
+   echo -e "\t  special properties. Optional, the default location is"
+   echo -e "\t  debian/maven.rules"
+   echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e "\t--skip-clean-pom: don't clean the pom, assume that a previous action ran"
+   echo -e "\t  mh_cleanpom with the correct options."
+   echo -e ""
+   echo -e "See also: mh_installpom(1), mh_installjar(1)"
+   exit 1
+}
+
+# The following elements are options which just need to be ignored: no-parent has-package-version keep-elements ignore-pom classifier
+ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom classifier" parseargs "$@"
+
+if [ "$ARGC" -lt "2" ]; then
+   syntax
+fi
+
+NOPARENT=$(getarg o no-parent)
+RULES=$(getarg r rules)
+IGNORE_RULES=$(getarg i ignore-rules)
+SETVERSION=$(getarg e set-version)
+PACKAGE=$(getarg p package)
+PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+VERBOSE=$(getarg v verbose)
+NOACT=$(getarg n no-act)
+SKIP_CLEAN_POM=$(getarg skip-clean-pom)
+POM="${ARGV[0]}"
+SITE_FILE="${ARGV[1]}"
+
+DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
+CLEAN_ARGS="--package=${PACKAGE} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES}"
+
+mkdir -p debian/.mh 2> /dev/null
+
+if [ -z "$SKIP_CLEAN_POM" ]; then
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+        echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
+    fi
+
+    mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
+fi
+
+source debian/.mh/pom.properties
+
+groupPath=$(echo $groupId | tr . / )
+
+if [ ! -e $SITE_FILE ]; then
+    echo "Cannot find the site.xml file to install: $SITE_FILE"
+    exit 2
+fi
+
+VERSIONED_SITE_NAME="${artifactId}-${version}-site.xml"
+DEBIAN_SITE_NAME="${artifactId}-${debianVersion}-site.xml"
+
+MVN_VERSIONED_DIR=usr/share/maven-repo/${groupPath}/${artifactId}/${version}
+MVN_DEBIAN_DIR=usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}
+
+install_site ()
+{
+	local srcSite=$1
+	local destDir=$2
+	local destSite=$3
+
+	if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+		echo "mh_installsite: Install $srcSite to $destDir $destSite"
+	fi
+
+    cp ${srcSite} debian/.mh/${destSite}
+	if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+		echo -e "\tinstall -m 644 -D debian/.mh/${destSite} debian/${PACKAGE}/${destDir}/${destSite}"
+	fi
+	install -m 644 -D debian/.mh/${destSite} debian/${PACKAGE}/${destDir}/${destSite}
+}
+
+# Install site.xml in the Maven repository
+install_site "$SITE_FILE" "$MVN_VERSIONED_DIR" "$VERSIONED_SITE_NAME"
+
+if [[ "${version}" != "${debianVersion}" ]]; then
+	install_site "$SITE_FILE" "$MVN_DEBIAN_DIR" "$DEBIAN_SITE_NAME"
+fi
+

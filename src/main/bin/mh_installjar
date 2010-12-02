@@ -1,5 +1,19 @@
 #!/bin/bash --
 
+# Copyright 2009 Ludovic Claude.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 set -e
 
 . /usr/share/maven-repo-helper/mh_lib.sh
@@ -59,8 +73,8 @@ syntax()
    exit 1
 }
 
-# The following elements are options which just need to be ignored: no-parent has-package-version keep-elements
-ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements" parseargs "$@"
+# The following elements are options which just need to be ignored: no-parent has-package-version keep-elements ignore-pom
+ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
@@ -159,9 +173,9 @@ install_jar ()
 		fi
 		cp ${srcJar} debian/.mh/${destJar}
 		if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-			echo -e "\tinstall -m 644 -D ${srcJar} debian/${PACKAGE}/${destDir}/${destJar}"
+			echo -e "\tinstall -m 644 -D debian/.mh/${destJar} debian/${PACKAGE}/${destDir}/${destJar}"
 		fi
-		install -m 644 -D ${srcJar} debian/${PACKAGE}/${destDir}/${destJar}
+		install -m 644 -D debian/.mh/${destJar} debian/${PACKAGE}/${destDir}/${destJar} 
 
 		JAR_INSTALLED=done
 	else

@@ -1,12 +1,28 @@
 package org.debian.maven.repo;
 
+/*
+ * Copyright 2009 Ludovic Claude.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import java.util.*;
 
 /**
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
-public class POMInfo {
+public class POMInfo implements Cloneable {
     
     public static final String DEPENDENCY_MANAGEMENT_LIST = "DependencyManagement";
     public static final String PROFILE_DEPENDENCY_MANAGEMENT_LIST = "ProfileDependencyManagement";
@@ -16,9 +32,11 @@ public class POMInfo {
     public static final String REPORTING_PLUGINS = "ReportingDependencies";
     public static final String PROFILE_PLUGINS = "ProfilePlugins";
     public static final String PROFILE_PLUGIN_DEPENDENCIES = "ProfilePluginDependencies";
+    public static final String PROFILE_PLUGIN_MANAGEMENT = "ProfilePluginManagement";
     public static final String PROFILE_REPORTING_PLUGINS = "ProfileReportingPlugins";
     public static final String PLUGINS = "Plugins";
     public static final String PLUGIN_MANAGEMENT = "PluginManagement";
+    public static final String PLUGIN_MANAGEMENT_DEPENDENCIES = "PluginManagementDependencies";
     public static final String EXTENSIONS = "Extensions";
     public static final String MODULES = "Modules";
     public static final String PARENT = "Parent";
@@ -34,11 +52,13 @@ public class POMInfo {
     private List plugins;
     private List pluginManagement;
     private List pluginDependencies;
+    private List pluginManagementDependencies;
     private List reportingPlugins;
     private List profileDependencies;
     private List profileDependencyManagement;
     private List profilePlugins;
     private List profilePluginDependencies;
+    private List profilePluginManagement;
     private List profileReportingPlugins;
     private Map properties;
     private POMInfo parentPOM;
@@ -154,6 +174,14 @@ public class POMInfo {
         this.pluginManagement = pluginManagement;
     }
 
+    public List getPluginManagementDependencies() {
+        return pluginManagementDependencies;
+    }
+
+    public void setPluginManagementDependencies(List pluginManagementDependencies) {
+        this.pluginManagementDependencies = pluginManagementDependencies;
+    }
+
     public List getProfileDependencies() {
         return profileDependencies;
     }
@@ -210,6 +238,14 @@ public class POMInfo {
         this.profilePluginDependencies = profilePluginDependencies;
     }
 
+    public List getProfilePluginManagement() {
+        return profilePluginManagement;
+    }
+
+    public void setProfilePluginManagement(List profilePluginManagement) {
+        this.profilePluginManagement = profilePluginManagement;
+    }
+
     public List getProfileReportingPlugins() {
         return profileReportingPlugins;
     }
@@ -226,12 +262,8 @@ public class POMInfo {
         return parentList;
     }
 
-    public Set getPublishedRules(boolean includeDefault) {
+    public Set getPublishedRules() {
         Set rules = new TreeSet();
-        if (includeDefault) {
-            rules.add(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
-            rules.add(DependencyRule.TO_DEBIAN_VERSION_RULE);
-        }
         if (getProperties() == null) {
             return rules;
         }
@@ -265,10 +297,12 @@ public class POMInfo {
         result.setPlugins(Dependency.applyRules(getPlugins(), rules));
         result.setPluginDependencies(Dependency.applyRules(getPluginDependencies(), rules));
         result.setPluginManagement(Dependency.applyRules(getPluginManagement(), rules));
+        result.setPluginManagementDependencies(Dependency.applyRules(getPluginManagementDependencies(), rules));
         result.setReportingPlugins(Dependency.applyRules(getReportingPlugins(), rules));
         result.setProfileDependencies(Dependency.applyRules(getProfileDependencies(), rules));
         result.setProfilePlugins(Dependency.applyRules(getProfilePlugins(), rules));
         result.setProfilePluginDependencies(Dependency.applyRules(getProfilePluginDependencies(), rules));
+        result.setProfilePluginManagement(Dependency.applyRules(getProfilePluginManagement(), rules));
         result.setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
         result.setProfileReportingPlugins(Dependency.applyRules(getProfileReportingPlugins(), rules));
 
@@ -287,8 +321,8 @@ public class POMInfo {
             setOriginalParentVersion(getParent().getVersion());
             setParent(getParent().applyRules(rules));
             if (repository != null) {
-                POMInfo parentPOM = repository.getPOM(getParent());
-                mergeManagement(parentPOM);
+                POMInfo newParentPOM = repository.getPOM(getParent());
+                mergeManagement(newParentPOM);
             } else {
                 // Always apply rules
                 //System.out.println(this.getThisPom() + ": Parent is not registered in repository, apply rules anyway");
@@ -303,10 +337,12 @@ public class POMInfo {
         setPlugins(Dependency.applyRules(getPlugins(), rules));
         setPluginDependencies(Dependency.applyRules(getPluginDependencies(), rules));
         setPluginManagement(Dependency.applyRules(getPluginManagement(), rules));
+        setPluginManagementDependencies(Dependency.applyRules(getPluginManagementDependencies(), rules));
         setReportingPlugins(Dependency.applyRules(getReportingPlugins(), rules));
         setProfileDependencies(Dependency.applyRules(getProfileDependencies(), rules));
         setProfilePlugins(Dependency.applyRules(getProfilePlugins(), rules));
         setProfilePluginDependencies(Dependency.applyRules(getProfilePluginDependencies(), rules));
+        setProfilePluginManagement(Dependency.applyRules(getProfilePluginManagement(), rules));
         setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
         setProfileReportingPlugins(Dependency.applyRules(getProfileReportingPlugins(), rules));
     }
@@ -318,10 +354,12 @@ public class POMInfo {
         setPlugins(Dependency.applyIgnoreRules(getPlugins(), rules));
         setPluginDependencies(Dependency.applyIgnoreRules(getPluginDependencies(), rules));
         setPluginManagement(Dependency.applyIgnoreRules(getPluginManagement(), rules));
+        setPluginManagementDependencies(Dependency.applyIgnoreRules(getPluginManagementDependencies(), rules));
         setReportingPlugins(Dependency.applyIgnoreRules(getReportingPlugins(), rules));
         setProfileDependencies(Dependency.applyIgnoreRules(getProfileDependencies(), rules));
         setProfilePlugins(Dependency.applyIgnoreRules(getProfilePlugins(), rules));
         setProfilePluginDependencies(Dependency.applyIgnoreRules(getProfilePluginDependencies(), rules));
+        setProfilePluginManagement(Dependency.applyIgnoreRules(getProfilePluginManagement(), rules));
         setProfileDependencyManagement(Dependency.applyIgnoreRules(getProfileDependencyManagement(), rules));
         setProfileReportingPlugins(Dependency.applyIgnoreRules(getProfileReportingPlugins(), rules));
     }
@@ -334,8 +372,11 @@ public class POMInfo {
         }
         resolveVersions(dependencies, dependencyManagement);
         resolveVersions(pluginDependencies, dependencyManagement);
+        resolveVersions(pluginDependencies, pluginManagementDependencies);
         resolveVersions(plugins, pluginManagement);
         resolveVersions(reportingPlugins, pluginManagement);
+        resolveVersions(profileDependencies, profileDependencyManagement);
+        resolveVersions(profilePlugins, profilePluginManagement);
     }
 
     private void mergeManagement(List target, List management) {
@@ -356,6 +397,7 @@ public class POMInfo {
         List allManagementLists = new ArrayList();
         allManagementLists.addAll(getDependencyList(DEPENDENCY_MANAGEMENT_LIST));
         allManagementLists.addAll(getDependencyList(PLUGIN_MANAGEMENT));
+        allManagementLists.addAll(getDependencyList(PLUGIN_MANAGEMENT_DEPENDENCIES));
         for (Iterator i = allManagementLists.iterator(); i.hasNext();) {
             Dependency mgtDep = (Dependency)i.next();
             if (mgtDep.getGroupId().equals(dependency.getGroupId()) &&
@@ -411,6 +453,9 @@ public class POMInfo {
         if (PROFILE_PLUGIN_DEPENDENCIES.equals(listSelector)) {
             return getProfilePluginDependencies();
         }
+        if (PROFILE_PLUGIN_MANAGEMENT.equals(listSelector)) {
+            return getProfilePluginManagement();
+        }
         if (PROFILE_REPORTING_PLUGINS.equals(listSelector)) {
             return getProfileReportingPlugins();
         }
@@ -419,6 +464,9 @@ public class POMInfo {
         }
         if (PLUGIN_MANAGEMENT.equals(listSelector)) {
             return getPluginManagement();
+        }
+        if (PLUGIN_MANAGEMENT_DEPENDENCIES.equals(listSelector)) {
+            return getPluginManagementDependencies();
         }
         if (REPORTING_PLUGINS.equals(listSelector)) {
             return getReportingPlugins();
@@ -436,11 +484,37 @@ public class POMInfo {
     }
 
     public List getAllDependencies(String listType) {
-        List dependencies = new ArrayList(getDependencyList(listType));
+        List allDependencies = new ArrayList(getDependencyList(listType));
         if (getParent() != null) {
             List parentDependencies = parentPOM.getAllDependencies(listType);
-            dependencies.addAll(parentDependencies);
+            allDependencies.addAll(parentDependencies);
         }
-        return dependencies;
+        return allDependencies;
+    }
+
+    public Object clone() {
+        POMInfo clone = new POMInfo();
+        clone.originalParentVersion = originalParentVersion;
+        clone.originalPom = originalPom;
+        clone.parent = parent;
+        clone.thisPom = (Dependency) thisPom.clone();
+        clone.modules = modules;
+        clone.dependencies = dependencies;
+        clone.dependencyManagement = dependencyManagement;
+        clone.extensions = extensions;
+        clone.plugins = plugins;
+        clone.pluginManagement = pluginManagement;
+        clone.pluginDependencies = pluginDependencies;
+        clone.pluginManagementDependencies = pluginManagementDependencies;
+        clone.reportingPlugins = reportingPlugins;
+        clone.profileDependencies = profileDependencies;
+        clone.profileDependencyManagement = profileDependencyManagement;
+        clone.profilePlugins = profilePlugins;
+        clone.profilePluginDependencies = profilePluginDependencies;
+        clone.profilePluginManagement = profilePluginManagement;
+        clone.profileReportingPlugins = profileReportingPlugins;
+        clone.properties = properties;
+        clone.parentPOM = parentPOM;
+        return clone;
     }
 }
