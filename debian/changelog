@@ -1,3 +1,9 @@
+maven-repo-helper (1.5.1) unstable; urgency=low
+
+  * Upload to unstable.
+
+ -- Torsten Werner <twerner@debian.org>  Wed, 09 Feb 2011 21:39:12 +0100
+
 maven-repo-helper (1.5) experimental; urgency=low
 
   * Create mh_installsite to install site.xml into the Maven repository,
