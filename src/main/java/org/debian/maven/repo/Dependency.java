@@ -132,7 +132,7 @@ public class Dependency implements Comparable, Cloneable {
         if ((this.artifactId == null) ? (other.artifactId != null) : !this.artifactId.equals(other.artifactId)) {
             return false;
         }
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+        if (!isTypeEquals(this.type, other.type)) {
             return false;
         }
         if ((this.version == null) ? (other.version != null) : !this.version.equals(other.version)) {
@@ -159,7 +159,7 @@ public class Dependency implements Comparable, Cloneable {
         if ((this.artifactId == null) ? (other.artifactId != null) : !this.artifactId.equals(other.artifactId)) {
             return false;
         }
-        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+        if (!isTypeEquals(this.type, other.type)) {
             return false;
         }
         // Classifier is still important here as it can influence greatly the contents of the artifact (a source artifact is very different from a normal artifact)
@@ -173,7 +173,7 @@ public class Dependency implements Comparable, Cloneable {
         int hash = 7;
         hash = 31 * hash + (this.groupId != null ? this.groupId.hashCode() : 0);
         hash = 31 * hash + (this.artifactId != null ? this.artifactId.hashCode() : 0);
-        hash = 31 * hash + (this.type != null ? this.type.hashCode() : 0);
+        // ignore type
         hash = 31 * hash + (this.version != null ? this.version.hashCode() : 0);
         return hash;
     }
@@ -196,12 +196,7 @@ public class Dependency implements Comparable, Cloneable {
                 return this.artifactId.compareTo(dependency.artifactId);
             }
         }
-        if (this.type != dependency.type) {
-            if (this.type == null) return -1;
-            if (! this.type.equals(dependency.type)) {
-                return this.type.compareTo(dependency.type);
-            }
-        }
+        // ignore type
         if (this.version != dependency.version) {
             if (this.version == null) return -1;
             if (! this.version.equals(dependency.version)) {
@@ -264,6 +259,16 @@ public class Dependency implements Comparable, Cloneable {
             }
         }
         return result;
+    }
+
+    public static boolean isTypeEquals(String type1, String type2) {
+        if (type1 != null && ("jar".equals(type1) || "bundle".equals(type1))) {
+            return ("jar".equals(type2) || "bundle".equals(type2));
+        }
+        if (type1 != null) {
+            return type1.equals(type2);
+        }
+        return type2 == null;
     }
 
 }
