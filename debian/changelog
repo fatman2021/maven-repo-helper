@@ -1,8 +1,12 @@
 maven-repo-helper (1.5.2) UNRELEASED; urgency=low
 
+  [ Ludovic Claude ]
   * Match jar with bundle as they are equivalent
 
- -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 19 May 2011 00:31:08 +0100
+  [ Damien Raude-Morvan ]
+  * Keep relativePath attribute on parent pom.
+
+ -- Damien Raude-Morvan <drazzib@debian.org>  Sun, 22 May 2011 21:20:44 +0200
 
 maven-repo-helper (1.5.1) unstable; urgency=low
 

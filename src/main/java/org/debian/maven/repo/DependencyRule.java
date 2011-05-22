@@ -106,7 +106,8 @@ public class DependencyRule implements Comparable {
                 versionRule.apply(dependency.getVersion()),
                 scopeRule.apply(dependency.getScope()),
                 dependency.isOptional(),
-                classifierRule.apply(dependency.getClassifier()));
+                classifierRule.apply(dependency.getClassifier()),
+                dependency.getRelativePath());
     }
 
     /**

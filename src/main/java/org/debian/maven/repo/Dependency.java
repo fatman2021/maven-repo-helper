@@ -31,6 +31,7 @@ public class Dependency implements Comparable, Cloneable {
     private boolean optional;
     private String scope;
     private String classifier;
+    private String relativePath;
 
     public Dependency(String groupId, String artifactId, String type, String version) {
         this.groupId = groupId;
@@ -42,7 +43,7 @@ public class Dependency implements Comparable, Cloneable {
     }
 
     public Dependency(String groupId, String artifactId, String type, String version, String scope, boolean optional,
-                      String classifier) {
+                      String classifier, String relativePath) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.type = type;
@@ -50,6 +51,7 @@ public class Dependency implements Comparable, Cloneable {
         this.scope = scope;
         this.optional = optional;
         this.classifier = (classifier == null) ? "" : classifier;
+        this.relativePath = relativePath;
     }
 
     public Dependency(Dependency dependency) {
@@ -60,6 +62,7 @@ public class Dependency implements Comparable, Cloneable {
         this.scope = dependency.scope;
         this.optional = dependency.optional;
         this.classifier = dependency.classifier;
+        this.relativePath = dependency.relativePath;
     }
 
     public String getArtifactId() {
@@ -116,6 +119,14 @@ public class Dependency implements Comparable, Cloneable {
 
     public void setClassifier(String classifier) {
         this.classifier = (classifier == null) ? "" : classifier;
+    }
+    
+    public String getRelativePath() {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath) {
+        this.relativePath = relativePath;
     }
 
     public boolean equals(Object obj) {

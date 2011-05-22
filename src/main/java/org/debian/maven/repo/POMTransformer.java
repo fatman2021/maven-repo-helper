@@ -668,7 +668,7 @@ public class POMTransformer extends POMReader {
     }
 
     private void copyAndFillProjectHeader(XMLStreamReader parser, XMLStreamWriter writer, int inLevel, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
-        if (parser.getNamespaceCount() == 0) {
+	if (parser.getNamespaceCount() == 0) {
             writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
             writer.writeNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
             // The correct URL is http://maven.apache.org/xsd/maven-4.0.0.xsd but
@@ -715,6 +715,12 @@ public class POMTransformer extends POMReader {
             writer.writeStartElement("version");
             writer.writeCharacters(parent.getVersion());
             writer.writeEndElement();
+            if (null != parent.getRelativePath()) {
+        	indent(writer, inLevel + 1);
+        	writer.writeStartElement("relativePath");
+        	writer.writeCharacters(parent.getRelativePath());
+        	writer.writeEndElement();
+            }
             indent(writer, inLevel);
             writer.writeEndElement();
             indent(writer, inLevel);

@@ -249,6 +249,8 @@ public class POMReader {
                             parent.setArtifactId(value);
                         } else if ("version".equals(element)) {
                             parent.setVersion(value);
+                        } else if ("relativePath".equals(element)) {
+                            parent.setRelativePath(value);
                         }
                     } else if (inProperties > 1) {
                         properties.put(element, value);
