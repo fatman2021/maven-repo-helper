@@ -2,6 +2,12 @@ maven-repo-helper (1.5.2) UNRELEASED; urgency=low
 
   [ Ludovic Claude ]
   * Match jar with bundle as they are equivalent
+  * TODO: Add support for packages built with dh 7 and javahelper: use the following
+    line in your rules file:
+     dh $@ --with javahelper --with jh_mavenrepohelper
+    This will build the package with javahelper, and the resulting
+    jar will be installed in the Maven repository (you need of course the
+    <package>.poms file and the POM files in your package).
 
   [ Damien Raude-Morvan ]
   * Keep relativePath attribute on parent pom.
