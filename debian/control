@@ -14,7 +14,7 @@ Architecture: all
 Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless, libstax-java
 Recommends: debhelper
 Suggests: maven-debian-helper
-Description: Helper tools for including Maven metatada in Debian packages
+Description: Helper tools for including Maven metadata in Debian packages
  Maven is a software project management and comprehension tool. Based on the
  concept of a project object model (POM), Maven can manage a project's build,
  reporting and documentation from a central piece of information.

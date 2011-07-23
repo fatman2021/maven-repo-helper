@@ -11,8 +11,9 @@ maven-repo-helper (1.5.2) UNRELEASED; urgency=low
 
   [ Damien Raude-Morvan ]
   * Keep relativePath attribute on parent pom.
+  * d/control: Fix typo in package description (Closes: #617438).
 
- -- Damien Raude-Morvan <drazzib@debian.org>  Sun, 22 May 2011 21:20:44 +0200
+ -- Damien Raude-Morvan <drazzib@debian.org>  Sat, 23 Jul 2011 16:42:59 +0200
 
 maven-repo-helper (1.5.1) unstable; urgency=low
 
