@@ -31,17 +31,9 @@ syntax()
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
    echo -e "\t-v --verbose: show more information while running"
+   echo -e "\t-o<format>, --output=<format>: 'text' or 'html' to change output format"
+   echo -e "\t-r<repository>, --repository=<repository>: directory of Maven repository"
    exit 1
 }
 
-ARGS="v verbose n" parseargs "$@"
-
-VERBOSE=$(getarg v verbose)
-
-if [ "$ARGC" -gt "0" ]; then
-	REPO="${ARGV[0]}"
-else
-	REPO="/usr/share/maven-repo"
-fi
-
-java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.Repository $REPO
+java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.Repository "$@"

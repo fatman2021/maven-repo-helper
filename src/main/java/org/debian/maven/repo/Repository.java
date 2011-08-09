@@ -24,10 +24,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -184,37 +194,44 @@ public class Repository {
         scanned = true;
     }
 
-    public void report() {
+    public void report(RepositoryReportWriter writer) {
 
+    	writer.printStart();
+    	
         if (pomsWithMissingParent.size() > 0) {
-            System.out.println("POMs with missing parents:");
+        	writer.printSectionStart("POMs with missing parents");
             for (Iterator i = pomsWithMissingParent.keySet().iterator(); i.hasNext();) {
                 File pom = (File) i.next();
-                System.out.println("\t" + pom.getAbsolutePath());
+                writer.printItem(pom.getAbsolutePath());
+                writer.endItem();
             }
+            writer.printSectionEnd();
         }
         if (pomsWithMissingVersions.size() > 0) {
-            System.out.println("POMs with missing versions:");
+        	writer.printSectionStart("POMs with missing versions");
             for (Iterator i = pomsWithMissingVersions.entrySet().iterator(); i.hasNext();) {
                 Entry entry = (Entry) i.next();
                 File pom = (File) entry.getKey();
                 POMInfo pomInfo = (POMInfo) entry.getValue();
-                System.out.println("\t" + pom.getAbsolutePath());
+                writer.printItem(pom.getAbsolutePath());
                 for (Iterator j = pomInfo.getDependencies().iterator(); j.hasNext();) {
                     Dependency dependency = (Dependency) j.next();
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
-                        System.out.println("\t\t" + dependency);
+                    	writer.printItem(dependency.toString());
+                    	writer.endItem();
                     }
                 }
                 for (Iterator j = pomInfo.getPlugins().iterator(); j.hasNext();) {
                     Dependency dependency = (Dependency) j.next();
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
-                        System.out.println("\t\t" + dependency);
+                    	writer.printItem(dependency.toString());
+                    	writer.endItem();
                     }
                 }
+                writer.endItem();
             }
+            writer.printSectionEnd();
         }
-        System.out.println();
 
         Set issues = new TreeSet();
         Map pomsWithIssues = new HashMap();
@@ -254,11 +271,13 @@ public class Repository {
             }
         }
 
+        writer.printSectionStart("Errors");
         for (Iterator i = issues.iterator(); i.hasNext();) {
             String issue = (String) i.next();
-            System.out.println(issue);
+            writer.printItem(issue);
+            writer.endItem();
         }
-        System.out.println();
+        writer.printSectionEnd();
 
         // Find the poms with most issues
         Map pomsWithNumberOfIssues = new TreeMap(Collections.reverseOrder());
@@ -275,20 +294,23 @@ public class Repository {
             orderedPoms.add(pom);
         }
         if (!pomsWithNumberOfIssues.isEmpty()) {
-            System.out.println("Top 10 POM files with issues:");
+        	writer.printSectionStart("Top 10 POM files with issues");
             int count = 0;
             for (Iterator i = pomsWithNumberOfIssues.values().iterator(); i.hasNext() && count < 10;) {
                 List orderedPoms = (List) i.next();
                 for (Iterator j = orderedPoms.iterator(); j.hasNext() && count < 10; count++) {
                     File pom = (File) j.next();
                     List missingDeps = (List) pomsWithIssues.get(pom);
-                    System.out.println("Missing dependencies in " + pom);
+                    writer.printItem("Missing dependencies in " + pom);
                     for (Iterator k = missingDeps.iterator(); k.hasNext();) {
                         Dependency dependency = (Dependency) k.next();
-                        System.out.println("\t" + dependency);
+                        writer.printItem(dependency.toString());
+                        writer.endItem();
                     }
+                    writer.endItem();
                 }
             }
+            writer.printSectionEnd();
         }
 
         // Find the dependencies that need packaging most
@@ -317,15 +339,19 @@ public class Repository {
             }
         });
         if (! missingDependenciesCountList.isEmpty()) {
-            System.out.println("Top 10 missing dependencies:");
+        	writer.printSectionStart("Top 10 missing dependencies");
             int count = 0;
             for (Iterator i = missingDependenciesCountList.iterator(); i.hasNext() && count < 10; count++) {
                 Map.Entry entry = (Entry) i.next();
                 Dependency missingDependency = (Dependency) entry.getKey();
                 Integer numberOfTimes = (Integer) entry.getValue();
-                System.out.println("Missing dependency " + missingDependency + " is needed in " + numberOfTimes + " places");
+                writer.printItem("Missing dependency " + missingDependency + " is needed in " + numberOfTimes + " places");
+                writer.endItem();
             }
+            writer.printSectionEnd();
         }
+        
+        writer.printEnd();
     }
 
     private void resolveAll(Map file2pom) {
@@ -410,15 +436,54 @@ public class Repository {
     }
 
     public static void main(String[] args) {
-        String repoLocation = "/usr/share/maven-repo";
-        if (args.length > 0) {
-            repoLocation = args[0];
+        File repoLocation = new File("/usr/share/maven-repo");
+
+        if (args != null && "-h".equals(args[0]) || "--help".equals(args[0])) {
+            System.out.println("Purpose: Check content of a Maven repository.");
+            System.out.println("Usage: [option]");
+            System.out.println("");
+            System.out.println("Options:");
+            System.out.println("  -v, --verbose: be extra verbose");
+            System.out.println("  -o<format>, --output=<format>: 'text' or 'html' to change output format");
+            System.out.println("  -r<repository>, --repository=<repository>: directory of Maven repository");
+            return;
         }
-        System.out.println("Scanning repository...");
-        Repository repository = new Repository(new File(repoLocation));
+
+        String format = "text";
+
+        // Parse parameters
+        int i = inc(-1, args);
+        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().isEmpty())) {
+            String arg = args[i].trim();
+            if (arg.startsWith("-o")) {
+                format = arg.substring(2);
+            } else if (arg.startsWith("--output=")) {
+                format = arg.substring("--output=".length());
+             } else if (arg.startsWith("-r")) {
+                repoLocation = new File(arg.substring(2));
+            } else if (arg.startsWith("--repository=")) {
+            	repoLocation = new File(arg.substring("--repository=".length()));
+            }
+            i = inc(i, args);
+        }
+
+        Repository repository = new Repository(repoLocation);
+        RepositoryReportWriter reportWriter;
+        if ("text".equals(format)) {
+            reportWriter = new RepositoryReportTextWriter();
+        } else {
+            reportWriter = new RepositoryReportHTMLWriter();
+        }
+        
         repository.scan();
-        repository.report();
-        System.out.println("Done.");
+        repository.report(reportWriter);
+    }
+
+    private static int inc(int i, String[] args) {
+        do {
+            i++;
+        } while (i < args.length && args[i].isEmpty());
+        return i;
     }
 
 }
