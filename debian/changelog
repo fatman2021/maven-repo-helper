@@ -2,7 +2,7 @@ maven-repo-helper (1.5.2) unstable; urgency=low
 
   [ Ludovic Claude ]
   * Match jar with bundle as they are equivalent
-  * TODO: Add support for packages built with dh 7 and javahelper: use
+  * Add support for packages built with dh 7 and javahelper: use
     the following line in your rules file:
      dh $@ --with javahelper --with jh_mavenrepohelper
     This will build the package with javahelper, and the resulting
@@ -14,8 +14,9 @@ maven-repo-helper (1.5.2) unstable; urgency=low
   * d/control: Fix typo in package description (Closes: #617438).
   * src/main/java/org/debian/maven/repo/RepositoryReportWriter.java: Add
     a hack to change output of Maven repository checker.
+  * Bump Standards-Version to 3.9.2 (no changes needed).
 
- -- Damien Raude-Morvan <drazzib@debian.org>  Tue, 09 Aug 2011 22:57:51 +0200
+ -- Damien Raude-Morvan <drazzib@debian.org>  Tue, 16 Aug 2011 19:28:03 +0200
 
 maven-repo-helper (1.5.1) unstable; urgency=low
 

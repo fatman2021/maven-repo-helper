@@ -36,4 +36,8 @@ syntax()
    exit 1
 }
 
+ARGS="v verbose o output r repository" parseargs "$@"
+
+VERBOSE=$(getarg v verbose)
+
 java -cp $CLASSPATH $JAVA_OPTIONS org.debian.maven.repo.Repository "$@"
