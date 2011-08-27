@@ -21,8 +21,9 @@ set -e
 syntax()
 {
    echo -e "Usage: mh_linkjar [option]... [pom] [dest_jar] [link]..."
-   echo -e "Create symlinks in package build directories, including links to the jar"
-   echo -e "file in /usr/share/maven-repo, at the correct location for Maven."
+   echo -e "Create symlinks for a jar installed by other means. The symlinks created"
+   echo -e "include links to the jar in /usr/share/maven-repo, at the correct"
+   echo -e "location for Maven."
    echo -e "It can also create additional links to the jar, usually located in"
    echo -e "/usr/share/java."
    echo -e ""
@@ -39,10 +40,15 @@ syntax()
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
-   echo -e "\t-p<package> --package=<package>: package to act on "
-   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
-   echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.rules"
+   echo -e "\t-p<package> --package=<package>: name of the Debian package which"
+   echo -e "\t  will contain this jar file"
+   echo -e "\t-e<version>, --set-version=<version>: set the version for the jar,"
+   echo -e "\t  do not use the version declared in the POM file."
+   echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
+   echo -e "\t  rules to apply when cleaning the POM."
+   echo -e "\t  Optional, the default location is debian/maven.rules"
+   echo -e "\t  Maven rules are used here to extract the groupId, artifactId"
+   echo -e "\t  and version from the POM file."
    echo -e "\t-l --java-lib: Optional, if given it will install the jar into"
    echo -e "\t  /usr/share/java to comply with the Debian Java specification."
    echo -e "\t  The jar will be installed as /usr/share/java/\$name-\$version.jar and"
@@ -61,15 +67,19 @@ syntax()
    echo -e "\t  the jar. Empty by default."
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e "\t--skip-clean-pom: don't clean the pom, assume that a previous action ran"
+   echo -e "\t  mh_cleanpom with the correct options. mh_cleanpom is run only to extract"
+   echo -e "\t  the groupId, artifactId and version of the jar"
    exit 1
 }
 
-ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless c classifier v verbose n no-act" parseargs "$@"
+ARGS="p package e set-version r rules l java-lib n usj-name i usj-version s no-usj-versionless c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
 fi
 
+SETVERSION=$(getarg e set-version)
 RULES=$(getarg r rules)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
@@ -79,22 +89,30 @@ NO_USJ_VERSIONLESS=$(getarg s no-usj-versionless)
 CLASSIFIER=$(getarg c classifier)
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
+SKIP_CLEAN_POM=$(getarg skip-clean-pom)
 POM="${ARGV[0]}"
 JAR="${ARGV[1]}"
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-CLEAN_ARGS="--package=${PACKAGE} ${RULES:+--rules=$RULES}"
+CLEAN_ARGS="--package=${PACKAGE} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES}"
 
 mkdir -p debian/.mh 2> /dev/null
 
-if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-    echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
+if [ -z "$SKIP_CLEAN_POM" ]; then
+    if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
+        echo -e "\tmh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties"
+    fi
+
+    mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
 fi
 
-mh_cleanpom $DH_OPTS $CLEAN_ARGS $POM debian/.mh/pom.xml debian/.mh/pom.properties
 source debian/.mh/pom.properties
 
 groupPath=$(echo $groupId | tr . / )
+if [ -z "$CLASSIFIER" ]; then
+    # Use the classifier from the POM
+    CLASSIFIER=$classifier
+fi
 
 VERSIONED_JAR_NAME="${artifactId}-${version}.jar"
 if [ ! -z "$CLASSIFIER" ]; then

@@ -27,20 +27,42 @@ syntax()
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
-   echo -e "\t-p<package> --package=<package>: package to act on "
-   echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
-   echo -e "\t  a POM's own attributes in debian.mavenRules"
+   echo -e "\t-p<package> --package=<package>: name of the Debian package which"
+   echo -e "\t  will contain those POM files"
+   echo -e "\t-k --keep-pom-version: keep the original version of the POM but"
+   echo -e "\t  convert all other versions in dependencies and plugins."
+   echo -e "\t  If there is a parent POM, keeps its version except when the parent is already"
+   echo -e "\t  registered in the Maven repository"
    echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
    echo -e "\t  do not use the version declared in the POM file."
-   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
-   echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.rules"
+   echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
+   echo -e "\t  rules to apply when cleaning the POM."
+   echo -e "\t  Optional, the default location is debian/maven.rules"
    echo -e "\t-u<rules> --published-rules=<rules>: path to the file containing the"
-   echo -e "\t  extra rules to publish in the property debian.mavenRules in the cleaned POM"
+   echo -e "\t  extra rules to publish in the property debian.mavenRules in the"
+   echo -e "\t  cleaned POM."
    echo -e "\t  Optional, the default location is debian/maven.publishedRules"
    echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
-   echo -e "\t  extra rules use to remove certain dependencies from the cleaned POM"
+   echo -e "\t  rules used to remove certain dependencies from the cleaned POM"
    echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
+   echo -e "\t-c<rules> --clean-ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  rules use to remove certain dependencies from the cleaned POM,"
+   echo -e "\t  in addition to the ignore rules specified previously. This is"
+   echo -e "\t  useful in situations such as when the Maven clean target requires more"
+   echo -e "\t  dependencies or plugins to ignore than the build target."
+   echo -e "\t  All rules defined in clean-ignore-rules will be added to the existing"
+   echo -e "\t  rules in ignore-rules."
+   echo -e "\t  Optional, the default location is debian/maven.cleanIgnoreRules"
+   echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
+   echo -e "\t  do not even convert versions to the default 'debian' version"
+   echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
+   echo -e "\t  a POM's own attributes in debian.mavenRules"
+   echo -e "\t--keep-elements=<elem1,elem2>: keep the elements listed here"
+   echo -e "\t  even if they are normally removed by the clean operation."
+   echo -e "\t  Such elements are build,reports,reporting,prerequisites,profiles."
+   echo -e "\t-m<repo root>--maven-repo=<repo root>: location of the Maven repository,"
+   echo -e "\t  used to force the versions of the Maven plugins used in the current"
+   echo -e "\t  POM file with the versions found in the repository"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    echo -e ""
@@ -48,32 +70,51 @@ syntax()
    exit 1
 }
 
-ARGS="p package no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act" parseargs "$@"
+ARGS="p package k keep-pom-version e set-version r rules u published-rules i ignore-rules c clean-ignore-rules s no-rules no-publish-used-rule v verbose n no-act m maven-repo keep-elements" parseargs "$@"
 
+KEEPVERSION=$(getarg k keep-pom-version)
+SETVERSION=$(getarg e set-version)
 RULES=$(getarg r rules)
 PUBLISHED_RULES=$(getarg u published-rules)
 IGNORE_RULES=$(getarg i ignore-rules)
-SETVERSION=$(getarg e set-version)
-PACKAGE=$(getarg p package)
-PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
+CLEAN_IGNORE_RULES=$(getarg c clean-ignore-rules)
+NORULES=$(getarg s no-rules)
 NO_PUBLISH_USED_RULE=$(getarg no-publish-used-rule)
+MAVEN_REPO=$(getarg m maven-repo)
+PACKAGE=$(getarg p package)
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
+KEEP_ELEMENTS=$(getarg keep-elements)
 
-DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-MH_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES}"
+function installpackagepoms()
+{
+  p=$1
 
-if [ -z "$NOACT" ]; then
-    cat debian/$PACKAGE.poms | while read POM OPT1 OPT2 OPT3 OPT4 OPT5 OPT6 OPT7 OPT8 OPT9 OPT10; do
+  DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
+  MH_ARGS="--package=${p} ${VERBOSE:+--verbose} ${NORULES:+--no-rules} ${KEEPVERSION:+--keep-version} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--clean-ignore-rules=$CLEAN_IGNORE_RULES} ${KEEP_ELEMENTS:+--keep-elements=$KEEP_ELEMENTS} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO}"
+
+  if [ -z "$NOACT" ]; then
+    cat debian/$p.poms | while read POM OPT1 OPT2 OPT3 OPT4 OPT5 OPT6 OPT7 OPT8 OPT9 OPT10; do
         # Remove comments
         POM=${POM##\#*}
         if [[ ! -z "$POM" ]]; then
             if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-	        echo -e "\tmh_installpom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM"
+	        echo -e "\tmh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $POM"
             fi
             if [[ ! "--ignore" == "$OPT1" ]]; then
-                mh_installpom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM
+                mh_installpom $DH_OPTS $MH_ARGS $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $POM
             fi
         fi
     done
+  fi
+}
+
+if [ -n "$PACKAGE" ]; then
+  installpackagepoms $PACKAGE
+else
+  for p in `findpackages`; do
+    if [ -f debian/$p.poms ]; then
+      installpackagepoms $p
+    fi
+  done
 fi

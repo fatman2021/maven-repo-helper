@@ -25,8 +25,9 @@ mh_installjar_description = "Installs a jar into /usr/share/maven-repo."
 mh_installpom_description = "Installs a POM file into /usr/share/maven-repo."
 mh_installpoms_description = "Installs all POMs for the package into /usr/share/maven-repo."
 mh_installsite_description = "Installs site.xml into /usr/share/maven-repo."
-mh_linkjar_description = "Installs a link to the jar into /usr/share/maven-repo."
-mh_linkrepojar_description = "Installs a link from the jar in /usr/share/maven-repo."
+mh_linkjar_description = "Creates a link in /usr/share/maven-repo for an existing jar."
+mh_linkjars_description = "Creates links in /usr/share/maven-repo for all jars."
+mh_linkrepojar_description = "Creates a link from a jar already installed in /usr/share/maven-repo."
 mh_lspoms_description = "Generates a list of POMs for the package."
 mh_patchpom_description = "Patches one POM file using the Maven dependency rules."
 mh_patchpoms_description = "Patches the POM files using the Maven dependency rules."
@@ -39,10 +40,22 @@ debian/.mh/mh_% : src/main/bin/mh_% debian/.mh/mh_lib.sh
 	cp $< $@
 	perl -i -pe 's,\. /usr/share/maven-repo-helper/mh_lib.sh,\. debian/.mh/mh_lib.sh,' $@
 	chmod +x $@
-debian/.mh/doc/mh_%.1 : debian/.mh/mh_% 
+debian/.mh/doc:
 	mkdir -p debian/.mh/doc
+	markdown --html4tags doc/tutorial.txt | \
+		cat doc/tutorial-header.html - doc/tutorial-footer.html > debian/.mh/doc/tutorial.html
+	cp doc/reference.txt + doc/ref/mh_cleanpom.txt + doc/ref/mh_installpom.txt + doc/ref/mh_installpoms.txt + doc/ref/mh_patchpom.txt \
+		+ doc/ref/mh_patchpoms.txt + doc/ref/mh_unpatchpoms.txt + doc/reference2.txt + doc/ref/mh_installjar.txt \
+		+ doc/ref/mh_linkjar.txt + doc/reference3.txt > debian/.mh/doc/reference.txt
+	markdown --html4tags debian/.mh/doc/reference.txt | \
+		cat doc/reference-header.html - doc/reference-footer.html > debian/.mh/doc/reference.html
+	markdown --html4tags doc/repository.txt | \
+		cat doc/repository-header.html - doc/repository-footer.html > debian/.mh/doc/repository.html
+
+debian/.mh/doc/mh_%.1 : debian/.mh/mh_% 
 	help2man -N -n $(mh_$*_description) -o $@ $<
-man-pages: $(MAN_PAGES)
+man-pages: debian/.mh/doc $(MAN_PAGES)
+
 build/$(PACKAGE):: man-pages
 
 binary-post-install/$(PACKAGE)::
@@ -50,13 +63,15 @@ binary-post-install/$(PACKAGE)::
 	dh_install -p$(PACKAGE) build/$(PACKAGE)-debian.jar /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
 	dh_install -p$(PACKAGE) src/main/bin/mh_* /usr/bin
 	dh_install -p$(PACKAGE) src/main/share/mh_* /usr/share/$(PACKAGE)
-	dh_install -p$(PACKAGE) src/main/share/maven_repo_helper.pm /usr/share/perl5/Debian/Debhelper/Sequence
+	dh_install -p$(PACKAGE) src/main/share/*.pm /usr/share/perl5/Debian/Debhelper/Sequence
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/.mh
-	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --has-package-version --rules=debian/maven.rules pom.xml debian/.mh/$(PACKAGE)-debian.pom debian/.mh/pom.properties 
+	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --has-package-version --rules=debian/maven.rules pom.xml \
+		debian/.mh/$(PACKAGE)-debian.pom debian/.mh/pom.properties 
 	dh_install -p$(PACKAGE) --sourcedir=debian/.mh $(PACKAGE)-debian.pom \
 		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian
+	dh_install -p$(PACKAGE) --sourcedir=debian/.mh/doc tutorial.html reference.html repository.html usr/share/doc/maven-repo-helper
 
 clean::
 	-rm -rf debian/.mh

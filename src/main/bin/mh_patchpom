@@ -31,13 +31,17 @@ syntax()
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
-   echo -e "\t-p<package> --package=<package>: name of the Debian package containing"
-   echo -e "\t  this library"
+   echo -e "\t-p<package> --package=<package>: name of the Debian package which"
+   echo -e "\t  will contain this POM file"
    echo -e "\t-o --no-parent: don't inherit from a parent POM"
+   echo -e "\t-k --keep-pom-version: keep the original version of the POM but"
+   echo -e "\t  convert all other versions in dependencies and plugins."
+   echo -e "\t  If there is a parent POM, keeps its version except when the parent is already"
+   echo -e "\t  registered in the Maven repository"
    echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
    echo -e "\t  do not use the version declared in the POM file."
    echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
-   echo -e "\t  extra rules to apply when cleaning the POM."
+   echo -e "\t  rules to apply when cleaning the POM."
    echo -e "\t  Optional, the default location is debian/maven.rules"
    echo -e "\t-R<rule>, --extra-rule=<rule>: extra rule to apply when cleaning the POM"
    echo -e "\t  May occur multiple times, instead of or in addition to -r"
@@ -57,25 +61,26 @@ syntax()
    echo -e "\t  rules use to remove certain dependencies from the cleaned POM,"
    echo -e "\t  in addition to the ignore rules specified previously. This is"
    echo -e "\t  useful in situations such as when the Maven clean target requires more"
-   echo -e "\t  dependencies or plugins to ignore than the build target"
-   echo -e "\t  Optional, it is ignored by default"
+   echo -e "\t  dependencies or plugins to ignore than the build target."
+   echo -e "\t  All rules defined in clean-ignore-rules will be added to the existing"
+   echo -e "\t  rules in ignore-rules."
+   echo -e "\t  Optional, the default location is debian/maven.cleanIgnoreRules"
    echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
    echo -e "\t  do not even convert versions to the default 'debian' version"
    echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
    echo -e "\t  a POM's own attributes in debian.mavenRules"
-   echo -e "\t-k --keep-pom-version: keep the original version of the POMs but, "
-   echo -e "\t  convert all other versions in dependencies and plugins."
-   echo -e "\t  If there is a parent POM, keeps its version except when the parent is already"
-   echo -e "\t  registered in the Maven repository"
    echo -e "\t-d --debian-build: transform during a Debian build, which means that"
    echo -e "\t  some POM elements will be removed"
-   echo -e "\t-b --build-no-docs: transform during a build where no documentation is generated,"
-   echo -e "\t  which means that some POM elements will be removed"
+   echo -e "\t-b --build-no-docs: if the build doesn't need to build documentation, use this"
+   echo -e "\t  option to remove some POM elements (in particular plugins) which are useless here"
+   echo -e "\t  and may require extra dependencies and make the packaging harder."
    echo -e "\t-m<repo root>--maven-repo=<repo root>: location of the Maven repository,"
    echo -e "\t  used to force the versions of the Maven plugins used in the current"
    echo -e "\t  POM file with the versions found in the repository"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
+   echo -e ""
+   echo -e "See also: mh_installpom(1), mh_patchpoms(1)"
    exit 1
 }
 
@@ -86,6 +91,7 @@ if [ "$ARGC" -lt "1" ]; then
 fi
 
 NOPARENT=$(getarg o no-parent)
+KEEP_POM_VERSION=$(getarg k keep-pom-version)
 SETVERSION=$(getarg e set-version)
 RULES=$(getarg r rules)
 eval EXTRA_RULES=$(getargs R extra-rule)
@@ -96,7 +102,6 @@ eval EXTRA_IGNORE_RULES=$(getargs I extra-ignore-rule)
 CLEAN_IGNORE_RULES=$(getarg c clean-ignore-rules)
 NORULES=$(getarg s no-rules)
 NO_PUBLISH_USED_RULE=$(getarg no-publish-used-rule)
-KEEP_POM_VERSION=$(getarg k keep-pom-version)
 MAVEN_REPO=$(getarg m maven-repo)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
@@ -134,8 +139,8 @@ if [ -z "$MAVEN_REPO" ]; then
     fi
 fi
 
-DH_OPTS="${VERBOSE:+-v}"
-MH_ARGS=(--package=${PACKAGE} ${NOPARENT:+--no-parent} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${KEEP_POM_VERSION:+--keep-pom-version} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--ignore-rules=$CLEAN_IGNORE_RULES} ${NORULES:+--no-rules} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${DEBIAN_BUILD:+--debian-build} ${BUILD_NO_DOCS:+--build-no-docs} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO} "${EXTRA_RULES[@]/#/--extra-rule=}" "${EXTRA_PUBLISHED_RULES[@]/#/--extra-published-rule=}" "${EXTRA_IGNORE_RULES[@]/#/--extra-ignore-rule=}")
+DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
+MH_ARGS=(--package=${PACKAGE} ${NOPARENT:+--no-parent} ${NORULES:+--no-rules} ${KEEP_POM_VERSION:+--keep-pom-version} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--clean-ignore-rules=$CLEAN_IGNORE_RULES} ${DEBIAN_BUILD:+--debian-build} ${BUILD_NO_DOCS:+--build-no-docs} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO} "${EXTRA_RULES[@]/#/--extra-rule=}" "${EXTRA_PUBLISHED_RULES[@]/#/--extra-published-rule=}" "${EXTRA_IGNORE_RULES[@]/#/--extra-ignore-rule=}")
 
 if [ -z "$NOACT" ]; then
 	cp $POM $BACKUP

@@ -39,12 +39,15 @@ syntax()
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
-   echo -e "\t-p<package> --package=<package>: package to act on "
-   echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
+   echo -e "\t-p<package> --package=<package>: name of the Debian package which"
+   echo -e "\t  will contain this jar file"
+   echo -e "\t-e<version>, --set-version=<version>: set the version for the jar,"
    echo -e "\t  do not use the version declared in the POM file."
-   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
-   echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.rules"
+   echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
+   echo -e "\t  rules to apply when cleaning the POM."
+   echo -e "\t  Optional, the default location is debian/maven.rules"
+   echo -e "\t  Maven rules are used here to extract the groupId, artifactId"
+   echo -e "\t  and version from the POM file."
    echo -e "\t-l --java-lib: Optional, if given it will install the jar into"
    echo -e "\t  /usr/share/java to comply with the Debian Java specification."
    echo -e "\t  The jar will be installed as /usr/share/java/\$name-\$version.jar and"
@@ -63,27 +66,28 @@ syntax()
    echo -e "\t  The other places where the jar appears, in the repository or in the"
    echo -e "\t  list of links, will be symlinks to this jar."
    echo -e "\t  Defaults to /usr/share/java/\$name-\$version.jar if --java-lib is used,"
-   echo -e "\t  otherwise it goes to the versioned path in the Maven repository."
+   echo -e "\t  otherwise the jar is installed in the versioned path in the Maven repository."
    echo -e "\t-c<classifier> --classifier=<classifier>: Optional, the classifier for"
    echo -e "\t  the jar. Empty by default."
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    echo -e "\t--skip-clean-pom: don't clean the pom, assume that a previous action ran"
-   echo -e "\t  mh_cleanpom with the correct options."
+   echo -e "\t  mh_cleanpom with the correct options. mh_cleanpom is run only to extract"
+   echo -e "\t  the groupId, artifactId and version of the jar"
    exit 1
 }
 
 # The following elements are options which just need to be ignored: no-parent has-package-version keep-elements ignore-pom
-ARGS="p package r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom" parseargs "$@"
+ARGS="p package e set-version r rules l java-lib n usj-name i usj-version s no-usj-versionless d dest-jar c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
 fi
 
+SETVERSION=$(getarg e set-version)
 RULES=$(getarg r rules)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
-SETVERSION=$(getarg e set-version)
 JAVALIB=$(getarg l java-lib)
 USJ_JAR_NAME=$(getarg n usj-name)
 NO_USJ_VERSIONLESS=$(getarg s no-usj-versionless)

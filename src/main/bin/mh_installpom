@@ -32,31 +32,50 @@ syntax()
    echo -e "debian/\$package.poms and avoids repetition."
    echo -e ""
    echo -e "Where"
-   echo -e "\t[pom] is the location of the POM associated with the jar to install."
+   echo -e "\t[pom] is the location of the POM file to install."
    echo -e "\t  GroupId, artifactId and version will be extracted from this file."
    echo -e "Options:"
    echo -e "\t-h --help: show this text"
    echo -e "\t-V --version: show the version"
-   echo -e "\t-p<package> --package=<package>: package to act on "
+   echo -e "\t-p<package> --package=<package>: name of the Debian package which"
+   echo -e "\t  will contain this POM file"
    echo -e "\t-h --has-package-version: flag that indicates that this POM has the"
    echo -e "\t  same version as the package, this helps packagers of depending packages"
    echo -e "\t-o --no-parent: don't inherit from a parent POM"
+   echo -e "\t-k --keep-pom-version: keep the original version of the POM but"
+   echo -e "\t  convert all other versions in dependencies and plugins."
+   echo -e "\t  If there is a parent POM, keeps its version except when the parent is already"
+   echo -e "\t  registered in the Maven repository"
+   echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
+   echo -e "\t  do not use the version declared in the POM file."
+   echo -e "\t-r<rules> --rules=<rules>: path to the file containing the"
+   echo -e "\t  rules to apply when cleaning the POM."
+   echo -e "\t  Optional, the default location is debian/maven.rules"
+   echo -e "\t-u<rules> --published-rules=<rules>: path to the file containing the"
+   echo -e "\t  extra rules to publish in the property debian.mavenRules in the"
+   echo -e "\t  cleaned POM."
+   echo -e "\t  Optional, the default location is debian/maven.publishedRules"
+   echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  rules used to remove certain dependencies from the cleaned POM"
+   echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
+   echo -e "\t-c<rules> --clean-ignore-rules=<rules>: path to the file containing the"
+   echo -e "\t  rules use to remove certain dependencies from the cleaned POM,"
+   echo -e "\t  in addition to the ignore rules specified previously. This is"
+   echo -e "\t  useful in situations such as when the Maven clean target requires more"
+   echo -e "\t  dependencies or plugins to ignore than the build target."
+   echo -e "\t  All rules defined in clean-ignore-rules will be added to the existing"
+   echo -e "\t  rules in ignore-rules."
+   echo -e "\t  Optional, the default location is debian/maven.cleanIgnoreRules"
+   echo -e "\t-s --no-rules: don't apply any rules for converting versions,"
+   echo -e "\t  do not even convert versions to the default 'debian' version"
+   echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
+   echo -e "\t  a POM's own attributes in debian.mavenRules"
    echo -e "\t--keep-elements=<elem1,elem2>: keep the elements listed here"
    echo -e "\t  even if they are normally removed by the clean operation."
    echo -e "\t  Such elements are build,reports,reporting,prerequisites,profiles."
-   echo -e "\t--no-publish-used-rule: don't publish the rule used to transform"
-   echo -e "\t  a POM's own attributes in debian.mavenRules"
-   echo -e "\t-e<version>, --set-version=<version>: set the version for the POM,"
-   echo -e "\t  do not use the version declared in the POM file."
-   echo -e "\t-r<rules> --rules=<rules>: gives the location of the rules file for"
-   echo -e "\t  special properties. Optional, the default location is"
-   echo -e "\t  debian/maven.rules"
-   echo -e "\t-u<rules> --published-rules=<rules>: path to the file containing the"
-   echo -e "\t  extra rules to publish in the property debian.mavenRules in the cleaned POM"
-   echo -e "\t  Optional, the default location is debian/maven.publishedRules"
-   echo -e "\t-i<rules> --ignore-rules=<rules>: path to the file containing the"
-   echo -e "\t  extra rules use to remove certain dependencies from the cleaned POM"
-   echo -e "\t  Optional, the default location is debian/maven.ignoreRules"
+   echo -e "\t-m<repo root>--maven-repo=<repo root>: location of the Maven repository,"
+   echo -e "\t  used to force the versions of the Maven plugins used in the current"
+   echo -e "\t  POM file with the versions found in the repository"
    echo -e "\t-v --verbose: show more information while running"
    echo -e "\t-n --no-act: don't actually do anything, just print the results"
    echo -e "\t-ignore-pom: read the POM but don't install it"
@@ -66,29 +85,54 @@ syntax()
 }
 
 # The following elements are options which just need to be ignored: artifact java-lib usj-name usj-version no-usj-versionless dest-jar classifier
-ARGS="p package o no-parent no-publish-used-rule r rules u published-rules i ignore-rules e set-version v verbose n no-act h has-package-version keep-elements artifact java-lib usj-name usj-version no-usj-versionless dest-jar ignore-pom classifier" parseargs "$@"
+ARGS="p package o no-parent k keep-pom-version e set-version r rules u published-rules i ignore-rules c clean-ignore-rules s no-rules no-publish-used-rule v verbose n no-act m maven-repo h has-package-version keep-elements artifact java-lib usj-name usj-version no-usj-versionless dest-jar ignore-pom classifier" parseargs "$@"
 
 if [ "$ARGC" -lt "1" ]; then
    syntax
 fi
 
 NOPARENT=$(getarg o no-parent)
-NO_PUBLISH_USED_RULE=$(getarg no-publish-used-rule)
+KEEP_POM_VERSION=$(getarg k keep-pom-version)
+SETVERSION=$(getarg e set-version)
 RULES=$(getarg r rules)
 PUBLISHED_RULES=$(getarg u published-rules)
 IGNORE_RULES=$(getarg i ignore-rules)
-SETVERSION=$(getarg e set-version)
+CLEAN_IGNORE_RULES=$(getarg c clean-ignore-rules)
+NORULES=$(getarg s no-rules)
+NO_PUBLISH_USED_RULE=$(getarg no-publish-used-rule)
+MAVEN_REPO=$(getarg m maven-repo)
 PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 VERBOSE=$(getarg v verbose)
 NOACT=$(getarg n no-act)
+POM="${ARGV[0]}"
+IGNORE_POM=$(getarg ignore-pom)
 HAS_PACKAGE_VERSION=$(getarg h has-package-version)
 KEEP_ELEMENTS=$(getarg keep-elements)
-IGNORE_POM=$(getarg ignore-pom)
-POM="${ARGV[0]}"
+
+if [ -z "$PUBLISHED_RULES" ]; then
+    if [ -f debian/maven.publishedRules ]; then
+        PUBLISHED_RULES="debian/maven.publishedRules"
+    fi
+fi
+if [ -z "$IGNORE_RULES" ]; then
+    if [ -f debian/maven.ignoreRules ]; then
+        IGNORE_RULES="debian/maven.ignoreRules"
+    fi
+fi
+if [ -z "$RULES" ]; then
+    if [ -f debian/maven.rules ]; then
+        RULES="debian/maven.rules"
+    fi
+fi
+if [ -z "$MAVEN_REPO" ]; then
+    if [ -f /usr/share/maven-repo ]; then
+        MAVEN_REPO="/usr/share/maven-repo"
+    fi
+fi
 
 DH_OPTS="${VERBOSE:+-v} ${NOACT:+-n}"
-CLEAN_ARGS="--package=${PACKAGE} ${VERBOSE:+--verbose} ${NOPARENT:+--no-parent} ${HAS_PACKAGE_VERSION:+--has-package-version} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${KEEP_ELEMENTS:+--keep-elements=$KEEP_ELEMENTS}"
+CLEAN_ARGS="--package=${PACKAGE} ${NOPARENT:+--no-parent} ${NORULES:+--no-rules} ${KEEP_POM_VERSION:+--keep-pom-version} ${HAS_PACKAGE_VERSION:+--has-package-version} ${NO_PUBLISH_USED_RULE:+--no-publish-used-rule} ${SETVERSION:+--set-version=$SETVERSION} ${RULES:+--rules=$RULES} ${PUBLISHED_RULES:+--published-rules=$PUBLISHED_RULES} ${IGNORE_RULES:+--ignore-rules=$IGNORE_RULES} ${CLEAN_IGNORE_RULES:+--clean-ignore-rules=$CLEAN_IGNORE_RULES} ${KEEP_ELEMENTS:+--keep-elements=$KEEP_ELEMENTS} ${MAVEN_REPO:+--maven-repo=$MAVEN_REPO}"
 
 mkdir -p debian/.mh 2> /dev/null
 

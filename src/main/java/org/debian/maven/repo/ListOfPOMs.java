@@ -234,7 +234,9 @@ public class ListOfPOMs {
                 out.println("# Format of this file is:");
                 out.println("# <path to pom file> [option]*");
                 out.println("# where option can be:");
-                out.println("#   --ignore: ignore this POM or");
+                out.println("#   --ignore: ignore this POM and its artifact if any");
+                out.println("#   --ignore-pom: don't install the POM with mh_install or mh_installpoms. To use with POM files that are created");
+                out.println("#     temporarily for certain artifacts such as Javadoc jars.");
                 out.println("#   --no-parent: remove the <parent> tag from the POM");
                 out.println("#   --package=<package>: an alternative package to use when installing this POM");
                 out.println("#      and its artifact");
@@ -252,8 +254,6 @@ public class ListOfPOMs {
                 out.println("#   --dest-jar=<path>: the destination for the real jar");
                 out.println("#   it will be installed with mh_install.");
                 out.println("#   --classifier=<classifier>: Optional, the classifier for the jar. Empty by default.");
-                out.println("#   --ignore-pom: don't install the POM with mh_install or mh_installpoms. To use with POM files that are created");
-                out.println("#     temporarily for certain artifacts such as Javadoc jars.");
                 out.println("#");
                 for (Iterator i = pomList.iterator(); i.hasNext();) {
                     String pomPath = (String) i.next();

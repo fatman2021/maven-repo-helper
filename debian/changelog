@@ -1,13 +1,24 @@
+maven-repo-helper (1.5.3) UNRELEASED; urgency=low
+
+  * Add tutorial, reference and repository specification in documentation
+  * Update options on mh_installpom and mh_installpoms, to use the new arguments
+    added to mh_cleanpom
+  * Add Build-Depend on markdown to build the doc
+  * Add support for packages built with dh 7 and javahelper: use
+    the following line in your rules file:
+     dh $@ --with javahelper --with jh_maven_repo_helper
+    This will build the package with javahelper, and the resulting
+    jar will be installed in the Maven repository (you need of course the
+    <package>.poms file and the POM files in your package).
+  * Add mh_linkjars to link the jars listed in the .poms file, this is used by
+    the jh_maven_repo_helper plugin for dh 7.
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Wed, 03 Aug 2011 00:31:08 +0100
+
 maven-repo-helper (1.5.2) unstable; urgency=low
 
   [ Ludovic Claude ]
   * Match jar with bundle as they are equivalent
-  * Add support for packages built with dh 7 and javahelper: use
-    the following line in your rules file:
-     dh $@ --with javahelper --with jh_mavenrepohelper
-    This will build the package with javahelper, and the resulting
-    jar will be installed in the Maven repository (you need of course the
-    <package>.poms file and the POM files in your package).
 
   [ Damien Raude-Morvan ]
   * Keep relativePath attribute on parent pom.
@@ -35,7 +46,7 @@ maven-repo-helper (1.5) experimental; urgency=low
     does.
   * add support for dh 7 and ant builds: use the following line in your
     rules file:
-     dh $@ --with ant --with mavenrepohelper
+     dh $@ --with ant --with maven_repo_helper
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Thu, 11 Nov 2010 18:49:49 +0100
 

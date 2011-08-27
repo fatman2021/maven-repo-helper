@@ -86,7 +86,7 @@
 
     <target name="package" depends="test">
         <jar jarfile="${build.directory}/${artifactId}-${version}.jar"
-            basedir="${build.outputDirectory}"/>
+            basedir="${build.outputDirectory}" manifest="src/main/resources/META-INF/MANIFEST.MF"/>
     </target>
 
 

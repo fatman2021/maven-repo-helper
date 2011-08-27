@@ -1,0 +1,78 @@
+### mh_linkjars:
+
+TODO
+
+### mh_linkrepojar:
+
+TODO
+
+Working with the build:
+-----------------------
+
+### mh_clean:
+
+Cleans the temporary files created by the other mh_* utilities.
+Add it to the clean: target in debian/rules
+
+### mh_installsite:
+
+TODO
+
+### mh_install:
+
+TODO
+
+Working with the repository:
+----------------------------
+
+### mh_checkrepo:
+
+TODO
+
+Debhelper 7 plugins:
+--------------------
+
+### --with maven_repo_helper:
+
+TODO
+
+### --with jh_maven_repo_helper:
+
+TODO
+
+-----------
+
+A more complex example from the modello package is:
+{{{
+pom.xml --no-parent
+modello-core/pom.xml
+modello-plugins/pom.xml
+modello-plugins/modello-plugin-converters/pom.xml
+modello-plugins/modello-plugin-dom4j/pom.xml
+modello-plugins/modello-plugin-java/pom.xml
+modello-plugins/modello-plugin-jdom/pom.xml
+modello-plugins/modello-plugin-stax/pom.xml
+modello-plugins/modello-plugin-xdoc/pom.xml
+modello-plugins/modello-plugin-xml/pom.xml
+modello-plugins/modello-plugin-xpp3/pom.xml
+modello-plugins/modello-plugin-xsd/pom.xml
+}}}
+
+debian/maven.rules:
+{{{
+junit junit jar s/3\..*/3.x/
+}}}
+This file is taken from the modello package. It specifies that the dependency on junit will use the version '3.x' instead of the default 'debian' version if the native version starts with '3.'. If the group id of the dependency is 'junit, the artifact id of the dependency is 'junit', the type of the dependency is 'jar' and the version starts with '3.', then this rule is used. 's/3\..*/3.x/' performs the replacement for the version, the syntax should be obvious to any sed user.
+
+This example from the commons-configuration package shows a few more possibilities: here, the version for commons-collections is converted to '2.x' if it starts with '2.' or '3.x' if it starts with '3.'.
+The line with ant is more interesting: if the group id is 'ant', then it is converted to 'org.apache.ant' - great trick for dealing with artifacts which are coming from Maven 1. Any artifact id or type will be matched and left unchanged, while the version will be converted to 'debian'.
+There is also the line with javax.servlet: this line keeps the version number used by this dependency, so if 2.4 is used, then 2.4 is also used in the cleaned POM.
+
+{{{
+junit junit jar s/3\..*/3.x/
+commons-collections commons-collections jar s/2\..*/2.x/
+commons-collections commons-collections jar s/3\..*/3.x/
+s/ant/org.apache.ant/ * * s/.*/debian/
+log4j log4j jar s/1\.2\..*/1.2.x/
+javax.servlet servlet-api jar *}}}
+
