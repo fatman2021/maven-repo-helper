@@ -57,7 +57,7 @@ syntax()
    echo -e "\t-n<name> --usj-name=<name>: Optional, the name to use when installing the"
    echo -e "\t  library in /usr/share/java when --java-lib is used."
    echo -e "\t  Defaults to the artifact id found in the POM."
-   echo -e "\t-i<version> --usj-version=<version>: Optional, the version to use when"
+   echo -e "\t-j<version> --usj-version=<version>: Optional, the version to use when"
    echo -e "\t  installing the library in /usr/share/java when --java-lib is used."
    echo -e "\t  Defaults to the version found in the POM."
    echo -e "\t-s --no-usj-versionless: Optional, don't install the versionless link"
@@ -73,7 +73,7 @@ syntax()
    exit 1
 }
 
-ARGS="p package e set-version r rules l java-lib n usj-name i usj-version s no-usj-versionless c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom" parseargs "$@"
+ARGS="p package e set-version r rules l java-lib n usj-name j usj-version s no-usj-versionless c classifier v verbose n no-act skip-clean-pom no-parent has-package-version keep-elements ignore-pom" parseargs "$@"
 
 if [ "$ARGC" -lt "2" ]; then
    syntax
@@ -85,6 +85,7 @@ PACKAGE=$(getarg p package)
 PACKAGE=${PACKAGE:?"Package parameter (-p) is mandatory"}
 JAVALIB=$(getarg l java-lib)
 USJ_JAR_NAME=$(getarg n usj-name)
+USJ_JAR_VERSION=$(getarg j usj-version)
 NO_USJ_VERSIONLESS=$(getarg s no-usj-versionless)
 CLASSIFIER=$(getarg c classifier)
 VERBOSE=$(getarg v verbose)
@@ -130,7 +131,6 @@ MVN_DEBIAN_DIR=usr/share/maven-repo/${groupPath}/${artifactId}/${debianVersion}
 if [ -n "$JAVALIB" ]; then
     USJ_JAR_NAME=$(getarg n usj-name)
     USJ_JAR_NAME=${USJ_JAR_NAME:-$artifactId}
-    USJ_JAR_VERSION=$(getarg i usj-version)
     USJ_JAR_VERSION=${USJ_JAR_VERSION:-$version}
 	USJ_VERSIONED_JAR_NAME=${USJ_JAR_NAME}-${USJ_JAR_VERSION}.jar
     USJ_JAR_NAME=${USJ_JAR_NAME}.jar

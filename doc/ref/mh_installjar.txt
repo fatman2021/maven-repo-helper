@@ -1,7 +1,7 @@
 ### mh\_installjar:
 
 Usage:
- 
+
     mh_installjar [option]... [pom] [jar] [link]...
 
 Installs the jar file in /usr/share/maven-repo, at the correct location for
@@ -33,7 +33,7 @@ Options:
       The jar will be installed as /usr/share/java/\$name-\$version.jar and a versionless link /usr/share/java/\$name.jar will point to it, as well as the links installed in /usr/share/maven-repo
     -n<name> --usj-name=<name>: Optional, the name to use when installing the library in /usr/share/java when --java-lib is used.
       Defaults to the artifact id found in the POM.
-    -i<version> --usj-version=<version>: Optional, the version to use when installing the library in /usr/share/java when --java-lib is used.
+    -j<version> --usj-version=<version>: Optional, the version to use when installing the library in /usr/share/java when --java-lib is used.
       Defaults to the version found in the POM.
     -s --no-usj-versionless: Optional, don't install the versionless link in /usr/share/java.
       This flag is used only when the -l or --java-lib option is given.

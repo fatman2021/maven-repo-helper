@@ -1,4 +1,4 @@
-### mh_patchpoms:
+### mh\_patchpoms:
 
 Usage: 
 

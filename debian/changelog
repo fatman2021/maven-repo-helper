@@ -1,4 +1,4 @@
-maven-repo-helper (1.5.3) UNRELEASED; urgency=low
+maven-repo-helper (1.6) UNRELEASED; urgency=low
 
   * Add tutorial, reference and repository specification in documentation
   * Update options on mh_installpom and mh_installpoms, to use the new arguments
@@ -12,8 +12,12 @@ maven-repo-helper (1.5.3) UNRELEASED; urgency=low
     <package>.poms file and the POM files in your package).
   * Add mh_linkjars to link the jars listed in the .poms file, this is used by
     the jh_maven_repo_helper plugin for dh 7.
+  * Deprecate mh_installjar -i option and replace it with -j to avoid conflicts
+    with -i/--ignore-rules option used elsewhere.
+  * Review all options passed to the mh_* scripts, in particular --set-version
+    for mh_installjar (Closes: #640730)
 
- -- Ludovic Claude <ludovic.claude@laposte.net>  Wed, 03 Aug 2011 00:31:08 +0100
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Sun, 28 Aug 2011 00:31:08 +0100
 
 maven-repo-helper (1.5.2) unstable; urgency=low
 

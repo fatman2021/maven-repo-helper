@@ -1,15 +1,18 @@
 ### mh\_patchpom:
 
 Usage:
+
     mh_patchpom [option]... [pom] [backup]
 
 Patches one POM file using the Maven dependency rules.
 
 Where:
+
     [pom] is the location of the POM file to transform. Default to pom.xml
     [backup] is the backup file for the pom. Default to pom.xml.save
 
 Options:
+
     -h --help: show this text
     -V --version: show the version
     -p<package> --package=<package>: name of the Debian package containing this library
