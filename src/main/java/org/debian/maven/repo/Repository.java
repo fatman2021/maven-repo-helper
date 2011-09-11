@@ -436,9 +436,7 @@ public class Repository {
     }
 
     public static void main(String[] args) {
-        File repoLocation = new File("/usr/share/maven-repo");
-
-        if (args != null && "-h".equals(args[0]) || "--help".equals(args[0])) {
+        if (args != null && args.length > 0 && ("-h".equals(args[0]) || "--help".equals(args[0]))) {
             System.out.println("Purpose: Check content of a Maven repository.");
             System.out.println("Usage: [option]");
             System.out.println("");
@@ -449,20 +447,23 @@ public class Repository {
             return;
         }
 
+        // default format
         String format = "text";
+        // default repository
+        File repoLocation = new File("/usr/share/maven-repo/");
 
         // Parse parameters
         int i = inc(-1, args);
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().isEmpty())) {
             String arg = args[i].trim();
             if (arg.startsWith("-o")) {
-                format = arg.substring(2);
+                format = arg.substring(2).trim();
             } else if (arg.startsWith("--output=")) {
-                format = arg.substring("--output=".length());
-             } else if (arg.startsWith("-r")) {
-                repoLocation = new File(arg.substring(2));
+                format = arg.substring("--output=".length()).trim();
+            } else if (arg.startsWith("-r")) {
+                repoLocation = new File(arg.substring(2).trim());
             } else if (arg.startsWith("--repository=")) {
-            	repoLocation = new File(arg.substring("--repository=".length()));
+                repoLocation = new File(arg.substring("--repository=".length()).trim());
             }
             i = inc(i, args);
         }

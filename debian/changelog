@@ -1,5 +1,6 @@
 maven-repo-helper (1.6) UNRELEASED; urgency=low
 
+  [ Ludovic Claude ]
   * Add tutorial, reference and repository specification in documentation
   * Update options on mh_installpom and mh_installpoms, to use the new arguments
     added to mh_cleanpom
@@ -17,7 +18,10 @@ maven-repo-helper (1.6) UNRELEASED; urgency=low
   * Review all options passed to the mh_* scripts, in particular --set-version
     for mh_installjar (Closes: #640730)
 
- -- Ludovic Claude <ludovic.claude@laposte.net>  Sun, 28 Aug 2011 00:31:08 +0100
+  [ Damien Raude-Morvan ]
+  * mh_checkrepo: Fix error when launching without any param.
+
+ -- Damien Raude-Morvan <drazzib@debian.org>  Sun, 11 Sep 2011 21:45:39 +0200
 
 maven-repo-helper (1.5.2) unstable; urgency=low
 
