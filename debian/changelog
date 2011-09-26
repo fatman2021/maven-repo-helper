@@ -21,7 +21,7 @@ maven-repo-helper (1.6) unstable; urgency=low
   [ Damien Raude-Morvan ]
   * mh_checkrepo: Fix error when launching without any param.
 
- -- Damien Raude-Morvan <drazzib@debian.org>  Sun, 11 Sep 2011 21:45:39 +0200
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 26 Sep 2011 22:55:09 +0100
 
 maven-repo-helper (1.5.2) unstable; urgency=low
 
