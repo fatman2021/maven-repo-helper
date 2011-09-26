@@ -1,4 +1,4 @@
-maven-repo-helper (1.6) UNRELEASED; urgency=low
+maven-repo-helper (1.6) unstable; urgency=low
 
   [ Ludovic Claude ]
   * Add tutorial, reference and repository specification in documentation
