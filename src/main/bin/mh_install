@@ -80,12 +80,18 @@ function installpackage()
     if [[ -n "$POM" ]]; then
       POM_DIR=$(dirname $POM)
       ARTIFACT=
+      SITE_XML=
       C=1
       _opt=$(eval echo '$OPT'$C)
       while [ -n "$_opt" ]; do
         if [ "--artifact" = "${_opt%%=*}" ]; then
           export ARTIFACT=${_opt##--artifact=}
-           # Unset the option where we found the artifact
+        fi
+        if [ "--site-xml" = "${_opt%%=*}" ]; then
+          export SITE_XML=${_opt##--site-xml=}
+        fi
+        if [ "--artifact" = "${_opt%%=*}" ] || [ "--site-xml" = "${_opt%%=*}" ]; then
+           # Unset the option where we found the matching option
            eval OPT$C=
            # shift all following options
            while [ -n "$_opt" ]; do
@@ -109,11 +115,11 @@ function installpackage()
           fi
           mh_installjar --skip-clean-pom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM $ARTIFACT
         fi
-        if [[ -f $POM_DIR/src/site/site.xml ]]; then
+        if [[ -n "$SITE_XML" ]]; then
           if [[ ! -z "$VERBOSE" || "$DH_VERBOSE" = "1" ]]; then
-            echo mh_installsite --skip-clean-pom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM $POM_DIR/src/site/site.xml
+            echo mh_installsite --skip-clean-pom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM ${SITE_XML}
           fi
-          mh_installsite --skip-clean-pom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM $POM_DIR/src/site/site.xml
+          mh_installsite --skip-clean-pom $OPT1 $OPT2 $OPT3 $OPT4 $OPT5 $OPT6 $OPT7 $OPT8 $OPT9 $OPT10 $DH_OPTS $MH_ARGS $POM ${SITE_XML}
         fi
       fi
     fi

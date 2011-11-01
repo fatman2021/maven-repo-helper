@@ -27,6 +27,7 @@ under the License.
 		<groupId>org.apache.maven.doxia</groupId>
 		<artifactId>doxia-modules</artifactId>
 		<version>debian</version>
+        <relativePath>../pom.xml</relativePath>
 	</parent>
 	<properties>
 		<debian.hasPackageVersion/>

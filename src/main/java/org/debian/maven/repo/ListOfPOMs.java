@@ -208,7 +208,9 @@ public class ListOfPOMs {
                     } else if (option.startsWith("--dest-jar=")) {
                         options.setDestJar(option.substring("--dest-jar=".length()));
                     } else if (option.startsWith("--classifier=")) {
-                        options.setUsjName(option.substring("--classifier=".length()));
+                        options.setClassifier(option.substring("--classifier=".length()));
+                    } else if (option.startsWith("--site-xml=")) {
+                        options.setSiteXml(option.substring("--site-xml=".length()));
                     } else if ("--ignore-pom".equals(option)) {
                         options.setIgnorePOM(true);
                     }
@@ -235,8 +237,8 @@ public class ListOfPOMs {
                 out.println("# <path to pom file> [option]*");
                 out.println("# where option can be:");
                 out.println("#   --ignore: ignore this POM and its artifact if any");
-                out.println("#   --ignore-pom: don't install the POM with mh_install or mh_installpoms. To use with POM files that are created");
-                out.println("#     temporarily for certain artifacts such as Javadoc jars.");
+                out.println("#   --ignore-pom: don't install the POM. To use on POM files that are created");
+                out.println("#     temporarily for certain artifacts such as Javadoc jars. [mh_install, mh_installpoms]");
                 out.println("#   --no-parent: remove the <parent> tag from the POM");
                 out.println("#   --package=<package>: an alternative package to use when installing this POM");
                 out.println("#      and its artifact");
@@ -245,15 +247,17 @@ public class ListOfPOMs {
                 out.println("#   --keep-elements=<elem1,elem2>: a list of XML elements to keep in the POM");
                 out.println("#      during a clean operation with mh_cleanpom or mh_installpom");
                 out.println("#   --artifact=<path>: path to the build artifact associated with this POM,");
-                out.println("#      it will be installed when using the command mh_install");
+                out.println("#      it will be installed when using the command mh_install. [mh_install]");
                 out.println("#   --java-lib: install the jar into /usr/share/java to comply with Debian");
                 out.println("#      packaging guidelines");
                 out.println("#   --usj-name=<name>: name to use when installing the library in /usr/share/java");
                 out.println("#   --usj-version=<version>: version to use when installing the library in /usr/share/java");
                 out.println("#   --no-usj-versionless: don't install the versionless link in /usr/share/java");
-                out.println("#   --dest-jar=<path>: the destination for the real jar");
-                out.println("#   it will be installed with mh_install.");
+                out.println("#   --dest-jar=<path>: the destination for the real jar.");
+                out.println("#     It will be installed with mh_install. [mh_install]");
                 out.println("#   --classifier=<classifier>: Optional, the classifier for the jar. Empty by default.");
+                out.println("#   --site-xml=<location>: Optional, the location for site.xml if it needs to be installed.");
+                out.println("#     Empty by default. [mh_install]");
                 out.println("#");
                 for (Iterator i = pomList.iterator(); i.hasNext();) {
                     String pomPath = (String) i.next();
@@ -281,6 +285,7 @@ public class ListOfPOMs {
         private String destJar;
         private boolean noUsjVersionless;
         private String classifier;
+        private String siteXml;
 
         public boolean isIgnore() {
             return ignore;
@@ -386,6 +391,14 @@ public class ListOfPOMs {
             this.classifier = classifier;
         }
 
+        public String getSiteXml() {
+            return siteXml;
+        }
+
+        public void setSiteXml(String siteXml) {
+            this.siteXml = siteXml;
+        }
+
         public String toString() {
             if (ignore) {
                return " --ignore";
@@ -423,6 +436,9 @@ public class ListOfPOMs {
             }
             if (classifier != null) {
                 options += " --classifier=" + classifier;
+            }
+            if (siteXml != null) {
+                options += " --site-xml=" + siteXml;
             }
             if (ignorePOM) {
                 options += " --ignore-pom";

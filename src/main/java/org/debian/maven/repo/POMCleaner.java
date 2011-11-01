@@ -103,6 +103,9 @@ public class POMCleaner extends POMTransformer {
     }
 
     protected boolean isWriteIgnoredElement(String element, List path, Dependency dependency) {
+        if ("relativePath".equals(element) && path.size() == 0) {
+            return true;
+        }
         boolean ignore = super.isWriteIgnoredElement(element, path, dependency);
         if (keepAllElements || ignore) {
             return ignore;

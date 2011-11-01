@@ -1,7 +1,9 @@
 <project name="pkg-java" default="package" basedir="..">
 
     <property file="debian/build.properties"/>
-    <property name="maven.test.skip" value="true"/>
+    <!-- Uncomment to skip the tests
+      <property name="maven.test.skip" value="true"/>
+    -->
     <property name="artifactId" value="maven-repo-helper"/>
 
     <target name="init">

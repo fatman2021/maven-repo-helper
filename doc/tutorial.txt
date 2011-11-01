@@ -34,7 +34,7 @@ debian/control:
 	Priority: optional
 	Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 	Uploaders: Ludovic Claude <ludovicc@debian.org>
-	Build-Depends: debhelper (>= 8), maven-repo-helper (>= 1.6), default-jdk
+	Build-Depends: debhelper (>= 8), maven-repo-helper (>= 1.6.1), default-jdk
 	Build-Depends-Indep: junit, libosgi-ee-minimum-api-java (>= 1.2.1)
 	Standards-Version: 3.9.2
 	Homepage: http://www.aqute.biz/Code/Bnd
@@ -84,7 +84,7 @@ debian/control:
 	Priority: optional
 	Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 	Uploaders: Ludovic Claude <ludovic.claude@laposte.net>
-	Build-Depends: debhelper (>= 7), default-jdk, maven-repo-helper (>= 1.6), ant-optional, maven-ant-helper (>> 6.7) 
+	Build-Depends: debhelper (>= 7), default-jdk, maven-repo-helper (>= 1.6.1), ant-optional, maven-ant-helper (>= 7) 
 	Build-Depends-Indep: libplexus-parent-java (>= 2.0.6), junit (>= 3.8.2), default-jdk-doc 
 	Standards-Version: 3.9.2
 	Vcs-Svn: svn://svn.debian.org/svn/pkg-java/trunk/plexus-utils2
@@ -177,7 +177,7 @@ debian/control:
 	 debhelper (>= 7.0.50~), rhino (>= 1.7R1-2), libjtidy-java (>= 7+svn20070309-2),
 	 libgnujaf-java (>= 1.1.1-4), junit (>= 3.8.2), libgnumail-java (>= 1.1.2-2),
 	 libservlet2.4-java (>= 5.0.30-8), libxerces2-java (>= 2.9.1-2),
-	 libnekohtml-java (>= 0.9.5+dfsg-1.1), maven-repo-helper (>= 1.6)
+	 libnekohtml-java (>= 0.9.5+dfsg-1.1), maven-repo-helper (>= 1.6.1)
 	Standards-Version: 3.9.2
 	Homepage: http://httpunit.org/
 	Vcs-Browser: http://svn.debian.org/wsvn/pkg-java/trunk/httpunit/
@@ -230,7 +230,7 @@ debian/control:
     Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
     Uploaders: Torsten Werner <twerner@debian.org>, Ludovic Claude <ludovic.claude@laposte.net>,
      Michael Koch <konqueror@gmx.de>, Damien Raude-Morvan <drazzib@debian.org>
-    Build-Depends: cdbs, debhelper (>= 7), default-jdk, maven-ant-helper (>> 6.7), maven-repo-helper (>= 1.5), ant-optional, help2man
+    Build-Depends: cdbs, debhelper (>= 7), default-jdk, maven-ant-helper (>= 7), maven-repo-helper (>= 1.6.1), ant-optional, help2man
     Build-Depends-Indep: junit, libmaven-plugin-tools-java, libplexus-velocity-java
     Standards-Version: 3.9.2
     Vcs-Svn: svn://svn.debian.org/svn/pkg-java/trunk/maven-debian-helper
@@ -301,7 +301,7 @@ debian/control:
     Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
     Uploaders: Torsten Werner <twerner@debian.org>, Ludovic Claude <ludovic.claude@laposte.net>
     Build-Depends: debhelper (>= 5), cdbs (>= 0.4.5.3), default-jdk
-    Build-Depends-Indep: maven-repo-helper (>> 0.5), maven-ant-helper (>> 4), ant, ant-optional, 
+    Build-Depends-Indep: maven-repo-helper (>= 1.6.1), maven-ant-helper (>= 7), ant, ant-optional, 
      libplexus-utils-java, libplexus-containers-java
     Standards-Version: 3.8.1
     Vcs-Svn: svn://svn.debian.org/svn/pkg-java/trunk/plexus-io

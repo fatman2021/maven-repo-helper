@@ -715,7 +715,7 @@ public class POMTransformer extends POMReader {
             writer.writeStartElement("version");
             writer.writeCharacters(parent.getVersion());
             writer.writeEndElement();
-            if (null != parent.getRelativePath()) {
+            if (!isWriteIgnoredElement("relativePath", new ArrayList(), null) && null != parent.getRelativePath()) {
                 indent(writer, inLevel + 1);
                 writer.writeStartElement("relativePath");
                 writer.writeCharacters(parent.getRelativePath());

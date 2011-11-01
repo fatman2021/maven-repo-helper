@@ -6,11 +6,11 @@ include /usr/share/cdbs/1/class/ant.mk
 PACKAGE              := $(DEB_SOURCE_PACKAGE)
 VERSION              := $(DEB_UPSTREAM_VERSION)
 JAVA_HOME            := /usr/lib/jvm/default-java
-DEB_JARS             := stax-api xml-apis
+DEB_JARS             := ant-junit stax-api xml-apis
 DEB_ANT_BUILD_TARGET := package
 DEB_ANT_BUILDFILE    := ./debian/build.xml
 DEB_ANT_ARGS         := -Dpackage=$(PACKAGE) -Dversion=$(VERSION)
-CLASSPATH            := build/$(PACKAGE)-debian.jar:/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar
+CLASSPATH            := /usr/share/java/ant-junit.jar:/usr/share/java/stax-api.jar:/usr/share/java/stax.jar:/usr/share/java/xml-apis.jar
 JAVA_OPTIONS         := -Djavax.xml.stream.XMLOutputFactory=com.bea.xml.stream.XMLOutputFactoryBase
 
 # Generation of man pages
@@ -69,7 +69,7 @@ binary-post-install/$(PACKAGE)::
 	dh_link -p$(PACKAGE) /usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian/$(PACKAGE)-debian.jar /usr/share/java/$(PACKAGE).jar
 	dh_installman $(MAN_PAGES)
 	mkdir -p debian/.mh
-	java -cp $(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --has-package-version --rules=debian/maven.rules pom.xml \
+	java -cp build/$(PACKAGE)-debian.jar:$(CLASSPATH) $(JAVA_OPTIONS) org.debian.maven.repo.POMCleaner --no-parent --has-package-version --rules=debian/maven.rules pom.xml \
 		debian/.mh/$(PACKAGE)-debian.pom debian/.mh/pom.properties 
 	dh_install -p$(PACKAGE) --sourcedir=debian/.mh $(PACKAGE)-debian.pom \
 		usr/share/maven-repo/org/debian/maven/$(PACKAGE)/debian

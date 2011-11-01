@@ -1,3 +1,19 @@
+maven-repo-helper (1.7) natty; urgency=low
+
+  * add --site-xml=<location> option to mh_install and in the
+    <package>.poms file to explicitly define the location for site.xml.
+    Warning: this forces existing packages to add this option if they
+    need to install site.xml
+  * update the version in the POM and in the documentation
+    (Closes: #644258)
+  * run the unit tests when building the package, fix broken tests after the
+    introduction of relativePath on the parent element of cleaned POM files. 
+  * d/control: add ant-optional, junit, libxmlunit-java, libcommons-io-java to
+    Build-Depend-Indep
+  * d/copyright: update fields to match latest DEP5 spec.
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Tue, 01 Nov 2011 16:32:39 +0200
+
 maven-repo-helper (1.6) unstable; urgency=low
 
   [ Ludovic Claude ]

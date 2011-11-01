@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 Copyright The Codehaus Foundation.
 
@@ -24,9 +24,10 @@ limitations under the License.
 		<groupId>org.codehaus.plexus</groupId>
 		<artifactId>plexus</artifactId>
 		<version>2.x</version>
+        <relativePath>../pom/pom.xml</relativePath>
 	</parent>
 	<properties>
-	    <debian.hasPackageVersion/>
+		<debian.hasPackageVersion/>
 		<debian.originalVersion>2.0.5</debian.originalVersion>
 		<debian.package>libplexus-utils2-java</debian.package>
 	</properties>
