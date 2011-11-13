@@ -1,4 +1,4 @@
-maven-repo-helper (1.7) UNRELEASED; urgency=low
+maven-repo-helper (1.7) unstable; urgency=low
 
   * add --site-xml=<location> option to mh_install and in the
     <package>.poms file to explicitly define the location for site.xml.
