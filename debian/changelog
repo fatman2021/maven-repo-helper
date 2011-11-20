@@ -1,9 +1,3 @@
-maven-repo-helper (1.7ubuntu1~ppa1) oneiric; urgency=low
-
-  * Ubuntu build
-
- -- Ludovic Claude <ludovic.claude@laposte.net>  Sun, 13 Nov 2011 23:51:14 +0100
-
 maven-repo-helper (1.7) unstable; urgency=low
 
   * add --site-xml=<location> option to mh_install and in the
