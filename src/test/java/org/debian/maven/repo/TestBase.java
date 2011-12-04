@@ -38,7 +38,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 public class TestBase extends XMLTestCase {
 
     protected static File testDir = new File("tmp");
-    private List openedReaders = new ArrayList();
+    private List<Reader> openedReaders = new ArrayList<Reader>();
     protected File pom;
     protected File updatedPom;
 
@@ -56,8 +56,8 @@ public class TestBase extends XMLTestCase {
         if (updatedPom.exists()) {
             updatedPom.delete();
         }
-        for (Iterator i = openedReaders.iterator(); i.hasNext(); ) {
-            Reader reader = (Reader) i.next();
+        for (Iterator<Reader> i = openedReaders.iterator(); i.hasNext(); ) {
+            Reader reader = i.next();
             try {
                 reader.close();
             } catch (IOException ex) {

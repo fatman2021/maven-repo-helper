@@ -19,7 +19,8 @@ package org.debian.maven.repo;
 import java.util.*;
 
 /**
- *
+ * Represents a Maven dependency of any type (dependency, plugin, parent POM)
+ * 
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class Dependency implements Comparable, Cloneable {
@@ -32,13 +33,13 @@ public class Dependency implements Comparable, Cloneable {
     private String scope;
     private String classifier;
     private String relativePath;
+    private boolean superPom;
 
     public Dependency(String groupId, String artifactId, String type, String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.type = type;
         this.version = version;
-        this.scope = "runtime";
         this.classifier = "";
     }
 
@@ -63,6 +64,7 @@ public class Dependency implements Comparable, Cloneable {
         this.optional = dependency.optional;
         this.classifier = dependency.classifier;
         this.relativePath = dependency.relativePath;
+        this.superPom = dependency.superPom;
     }
 
     public String getArtifactId() {
@@ -105,8 +107,12 @@ public class Dependency implements Comparable, Cloneable {
         this.optional = optional;
     }
 
+    public boolean isScopeDefined() {
+        return (scope != null);
+    }
+    
     public String getScope() {
-        return scope;
+        return scope == null ? "runtime" : scope;
     }
 
     public void setScope(String scope) {
@@ -127,6 +133,14 @@ public class Dependency implements Comparable, Cloneable {
 
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
+    }
+
+    public void setSuperPom(boolean superPom) {
+        this.superPom = superPom;
+    }
+
+    public boolean isSuperPom() {
+        return superPom;
     }
 
     public boolean equals(Object obj) {
@@ -150,20 +164,16 @@ public class Dependency implements Comparable, Cloneable {
             return false;
         }
         // Ignore scope and optional as they are content-free and indicate more the context
-        if ((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier)) {
-            return false;
-        }
-        return true;
+        return !((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier));
     }
 
-    public boolean equalsIgnoreVersion(Object obj) {
-        if (obj == null) {
+    public boolean equalsIgnoreVersion(Dependency other) {
+        if (other == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (getClass() != other.getClass()) {
             return false;
         }
-        final Dependency other = (Dependency) obj;
         if ((this.groupId == null) ? (other.groupId != null) : !this.groupId.equals(other.groupId)) {
             return false;
         }
@@ -174,10 +184,7 @@ public class Dependency implements Comparable, Cloneable {
             return false;
         }
         // Classifier is still important here as it can influence greatly the contents of the artifact (a source artifact is very different from a normal artifact)
-        if ((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier)) {
-            return false;
-        }
-        return true;
+        return !((this.classifier == null) ? (other.classifier != null) : !this.classifier.equals(other.classifier));
     }
 
     public int hashCode() {
@@ -217,7 +224,7 @@ public class Dependency implements Comparable, Cloneable {
         return 0;
     }
 
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
         try {
             return super.clone();
         } catch (CloneNotSupportedException e) {
@@ -226,9 +233,8 @@ public class Dependency implements Comparable, Cloneable {
         }
     }
 
-    public Dependency applyRules(Collection rules) {
-        for (Iterator i = rules.iterator(); i.hasNext();) {
-            DependencyRule rule = (DependencyRule) i.next();
+    public Dependency applyRules(Collection<DependencyRule> rules) {
+        for (DependencyRule rule: rules) {
             if (rule.matches(this)) {
                 return rule.apply(this);
             }
@@ -236,9 +242,8 @@ public class Dependency implements Comparable, Cloneable {
         return new Dependency(this);
     }
 
-    public DependencyRule findMatchingRule(Collection rules) {
-        for (Iterator i = rules.iterator(); i.hasNext();) {
-            DependencyRule rule = (DependencyRule) i.next();
+    public DependencyRule findMatchingRule(Collection<DependencyRule> rules) {
+        for (DependencyRule rule: rules) {
             if (rule.matches(this)) {
                 return rule;
             }
@@ -246,25 +251,23 @@ public class Dependency implements Comparable, Cloneable {
         return null;
     }
 
-    public static List applyRules(List dependencies, Collection rules) {
+    public static List<Dependency> applyRules(List<Dependency> dependencies, Collection<DependencyRule> rules) {
         if (dependencies == null) {
             return null;
         }
-        List result = new ArrayList();
-        for (Iterator i = dependencies.iterator(); i.hasNext();) {
-            Dependency dependency = (Dependency) i.next();
+        List<Dependency> result = new ArrayList<Dependency>();
+        for (Dependency dependency: dependencies) {
             result.add(dependency.applyRules(rules));
         }
         return result;
     }
 
-    public static List applyIgnoreRules(List dependencies, Set ignoreRules) {
+    public static List<Dependency> applyIgnoreRules(List<Dependency> dependencies, Set<DependencyRule> ignoreRules) {
         if (dependencies == null) {
             return null;
         }
-        List result = new ArrayList();
-        for (Iterator i = dependencies.iterator(); i.hasNext();) {
-            Dependency dependency = (Dependency) i.next();
+        List<Dependency> result = new ArrayList<Dependency>();
+        for (Dependency dependency: dependencies) {
             if (dependency.findMatchingRule(ignoreRules) == null) {
                 result.add(new Dependency(dependency));
             }

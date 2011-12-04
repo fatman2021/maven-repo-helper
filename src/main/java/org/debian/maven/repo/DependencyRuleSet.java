@@ -24,12 +24,12 @@ import java.util.logging.Logger;
 /**
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
-public class DependencyRuleSet {
+public class DependencyRuleSet implements Iterable<DependencyRule> {
 
     private static final Logger log = Logger.getLogger(DependencyRuleSet.class.getName());
 
     private File rulesFile;
-    private Set rules;
+    private Set<DependencyRule> rules;
     private boolean verbose;
     private boolean warnRulesFileNotFound = true;
     private String name;
@@ -55,7 +55,7 @@ public class DependencyRuleSet {
         readRules();
     }
 
-    public Set getRules() {
+    public Set<DependencyRule> getRules() {
         if (rules == null) {
             readRules();
         }
@@ -98,7 +98,7 @@ public class DependencyRuleSet {
         this.dontDuplicate = dontDuplicate;
     }
 
-    public Iterator iterator() {
+    public Iterator<DependencyRule> iterator() {
         return getRules().iterator();
     }
 
@@ -111,15 +111,13 @@ public class DependencyRuleSet {
     }
 
     public void addAll(DependencyRuleSet newRules) {
-        for (Iterator i = newRules.iterator(); i.hasNext();) {
-            DependencyRule rule = (DependencyRule) i.next();
+        for (DependencyRule rule: newRules) {
             add(rule);
         }
     }
 
-    public void addAll(Collection newRules) {
-        for (Iterator i = newRules.iterator(); i.hasNext();) {
-            Object rule = i.next();
+    public void addAll(Collection<?> newRules) {
+        for (Object rule : newRules) {
             if (rule instanceof DependencyRule) {
                 add((DependencyRule) rule);
             } else {
@@ -132,10 +130,9 @@ public class DependencyRuleSet {
         getRules().remove(rule);
     }
 
-    public Set findMatchingRules(Dependency dependency) {
-        Set matchingRules = new HashSet();
-        for (Iterator i = rules.iterator(); i.hasNext();) {
-            DependencyRule rule = (DependencyRule) i.next();
+    public Set<DependencyRule> findMatchingRules(Dependency dependency) {
+        Set<DependencyRule> matchingRules = new HashSet<DependencyRule>();
+        for (DependencyRule rule : rules) {
             if (rule.matches(dependency)) {
                 matchingRules.add(rule);
             }
@@ -148,9 +145,11 @@ public class DependencyRuleSet {
             PrintWriter out = new PrintWriter(new FileWriter(getRulesFile()));
             out.println(description);
 
-            for (Iterator i = getRules().iterator(); i.hasNext();) {
-                DependencyRule rule = (DependencyRule) i.next();
-                if (dontDuplicate == null || !dontDuplicate.getRules().contains(rule)) {
+            for (DependencyRule rule: getRules()) {
+                if (dontDuplicate == null || !dontDuplicate.getRules().contains(rule)
+                        // Don't save implicit rules
+                        && !DependencyRule.TO_DEBIAN_VERSION_RULE.equals(rule)
+                        && !DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE.equals(rule)) {
                     out.println(rule.toString());
                 }
             }
@@ -164,15 +163,15 @@ public class DependencyRuleSet {
     public void dump() {
         if (rules != null) {
             System.out.println(name + ":");
-            for (Iterator i = rules.iterator(); i.hasNext();) {
-                System.out.println("  " + i.next());
+            for (DependencyRule rule : rules) {
+                System.out.println("  " + rule);
             }
             System.out.println("---------");
         }
     }
 
     private void readRules() {
-        rules = new TreeSet();
+        rules = new TreeSet<DependencyRule>();
         if (rulesFile == null) {
             return;
         }

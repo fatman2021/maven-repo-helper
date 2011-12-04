@@ -1,3 +1,10 @@
+maven-repo-helper (1.7.1) UNRELEASED; urgency=low
+
+  * Build with Java 5, use generics. (Closes: #644260)
+  * Fix resolution of versions from dependency management
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Sun, 13 Nov 2011 23:59:09 +0100
+
 maven-repo-helper (1.7) unstable; urgency=low
 
   * add --site-xml=<location> option to mh_install and in the

@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
-public class DependencyRule implements Comparable {
+public class DependencyRule implements Comparable<DependencyRule> {
 
     public static DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
     public static DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
@@ -117,8 +117,7 @@ public class DependencyRule implements Comparable {
      * If 2 rules have the same order of genericity, then use an alphabetical
      * sorting of the pattern strings.
      */
-    public int compareTo(Object o) {
-        DependencyRule other = (DependencyRule) o;
+    public int compareTo(DependencyRule other) {
         if (groupRule.isGeneric() && !other.groupRule.isGeneric()) {
             return 1;
         }
@@ -181,10 +180,7 @@ public class DependencyRule implements Comparable {
         if (this.classifierRule != other.classifierRule && (this.classifierRule == null || !this.classifierRule.equals(other.classifierRule))) {
             return false;
         }
-        if (this.scopeRule != other.scopeRule && (this.scopeRule == null || !this.scopeRule.equals(other.scopeRule))) {
-            return false;
-        }
-        return true;
+        return !(this.scopeRule != other.scopeRule && (this.scopeRule == null || !this.scopeRule.equals(other.scopeRule)));
     }
 
     public int hashCode() {

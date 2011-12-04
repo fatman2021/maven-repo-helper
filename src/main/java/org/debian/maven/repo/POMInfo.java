@@ -45,22 +45,22 @@ public class POMInfo implements Cloneable {
     private Dependency originalPom;
     private Dependency parent;
     private Dependency thisPom;
-    private List modules;
-    private List dependencies;
-    private List dependencyManagement;
-    private List extensions;
-    private List plugins;
-    private List pluginManagement;
-    private List pluginDependencies;
-    private List pluginManagementDependencies;
-    private List reportingPlugins;
-    private List profileDependencies;
-    private List profileDependencyManagement;
-    private List profilePlugins;
-    private List profilePluginDependencies;
-    private List profilePluginManagement;
-    private List profileReportingPlugins;
-    private Map properties;
+    private List<String> modules;
+    private List<Dependency> dependencies;
+    private List<Dependency> dependencyManagement;
+    private List<Dependency> extensions;
+    private List<Dependency> plugins;
+    private List<Dependency> pluginManagement;
+    private List<Dependency> pluginDependencies;
+    private List<Dependency> pluginManagementDependencies;
+    private List<Dependency> reportingPlugins;
+    private List<Dependency> profileDependencies;
+    private List<Dependency> profileDependencyManagement;
+    private List<Dependency> profilePlugins;
+    private List<Dependency> profilePluginDependencies;
+    private List<Dependency> profilePluginManagement;
+    private List<Dependency> profileReportingPlugins;
+    private Map<String, String> properties;
     private POMInfo parentPOM;
 
     public Dependency getOriginalPom() {
@@ -114,156 +114,156 @@ public class POMInfo implements Cloneable {
         this.thisPom = thisPom;
     }
 
-    public List getModules() {
+    public List<String> getModules() {
         return modules;
     }
 
-    public void setModules(List modules) {
+    public void setModules(List<String> modules) {
         this.modules = modules;
     }
 
     /**
      * @return the dependencies
      */
-    public List getDependencies() {
+    public List<Dependency> getDependencies() {
         return dependencies;
     }
 
     /**
      * @param dependencies the dependencies to set
      */
-    public void setDependencies(List dependencies) {
+    public void setDependencies(List<Dependency> dependencies) {
         this.dependencies = dependencies;
     }
 
     /**
      * @return the properties
      */
-    public Map getProperties() {
+    public Map<String, String> getProperties() {
         return properties;
     }
 
     /**
      * @param properties the properties to set
      */
-    public void setProperties(Map properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
-    public List getDependencyManagement() {
+    public List<Dependency> getDependencyManagement() {
         return dependencyManagement;
     }
 
-    public void setDependencyManagement(List dependencyManagement) {
+    public void setDependencyManagement(List<Dependency> dependencyManagement) {
         this.dependencyManagement = dependencyManagement;
     }
 
-    public List getPlugins() {
+    public List<Dependency> getPlugins() {
         return plugins;
     }
 
-    public void setPlugins(List plugins) {
+    public void setPlugins(List<Dependency> plugins) {
         this.plugins = plugins;
     }
 
-    public List getPluginManagement() {
+    public List<Dependency> getPluginManagement() {
         return pluginManagement;
     }
 
-    public void setPluginManagement(List pluginManagement) {
+    public void setPluginManagement(List<Dependency> pluginManagement) {
         this.pluginManagement = pluginManagement;
     }
 
-    public List getPluginManagementDependencies() {
+    public List<Dependency> getPluginManagementDependencies() {
         return pluginManagementDependencies;
     }
 
-    public void setPluginManagementDependencies(List pluginManagementDependencies) {
+    public void setPluginManagementDependencies(List<Dependency> pluginManagementDependencies) {
         this.pluginManagementDependencies = pluginManagementDependencies;
     }
 
-    public List getProfileDependencies() {
+    public List<Dependency> getProfileDependencies() {
         return profileDependencies;
     }
 
-    public void setProfileDependencies(List profileDependencies) {
+    public void setProfileDependencies(List<Dependency> profileDependencies) {
         this.profileDependencies = profileDependencies;
     }
 
-    public List getProfileDependencyManagement() {
+    public List<Dependency> getProfileDependencyManagement() {
         return profileDependencyManagement;
     }
 
-    public void setProfileDependencyManagement(List profileDependencyManagement) {
+    public void setProfileDependencyManagement(List<Dependency> profileDependencyManagement) {
         this.profileDependencyManagement = profileDependencyManagement;
     }
 
-    public List getExtensions() {
+    public List<Dependency> getExtensions() {
         return extensions;
     }
 
-    public void setExtensions(List extensions) {
+    public void setExtensions(List<Dependency> extensions) {
         this.extensions = extensions;
     }
 
-    public List getPluginDependencies() {
+    public List<Dependency> getPluginDependencies() {
         return pluginDependencies;
     }
 
-    public void setPluginDependencies(List pluginDependencies) {
+    public void setPluginDependencies(List<Dependency> pluginDependencies) {
         this.pluginDependencies = pluginDependencies;
     }
 
-    public List getReportingPlugins() {
+    public List<Dependency> getReportingPlugins() {
         return reportingPlugins;
     }
 
-    public void setReportingPlugins(List reportingPlugins) {
+    public void setReportingPlugins(List<Dependency> reportingPlugins) {
         this.reportingPlugins = reportingPlugins;
     }
 
-    public List getProfilePlugins() {
+    public List<Dependency> getProfilePlugins() {
         return profilePlugins;
     }
 
-    public void setProfilePlugins(List profilePlugins) {
+    public void setProfilePlugins(List<Dependency> profilePlugins) {
         this.profilePlugins = profilePlugins;
     }
 
-    public List getProfilePluginDependencies() {
+    public List<Dependency> getProfilePluginDependencies() {
         return profilePluginDependencies;
     }
 
-    public void setProfilePluginDependencies(List profilePluginDependencies) {
+    public void setProfilePluginDependencies(List<Dependency> profilePluginDependencies) {
         this.profilePluginDependencies = profilePluginDependencies;
     }
 
-    public List getProfilePluginManagement() {
+    public List<Dependency> getProfilePluginManagement() {
         return profilePluginManagement;
     }
 
-    public void setProfilePluginManagement(List profilePluginManagement) {
+    public void setProfilePluginManagement(List<Dependency> profilePluginManagement) {
         this.profilePluginManagement = profilePluginManagement;
     }
 
-    public List getProfileReportingPlugins() {
+    public List<Dependency> getProfileReportingPlugins() {
         return profileReportingPlugins;
     }
 
-    public void setProfileReportingPlugins(List profileReportingPlugins) {
+    public void setProfileReportingPlugins(List<Dependency> profileReportingPlugins) {
         this.profileReportingPlugins = profileReportingPlugins;
     }
 
-    public List getParentAsList() {
-        List parentList = new ArrayList();
+    public List<Dependency> getParentAsList() {
+        List<Dependency> parentList = new ArrayList<Dependency>();
         if (getParent() != null) {
             parentList.add(getParent());
         }
         return parentList;
     }
 
-    public Set getPublishedRules() {
-        Set rules = new TreeSet();
+    public Set<DependencyRule> getPublishedRules() {
+        Set<DependencyRule> rules = new TreeSet<DependencyRule>();
         if (getProperties() == null) {
             return rules;
         }
@@ -283,7 +283,7 @@ public class POMInfo implements Cloneable {
      * @param rules The list of rules to apply
      * @see #applyRulesOnParent(java.util.Collection, Repository) 
      */
-    public POMInfo newPOMFromRules(Collection rules, Repository repository) {
+    public POMInfo newPOMFromRules(Collection<DependencyRule> rules, Repository repository) {
         if (rules.isEmpty()) {
             return this;
         }
@@ -306,7 +306,7 @@ public class POMInfo implements Cloneable {
         result.setProfileDependencyManagement(Dependency.applyRules(getProfileDependencyManagement(), rules));
         result.setProfileReportingPlugins(Dependency.applyRules(getProfileReportingPlugins(), rules));
 
-        result.setProperties(new TreeMap(getProperties()));
+        result.setProperties(new TreeMap<String, String>(getProperties()));
         result.setModules(getModules());
 
         result.setParent(getParent());
@@ -315,14 +315,14 @@ public class POMInfo implements Cloneable {
         return result;
     }
 
-    public void applyRulesOnParent(Collection rules, Repository repository) {
+    public void applyRulesOnParent(Collection<DependencyRule> rules, Repository repository) {
         if (getParent() != null) {
             //System.out.println(this.getThisPom() + ": Apply rules on parent " + getParent() + " using repository " + repository);
             setOriginalParentVersion(getParent().getVersion());
             setParent(getParent().applyRules(rules));
             if (repository != null) {
                 POMInfo newParentPOM = repository.getPOM(getParent());
-                mergeManagement(newParentPOM);
+                setParentPOM(newParentPOM);
             } else {
                 // Always apply rules
                 //System.out.println(this.getThisPom() + ": Parent is not registered in repository, apply rules anyway");
@@ -330,7 +330,7 @@ public class POMInfo implements Cloneable {
         }
     }
 
-    public void applyRulesOnDependenciesAndPlugins(Collection rules) {
+    public void applyRulesOnDependenciesAndPlugins(Collection<DependencyRule> rules) {
         setDependencies(Dependency.applyRules(getDependencies(), rules));
         setDependencyManagement(Dependency.applyRules(getDependencyManagement(), rules));
         setExtensions(Dependency.applyRules(getExtensions(), rules));
@@ -347,7 +347,7 @@ public class POMInfo implements Cloneable {
         setProfileReportingPlugins(Dependency.applyRules(getProfileReportingPlugins(), rules));
     }
 
-    public void applyIgnoreRulesOnDependenciesAndPlugins(Set rules) {
+    public void applyIgnoreRulesOnDependenciesAndPlugins(Set<DependencyRule> rules) {
         setDependencies(Dependency.applyIgnoreRules(getDependencies(), rules));
         setDependencyManagement(Dependency.applyIgnoreRules(getDependencyManagement(), rules));
         setExtensions(Dependency.applyIgnoreRules(getExtensions(), rules));
@@ -364,9 +364,12 @@ public class POMInfo implements Cloneable {
         setProfileReportingPlugins(Dependency.applyIgnoreRules(getProfileReportingPlugins(), rules));
     }
 
-    public void mergeManagement(POMInfo parentPOM) {
+    public void setParentPOM(POMInfo parentPOM) {
         this.parentPOM = parentPOM;
         if (parentPOM != null) {
+            if (this.parent == null) {
+                this.parent = parentPOM.getThisPom();
+            }
             mergeManagement(dependencyManagement, parentPOM.getDependencyManagement());
             mergeManagement(pluginManagement, parentPOM.getPluginManagement());
         }
@@ -379,12 +382,10 @@ public class POMInfo implements Cloneable {
         resolveVersions(profilePlugins, profilePluginManagement);
     }
 
-    private void mergeManagement(List target, List management) {
+    private void mergeManagement(List<Dependency> target, List<Dependency> management) {
         resolveVersions(target, management);
-        nextParentDep: for (Iterator i = management.iterator(); i.hasNext();) {
-            Dependency parentDep = (Dependency)i.next();
-            for (Iterator j = target.iterator(); j.hasNext();) {
-                Dependency dependency = (Dependency)j.next();
+        nextParentDep: for (Dependency parentDep: management) {
+            for (Dependency dependency: target) {
                 if (dependency.equalsIgnoreVersion(parentDep)) {
                     continue nextParentDep;
                 }
@@ -394,16 +395,14 @@ public class POMInfo implements Cloneable {
     }
 
     public String getVersionFromManagementDependency(Dependency dependency) {
-        List allManagementLists = new ArrayList();
-        allManagementLists.addAll(getDependencyList(DEPENDENCY_MANAGEMENT_LIST));
-        allManagementLists.addAll(getDependencyList(PLUGIN_MANAGEMENT));
-        allManagementLists.addAll(getDependencyList(PLUGIN_MANAGEMENT_DEPENDENCIES));
-        for (Iterator i = allManagementLists.iterator(); i.hasNext();) {
-            Dependency mgtDep = (Dependency)i.next();
-            if (mgtDep.getGroupId().equals(dependency.getGroupId()) &&
-                    mgtDep.getArtifactId().equals(dependency.getArtifactId()) ) {
-                if (mgtDep.getVersion() != null) {
-                    return mgtDep.getVersion();
+        for (String listType: Arrays.asList(DEPENDENCY_MANAGEMENT_LIST, PLUGIN_MANAGEMENT, PLUGIN_MANAGEMENT_DEPENDENCIES)) {
+            for (Dependency mgtDep: getDependencyList(listType)) {
+                if (mgtDep.equalsIgnoreVersion(dependency) ) {
+                    if (mgtDep.getVersion() != null) {
+                        //System.out.println("In " + getThisPom() + " - found version " + mgtDep.getVersion() + " for " +
+                        //  dependency.getGroupId() + ":" + dependency.getArtifactId() + " according to the list of " + listType);
+                        return mgtDep.getVersion();
+                    }
                 }
             }
         }
@@ -414,16 +413,23 @@ public class POMInfo implements Cloneable {
         return null;
     }
 
-    private void resolveVersions(List deps, List management) {
-        for (Iterator i = management.iterator(); i.hasNext();) {
-            Dependency parentDep = (Dependency)i.next();
-            for (Iterator j = deps.iterator(); j.hasNext();) {
-                Dependency dependency = (Dependency)j.next();
-                if (dependency.getVersion() == null) {
+    private void resolveVersions(List<Dependency> deps, List<Dependency> management) {
+        for (Dependency parentDep: management) {
+            for (Dependency dependency: deps) {
+                if (dependency.getVersion() == null || !dependency.isScopeDefined()) {
                     if (dependency.getGroupId().equals(parentDep.getGroupId()) &&
                         dependency.getArtifactId().equals(parentDep.getArtifactId()) &&
                         dependency.getType().equals(parentDep.getType())) {
-                        dependency.setVersion(parentDep.getVersion());
+
+                        if (dependency.getVersion() == null) {
+                            //System.out.println("In " + getThisPom() + " - resolve version to " + parentDep.getVersion() + " for " +
+                            //  dependency.getGroupId() + ":" + dependency.getArtifactId() + " according to parent POM");
+                            dependency.setVersion(parentDep.getVersion());
+                        }
+                        if (!dependency.isScopeDefined()) {
+                            dependency.setScope(parentDep.getScope());
+                        }
+
                         break;
                     }
                 }
@@ -431,7 +437,7 @@ public class POMInfo implements Cloneable {
         }
     }
 
-    public List getDependencyList(String listSelector) {
+    public List<Dependency> getDependencyList(String listSelector) {
         if (DEPENDENCY_MANAGEMENT_LIST.equals(listSelector)) {
             return getDependencyManagement();
         }
@@ -474,25 +480,22 @@ public class POMInfo implements Cloneable {
         if (EXTENSIONS.equals(listSelector)) {
             return getExtensions();
         }
-        if (MODULES.equals(listSelector)) {
-            return getModules();
-        }
         if (PARENT.equals(listSelector)) {
             return getParentAsList();
         }
         return null;
     }
 
-    public List getAllDependencies(String listType) {
-        List allDependencies = new ArrayList(getDependencyList(listType));
+    public List<Dependency> getAllDependencies(String listType) {
+        List<Dependency> allDependencies = new ArrayList<Dependency>(getDependencyList(listType));
         if (getParent() != null) {
-            List parentDependencies = parentPOM.getAllDependencies(listType);
+            List<Dependency> parentDependencies = parentPOM.getAllDependencies(listType);
             allDependencies.addAll(parentDependencies);
         }
         return allDependencies;
     }
 
-    public Object clone() {
+    public Object clone() throws CloneNotSupportedException {
         POMInfo clone = new POMInfo();
         clone.originalParentVersion = originalParentVersion;
         clone.originalPom = originalPom;

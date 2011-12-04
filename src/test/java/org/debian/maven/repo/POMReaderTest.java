@@ -1,7 +1,5 @@
 package org.debian.maven.repo;
 
-import java.util.Iterator;
-
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -39,7 +37,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("pom", info.getThisPom().getType());
 
         assertEquals(1, info.getDependencies().size());
-        Dependency dependency = (Dependency) info.getDependencies().get(0);
+        Dependency dependency = info.getDependencies().get(0);
         assertEquals("junit", dependency.getGroupId());
         assertEquals("junit", dependency.getArtifactId());
         assertEquals("3.8.1", dependency.getVersion());
@@ -100,7 +98,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("jar", info.getThisPom().getType());
 
         assertEquals(6, info.getDependencies().size());
-        Dependency dependency = (Dependency) info.getDependencies().get(5);
+        Dependency dependency = info.getDependencies().get(5);
         assertEquals("org.jboss.test-harness", dependency.getGroupId());
         assertEquals("jboss-test-harness-jboss-as-51", dependency.getArtifactId());
         assertEquals("1.0.0", dependency.getVersion());
@@ -144,7 +142,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("jar", info.getThisPom().getType());
 
         assertEquals(6, info.getDependencies().size());
-        Dependency dependency = (Dependency) info.getDependencies().get(0);
+        Dependency dependency = info.getDependencies().get(0);
         assertEquals("javax.validation", dependency.getGroupId());
         assertEquals("validation-api", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -152,7 +150,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("runtime", dependency.getScope());
         assertEquals(false, dependency.isOptional());
 
-        dependency = (Dependency) info.getDependencies().get(1);
+        dependency = info.getDependencies().get(1);
         assertEquals("org.slf4j", dependency.getGroupId());
         assertEquals("slf4j-api", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -160,7 +158,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("runtime", dependency.getScope());
         assertEquals(false, dependency.isOptional());
 
-        dependency = (Dependency) info.getDependencies().get(2);
+        dependency = info.getDependencies().get(2);
         assertEquals("com.googlecode.jtype", dependency.getGroupId());
         assertEquals("jtype", dependency.getArtifactId());
         assertEquals("0.1.0", dependency.getVersion());
@@ -168,7 +166,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("runtime", dependency.getScope());
         assertEquals(false, dependency.isOptional());
 
-        dependency = (Dependency) info.getDependencies().get(3);
+        dependency = info.getDependencies().get(3);
         assertEquals("org.slf4j", dependency.getGroupId());
         assertEquals("slf4j-log4j12", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -176,7 +174,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("runtime", dependency.getScope());
         assertEquals(true, dependency.isOptional());
 
-        dependency = (Dependency) info.getDependencies().get(4);
+        dependency = info.getDependencies().get(4);
         assertEquals("org.hibernate.java-persistence", dependency.getGroupId());
         assertEquals("jpa-api", dependency.getArtifactId());
         assertEquals("2.0.Beta-20090815", dependency.getVersion());
@@ -184,7 +182,7 @@ public class POMReaderTest extends TestBase {
         assertEquals("runtime", dependency.getScope());
         assertEquals(true, dependency.isOptional());
 
-        dependency = (Dependency) info.getDependencies().get(5);
+        dependency = info.getDependencies().get(5);
         assertEquals("org.testng", dependency.getGroupId());
         assertEquals("testng", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());

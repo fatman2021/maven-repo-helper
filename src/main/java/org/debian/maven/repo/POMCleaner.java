@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Cleans up a POM for inclusion in the /usr/share/maven-repo/ repository.
@@ -35,13 +34,13 @@ import javax.xml.stream.XMLStreamWriter;
 public class POMCleaner extends POMTransformer {
 
     private static final Logger log = Logger.getLogger(POMCleaner.class.getName());
-    private static final List WRITE_IGNORED_ELEMENTS = Arrays.asList(new String[]{"build",
+    private static final List<String> WRITE_IGNORED_ELEMENTS = Arrays.asList("build",
                 "distributionManagement", "profiles", "ciManagement", "prerequisites",
                 "repositories", "pluginRepositories", "reports", "reporting", "modelVersion",
-                "parent"});
+                "parent");
     private boolean keepAllElements = false;
     private boolean isPOM = false;
-    private Collection keepElements = new ArrayList();
+    private Collection<String> keepElements = new ArrayList<String>();
 
     public POMCleaner() {
     }
@@ -85,10 +84,8 @@ public class POMCleaner extends POMTransformer {
 
         } catch (IOException ex) {
             log.log(Level.SEVERE, null, ex);
-            return;
         } catch (XMLStreamException ex) {
             log.log(Level.SEVERE, null, ex);
-            return;
         }
     }
 
@@ -102,7 +99,7 @@ public class POMCleaner extends POMTransformer {
         }
     }
 
-    protected boolean isWriteIgnoredElement(String element, List path, Dependency dependency) {
+    protected boolean isWriteIgnoredElement(String element, List<String> path, Dependency dependency) {
         if ("relativePath".equals(element) && path.size() == 0) {
             return true;
         }
@@ -115,7 +112,7 @@ public class POMCleaner extends POMTransformer {
         }
         if (path.size() > 2 && keepElements.contains(path.get(1))) {
             if ("version".equals(element)) {
-                String parent = (String) path.get(path.size() - 1);
+                String parent = path.get(path.size() - 1);
                 if ("plugin".equals(parent)) {
                     return true;
                 }
@@ -129,17 +126,13 @@ public class POMCleaner extends POMTransformer {
     }
 
     protected boolean acceptDependency(Dependency dependency, POMInfo info) {
-        if (!super.acceptDependency(dependency, info)) {
-            return false;
-        }
-        return "pom".equals(info.getThisPom().getType()) || !"test".equals(dependency.getScope());
+        return super.acceptDependency(dependency, info) &&
+                ("pom".equals(info.getThisPom().getType()) || !"test".equals(dependency.getScope()));
     }
 
     protected void createDebianProperties(POMInfo info, POMInfo original, String debianPackage, int inLevel) throws XMLStreamException {
         super.createDebianProperties(info, original, debianPackage, inLevel);
-        Map dependencyVersions = new TreeMap();
-        for (Iterator i = original.getDependencies().iterator(); i.hasNext(); ) {
-            Dependency dependency = (Dependency) i.next();
+        for (Dependency dependency : original.getDependencies()) {
             if (dependency.getVersion() != null) {
                 String versionProperty = "debian." + dependency.getGroupId() + "." + dependency.getArtifactId() + ".originalVersion";
                 info.getProperties().put(versionProperty, dependency.getVersion());
@@ -271,10 +264,10 @@ public class POMCleaner extends POMTransformer {
         File rulesFile = null;
         File publishedRulesFile = null;
         File mavenRepo = null;
-        List rulesExtra = new ArrayList();
-        List publishedRulesExtra = new ArrayList();
-        List ignoreRulesExtra = new ArrayList();
-        List ignoreRulesFiles = new ArrayList();
+        List<String> rulesExtra = new ArrayList<String>();
+        List<String> publishedRulesExtra = new ArrayList<String>();
+        List<String> ignoreRulesExtra = new ArrayList<String>();
+        List<File> ignoreRulesFiles = new ArrayList<File>();
         while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
             String arg = args[i].trim();
             if ("--verbose".equals(arg) || "-v".equals(arg)) {
@@ -363,8 +356,8 @@ public class POMCleaner extends POMTransformer {
 
             if (!ignoreRulesFiles.isEmpty()) {
                 boolean firstIgnoreRule = true;
-                for (Iterator irf = ignoreRulesFiles.iterator(); irf.hasNext(); ) {
-                    File ignoreRulesFile = (File) irf.next();
+                for (Iterator<File> irf = ignoreRulesFiles.iterator(); irf.hasNext(); ) {
+                    File ignoreRulesFile = irf.next();
                     if (ignoreRulesFile.exists()) {
                         if (firstIgnoreRule) {
                             cleaner.getIgnoreRules().setRulesFile(ignoreRulesFile);

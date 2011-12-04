@@ -48,11 +48,11 @@ public class Repository {
 
     private static final Logger log = Logger.getLogger(Repository.class.getName());
     private File baseDir;
-    private Map unresolvedPoms = new HashMap();
-    private Map dep2info = new HashMap();
-    private Map pomsWithMissingParent = new HashMap();
-    private Map pomsWithMissingVersions = new HashMap();
-    private Map resolvedPoms = new HashMap();
+    private Map<File, POMInfo> unresolvedPoms = new HashMap<File, POMInfo>();
+    private Map<Dependency, POMInfo> dep2info = new HashMap<Dependency, POMInfo>();
+    private Map<File, POMInfo> pomsWithMissingParent = new HashMap<File, POMInfo>();
+    private Map<File, POMInfo> pomsWithMissingVersions = new HashMap<File, POMInfo>();
+    private Map<File, POMInfo> resolvedPoms = new HashMap<File, POMInfo>();
     private POMInfo superPom;
     private POMReader pomReader = new POMReader();
     private boolean scanned = false;
@@ -67,6 +67,7 @@ public class Repository {
                 superPom.getThisPom().setGroupId("__super__");
                 superPom.getThisPom().setArtifactId("__pom__");
                 superPom.getThisPom().setType("pom");
+                superPom.getThisPom().setSuperPom(true);
             }
         } catch (XMLStreamException ex) {
             log.log(Level.SEVERE, null, ex);
@@ -82,27 +83,27 @@ public class Repository {
     }
 
     public POMInfo getPOM(Dependency dependency) {
-        return (POMInfo) dep2info.get(dependency);
+        return dep2info.get(dependency);
     }
 
-    protected Map getUnresolvedPoms() {
+    protected Map<File, POMInfo> getUnresolvedPoms() {
         return unresolvedPoms;
     }
 
-    protected Map getPomsWithMissingParent() {
+    protected Map<File, POMInfo> getPomsWithMissingParent() {
         return pomsWithMissingParent;
     }
 
-    protected Map getPomsWithMissingVersions() {
+    protected Map<File, POMInfo> getPomsWithMissingVersions() {
         return pomsWithMissingVersions;
     }
 
-    protected Map getResolvedPoms() {
+    protected Map<File, POMInfo> getResolvedPoms() {
         return resolvedPoms;
     }
 
-    protected List getAllPoms() {
-        List allPoms = new ArrayList(resolvedPoms.values());
+    protected List<POMInfo> getAllPoms() {
+        List<POMInfo> allPoms = new ArrayList<POMInfo>(resolvedPoms.values());
         allPoms.addAll(unresolvedPoms.values());
         return allPoms;
     }
@@ -120,15 +121,13 @@ public class Repository {
         }
 
         // Map<DependencyRule,POMInfo>
-        Map potentialMatches = new TreeMap();
-        for (Iterator i = getAllPoms().iterator(); i.hasNext();) {
-            POMInfo testPom = (POMInfo) i.next();
-            Set rules = testPom.getPublishedRules();
+        Map<DependencyRule, POMInfo> potentialMatches = new TreeMap<DependencyRule, POMInfo>();
+        for (POMInfo testPom: getAllPoms()) {
+            Set<DependencyRule> rules = testPom.getPublishedRules();
             rules.add(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
             rules.add(DependencyRule.TO_DEBIAN_VERSION_RULE);
             
-            for (Iterator j = rules.iterator(); j.hasNext();) {
-                DependencyRule rule = (DependencyRule) j.next();
+            for (DependencyRule rule: rules) {
                 if (rule.matches(dependency) && rule.apply(dependency).equals(testPom.getThisPom())) {
                     potentialMatches.put(rule, testPom);
                 }
@@ -136,25 +135,25 @@ public class Repository {
         }
         if (!potentialMatches.isEmpty()) {
             // Return the best match
-            return (POMInfo) potentialMatches.values().iterator().next();
+            return potentialMatches.values().iterator().next();
         }
         return null;
     }
 
-    public Iterator resolvedPomsIterator() {
+    public Iterator<POMInfo> resolvedPomsIterator() {
         return resolvedPoms.values().iterator();
     }
 
-    public List searchMatchingPOMsIgnoreVersion(Dependency dependency) {
-        List result = new ArrayList();
+    public List<POMInfo> searchMatchingPOMsIgnoreVersion(Dependency dependency) {
+        List<POMInfo> result = new ArrayList<POMInfo>();
         POMInfo pom = searchMatchingPOM(dependency);
         if (pom != null) {
             result.add(pom);
             return result;
         }
 
-        for (Iterator i = resolvedPomsIterator(); i.hasNext();) {
-            POMInfo testPom = (POMInfo) i.next();
+        for (Iterator<POMInfo> i = resolvedPomsIterator(); i.hasNext();) {
+            POMInfo testPom = i.next();
             if (testPom.getThisPom().equalsIgnoreVersion(dependency)) {
                 result.add(testPom);
             }
@@ -200,8 +199,7 @@ public class Repository {
     	
         if (pomsWithMissingParent.size() > 0) {
         	writer.printSectionStart("POMs with missing parents");
-            for (Iterator i = pomsWithMissingParent.keySet().iterator(); i.hasNext();) {
-                File pom = (File) i.next();
+            for (File pom: pomsWithMissingParent.keySet()) {
                 writer.printItem(pom.getAbsolutePath());
                 writer.endItem();
             }
@@ -209,20 +207,17 @@ public class Repository {
         }
         if (pomsWithMissingVersions.size() > 0) {
         	writer.printSectionStart("POMs with missing versions");
-            for (Iterator i = pomsWithMissingVersions.entrySet().iterator(); i.hasNext();) {
-                Entry entry = (Entry) i.next();
-                File pom = (File) entry.getKey();
-                POMInfo pomInfo = (POMInfo) entry.getValue();
+            for (Entry<File, POMInfo> entry: pomsWithMissingVersions.entrySet()) {
+                File pom = entry.getKey();
+                POMInfo pomInfo = entry.getValue();
                 writer.printItem(pom.getAbsolutePath());
-                for (Iterator j = pomInfo.getDependencies().iterator(); j.hasNext();) {
-                    Dependency dependency = (Dependency) j.next();
+                for (Dependency dependency: pomInfo.getDependencies()) {
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
                     	writer.printItem(dependency.toString());
                     	writer.endItem();
                     }
                 }
-                for (Iterator j = pomInfo.getPlugins().iterator(); j.hasNext();) {
-                    Dependency dependency = (Dependency) j.next();
+                for (Dependency dependency: pomInfo.getPlugins()) {
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
                     	writer.printItem(dependency.toString());
                     	writer.endItem();
@@ -233,37 +228,34 @@ public class Repository {
             writer.printSectionEnd();
         }
 
-        Set issues = new TreeSet();
-        Map pomsWithIssues = new HashMap();
-        for (Iterator i = resolvedPoms.entrySet().iterator(); i.hasNext();) {
-            Entry entry = (Entry) i.next();
-            File pom = (File) entry.getKey();
-            POMInfo pomInfo = (POMInfo) entry.getValue();
+        Set<String> issues = new TreeSet<String>();
+        Map<File, List<Dependency>> pomsWithIssues = new HashMap<File, List<Dependency>>();
+        for (Entry<File, POMInfo> entry: resolvedPoms.entrySet()) {
+            File pom = entry.getKey();
+            POMInfo pomInfo = entry.getValue();
             if (pomInfo.getThisPom().getVersion() == null) {
                 issues.add("Missing version in " + pom);
             }
             if (pomInfo.getThisPom().getVersion().endsWith("-SNAPSHOT")) {
                 issues.add("Snapshot version in " + pom);
             }
-            for (Iterator j = pomInfo.getDependencies().iterator(); j.hasNext();) {
-                Dependency dependency = (Dependency) j.next();
+            for (Dependency dependency: pomInfo.getDependencies()) {
                 if (!dep2info.containsKey(dependency)) {
                     issues.add("Unpackaged dependency: " + dependency + " in " + pom);
-                    List pomIssues = (List) pomsWithIssues.get(pom);
+                    List<Dependency> pomIssues = pomsWithIssues.get(pom);
                     if (pomIssues == null) {
-                        pomIssues = new ArrayList();
+                        pomIssues = new ArrayList<Dependency>();
                         pomsWithIssues.put(pom, pomIssues);
                     }
                     pomIssues.add(dependency);
                 }
             }
-            for (Iterator j = pomInfo.getPlugins().iterator(); j.hasNext();) {
-                Dependency dependency = (Dependency) j.next();
+            for (Dependency dependency: pomInfo.getPlugins()) {
                 if (!dep2info.containsKey(dependency)) {
                     issues.add("Unpackaged plugin: " + dependency + " in " + pom);
-                    List pomIssues = (List) pomsWithIssues.get(pom);
+                    List<Dependency> pomIssues = pomsWithIssues.get(pom);
                     if (pomIssues == null) {
-                        pomIssues = new ArrayList();
+                        pomIssues = new ArrayList<Dependency>();
                         pomsWithIssues.put(pom, pomIssues);
                     }
                     pomIssues.add(dependency);
@@ -272,38 +264,35 @@ public class Repository {
         }
 
         writer.printSectionStart("Errors");
-        for (Iterator i = issues.iterator(); i.hasNext();) {
-            String issue = (String) i.next();
+        for (String issue : issues) {
             writer.printItem(issue);
             writer.endItem();
         }
         writer.printSectionEnd();
 
         // Find the poms with most issues
-        Map pomsWithNumberOfIssues = new TreeMap(Collections.reverseOrder());
-        for (Iterator i = pomsWithIssues.entrySet().iterator(); i.hasNext();) {
-            Entry entry = (Entry) i.next();
-            File pom = (File) entry.getKey();
-            List missingDeps = (List) entry.getValue();
+        Map<Integer, List<File>> pomsWithNumberOfIssues = new TreeMap<Integer, List<File>>(Collections.reverseOrder());
+        for (Entry<File, List<Dependency>> entry : pomsWithIssues.entrySet()) {
+            File pom = entry.getKey();
+            List<Dependency> missingDeps = entry.getValue();
             int count = missingDeps.size();
-            List orderedPoms = (List) pomsWithNumberOfIssues.get(new Integer(count));
+            List<File> orderedPoms = pomsWithNumberOfIssues.get(count);
             if (orderedPoms == null) {
-                orderedPoms = new ArrayList();
-                pomsWithNumberOfIssues.put(new Integer(count), orderedPoms);
+                orderedPoms = new ArrayList<File>();
+                pomsWithNumberOfIssues.put(count, orderedPoms);
             }
             orderedPoms.add(pom);
         }
         if (!pomsWithNumberOfIssues.isEmpty()) {
         	writer.printSectionStart("Top 10 POM files with issues");
             int count = 0;
-            for (Iterator i = pomsWithNumberOfIssues.values().iterator(); i.hasNext() && count < 10;) {
-                List orderedPoms = (List) i.next();
-                for (Iterator j = orderedPoms.iterator(); j.hasNext() && count < 10; count++) {
-                    File pom = (File) j.next();
-                    List missingDeps = (List) pomsWithIssues.get(pom);
+            for (Iterator<List<File>> i = pomsWithNumberOfIssues.values().iterator(); i.hasNext() && count < 10;) {
+                List<File> orderedPoms = i.next();
+                for (Iterator<File> j = orderedPoms.iterator(); j.hasNext() && count < 10; count++) {
+                    File pom = j.next();
+                    List<Dependency> missingDeps = pomsWithIssues.get(pom);
                     writer.printItem("Missing dependencies in " + pom);
-                    for (Iterator k = missingDeps.iterator(); k.hasNext();) {
-                        Dependency dependency = (Dependency) k.next();
+                    for (Dependency dependency : missingDeps) {
                         writer.printItem(dependency.toString());
                         writer.endItem();
                     }
@@ -314,37 +303,33 @@ public class Repository {
         }
 
         // Find the dependencies that need packaging most
-        Map missingDependenciesCounts = new HashMap();
-        for (Iterator i = pomsWithIssues.entrySet().iterator(); i.hasNext();) {
-            Entry entry = (Entry) i.next();
-            List missingDeps = (List) entry.getValue();
-            for (Iterator j = missingDeps.iterator(); j.hasNext();) {
-                Dependency missingDependency = (Dependency) j.next();
-                Integer lastCount = (Integer) missingDependenciesCounts.remove(missingDependency);
+        Map<Dependency, Integer> missingDependenciesCounts = new HashMap<Dependency, Integer>();
+        for (Entry<File, List<Dependency>> entry : pomsWithIssues.entrySet()) {
+            List<Dependency> missingDeps = entry.getValue();
+            for (Dependency missingDependency : missingDeps) {
+                Integer lastCount = missingDependenciesCounts.remove(missingDependency);
                 if (lastCount == null) {
-                    lastCount = new Integer(0);
+                    lastCount = 0;
                 }
-                missingDependenciesCounts.put(missingDependency, new Integer(lastCount.intValue() + 1));
+                missingDependenciesCounts.put(missingDependency, lastCount + 1);
             }
         }
-        List missingDependenciesCountList = new ArrayList(missingDependenciesCounts.entrySet());
-        Collections.sort(missingDependenciesCountList, new Comparator() {
+        List<Map.Entry<Dependency, Integer>> missingDependenciesCountList = new ArrayList<Map.Entry<Dependency, Integer>>(missingDependenciesCounts.entrySet());
+        Collections.sort(missingDependenciesCountList, new Comparator<Map.Entry<Dependency, Integer>>() {
 
-            public int compare(Object o, Object o2) {
-                Map.Entry entry1 = (Entry) o;
-                Map.Entry entry2 = (Entry) o2;
-                Integer count1 = (Integer) entry1.getValue();
-                Integer count2 = (Integer) entry2.getValue();
+            public int compare(Map.Entry<Dependency, Integer> entry1, Map.Entry<Dependency, Integer> entry2) {
+                Integer count1 = entry1.getValue();
+                Integer count2 = entry2.getValue();
                 return count2.compareTo(count1);
             }
         });
         if (! missingDependenciesCountList.isEmpty()) {
         	writer.printSectionStart("Top 10 missing dependencies");
             int count = 0;
-            for (Iterator i = missingDependenciesCountList.iterator(); i.hasNext() && count < 10; count++) {
-                Map.Entry entry = (Entry) i.next();
-                Dependency missingDependency = (Dependency) entry.getKey();
-                Integer numberOfTimes = (Integer) entry.getValue();
+            for (Iterator<Map.Entry<Dependency, Integer>> i = missingDependenciesCountList.iterator(); i.hasNext() && count < 10; count++) {
+                Map.Entry<Dependency, Integer> entry = i.next();
+                Dependency missingDependency = entry.getKey();
+                Integer numberOfTimes = entry.getValue();
                 writer.printItem("Missing dependency " + missingDependency + " is needed in " + numberOfTimes + " places");
                 writer.endItem();
             }
@@ -354,13 +339,12 @@ public class Repository {
         writer.printEnd();
     }
 
-    private void resolveAll(Map file2pom) {
+    private void resolveAll(Map<File, POMInfo> file2pom) {
         // copy to avoid concurrent modifications
-        Map copy = new HashMap(file2pom);
-        for (Iterator i = copy.entrySet().iterator(); i.hasNext();) {
-            Entry entry = (Entry) i.next();
+        Map<File, POMInfo> copy = new HashMap<File, POMInfo>(file2pom);
+        for (Entry<File, POMInfo> entry : copy.entrySet()) {
             try {
-                registerPom((File) entry.getKey(), (POMInfo) entry.getValue());
+                registerPom(entry.getKey(), entry.getValue());
             } catch (DependencyNotFoundException e) {
                 // Ignore
             }
@@ -371,8 +355,7 @@ public class Repository {
         if (files == null) {
             return;
         }
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
+        for (File file : files) {
             if (file.isDirectory()) {
                 scan(file.listFiles());
             } else if (file.getName().endsWith(".pom")) {
@@ -396,7 +379,7 @@ public class Repository {
 
         POMInfo parentPOM = superPom;
         try {
-            if (pomInfo.getParent() != null) {
+            if (pomInfo.getParent() != null && !pomInfo.getParent().isSuperPom()) {
                 POMInfo foundParent = getPOM(pomInfo.getParent());
                 if (foundParent == null) {
                     pomsWithMissingParent.put(file, pomInfo);
@@ -414,17 +397,15 @@ public class Repository {
             // as we can have intermediate situations in the DependenciesSolver where
             // the true parent POM is not known and will be eliminated, yet we need
             // the versions from the super POM.
-            pomInfo.mergeManagement(parentPOM);
+            pomInfo.setParentPOM(parentPOM);
 
             pomsWithMissingVersions.remove(file);
-            for (Iterator i = pomInfo.getDependencies().iterator(); i.hasNext();) {
-                Dependency dependency = (Dependency) i.next();
+            for (Dependency dependency : pomInfo.getDependencies()) {
                 if (dependency.getVersion() == null) {
                     pomsWithMissingVersions.put(file, pomInfo);
                 }
             }
-            for (Iterator i = pomInfo.getPlugins().iterator(); i.hasNext();) {
-                Dependency dependency = (Dependency) i.next();
+            for (Dependency dependency : pomInfo.getPlugins()) {
                 if (dependency.getVersion() == null) {
                     pomsWithMissingVersions.put(file, pomInfo);
                 }
@@ -454,18 +435,20 @@ public class Repository {
 
         // Parse parameters
         int i = inc(-1, args);
-        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().isEmpty())) {
-            String arg = args[i].trim();
-            if (arg.startsWith("-o")) {
-                format = arg.substring(2).trim();
-            } else if (arg.startsWith("--output=")) {
-                format = arg.substring("--output=".length()).trim();
-            } else if (arg.startsWith("-r")) {
-                repoLocation = new File(arg.substring(2).trim());
-            } else if (arg.startsWith("--repository=")) {
-                repoLocation = new File(arg.substring("--repository=".length()).trim());
+        if (args != null) {
+            while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().isEmpty())) {
+                String arg = args[i].trim();
+                if (arg.startsWith("-o")) {
+                    format = arg.substring(2).trim();
+                } else if (arg.startsWith("--output=")) {
+                    format = arg.substring("--output=".length()).trim();
+                } else if (arg.startsWith("-r")) {
+                    repoLocation = new File(arg.substring(2).trim());
+                } else if (arg.startsWith("--repository=")) {
+                    repoLocation = new File(arg.substring("--repository=".length()).trim());
+                }
+                i = inc(i, args);
             }
-            i = inc(i, args);
         }
 
         Repository repository = new Repository(repoLocation);

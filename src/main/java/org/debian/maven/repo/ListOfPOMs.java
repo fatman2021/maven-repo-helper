@@ -31,8 +31,8 @@ public class ListOfPOMs {
     private boolean verbose;
     private File baseDir = new File(".");
     private File poms;
-    private List pomList;
-    private Map pomOptions;
+    private List<String> pomPaths;
+    private Map<String, POMOptions> pomOptions;
 
     public ListOfPOMs() {
     }
@@ -66,21 +66,20 @@ public class ListOfPOMs {
     }
 
     public String getFirstPOM() {
-        if (pomList == null) {
+        if (pomPaths == null) {
             readPomsFile();
         }
-        if (!pomList.isEmpty()) {
-            return (String) pomList.get(0);
+        if (!pomPaths.isEmpty()) {
+            return pomPaths.get(0);
         }
         return null;
     }
 
     public void foreachPoms(POMHandler handler) {
-        if (pomList == null) {
+        if (pomPaths == null) {
             readPomsFile();
         }
-        for (Iterator i = pomList.iterator(); i.hasNext(); ) {
-            String pomPath = (String) i.next();
+        for (String pomPath: pomPaths) {
             POMOptions options = getPOMOptions(pomPath);
             if (options.isIgnore()) {
                 try {
@@ -90,8 +89,7 @@ public class ListOfPOMs {
                 }
             }
         }
-        for (Iterator i = pomList.iterator(); i.hasNext(); ) {
-            String pomPath = (String) i.next();
+        for (String pomPath: pomPaths) {
             POMOptions options = getPOMOptions(pomPath);
             if (!options.isIgnore()) {
                 try {
@@ -113,7 +111,7 @@ public class ListOfPOMs {
     }
 
     public POMOptions getPOMOptions(String pomPath) {
-        return (POMOptions) getPomOptions().get(pomPath);
+        return getPomOptions().get(pomPath);
     }
 
     public POMOptions getOrCreatePOMOptions(File pom) {
@@ -129,7 +127,7 @@ public class ListOfPOMs {
         return options;
     }
 
-    public Map getPomOptions() {
+    public Map<String, POMOptions> getPomOptions() {
         if (pomOptions == null) {
             readPomsFile();
         }
@@ -142,26 +140,23 @@ public class ListOfPOMs {
     }
 
     public POMOptions addPOM(String pomPath) {
-        if (pomList == null) {
+        if (pomPaths == null) {
             readPomsFile();
         }
-        pomList.add(pomPath);
+        pomPaths.add(pomPath);
         POMOptions options = new POMOptions();
         pomOptions.put(pomPath, options);
         return options;
     }
 
     public boolean contains(File pomFile) {
-        if (pomFile.getAbsolutePath().startsWith(baseDir.getAbsolutePath())) {
-            return getPOMOptions(pomFile) != null;
-        }
-        return false;
+        return pomFile.getAbsolutePath().startsWith(baseDir.getAbsolutePath()) && getPOMOptions(pomFile) != null;
     }
 
     private void readPomsFile() {
-        if (pomList == null) {
-            pomList = new ArrayList();
-            pomOptions = new HashMap();
+        if (pomPaths == null) {
+            pomPaths = new ArrayList<String>();
+            pomOptions = new HashMap<String, POMOptions>();
         }
 
         if (poms == null || !poms.exists()) {
@@ -228,7 +223,7 @@ public class ListOfPOMs {
     public void save() {
         if (poms != null) {
             try {
-                if (pomList == null) {
+                if (pomPaths == null) {
                     readPomsFile();
                 }
                 PrintWriter out = new PrintWriter(new FileWriter(poms));
@@ -259,8 +254,7 @@ public class ListOfPOMs {
                 out.println("#   --site-xml=<location>: Optional, the location for site.xml if it needs to be installed.");
                 out.println("#     Empty by default. [mh_install]");
                 out.println("#");
-                for (Iterator i = pomList.iterator(); i.hasNext();) {
-                    String pomPath = (String) i.next();
+                for (String pomPath: pomPaths) {
                     out.println(pomPath + getPOMOptions(pomPath));
                 }
                 out.flush();

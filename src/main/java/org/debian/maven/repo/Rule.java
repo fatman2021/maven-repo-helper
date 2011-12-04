@@ -104,10 +104,7 @@ public class Rule {
         if (this.pattern != other.pattern && (this.pattern == null || !this.pattern.pattern().equals(other.pattern.pattern()))) {
             return false;
         }
-        if ((this.replace == null) ? (other.replace != null) : !this.replace.equals(other.replace)) {
-            return false;
-        }
-        return true;
+        return !((this.replace == null) ? (other.replace != null) : !this.replace.equals(other.replace));
     }
 
     public int hashCode() {

@@ -20,10 +20,6 @@ package org.debian.maven.repo;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.Map;
 
 public class RepositoryTest extends TestBase {
 

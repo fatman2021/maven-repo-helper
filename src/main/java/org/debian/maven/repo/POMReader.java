@@ -40,9 +40,9 @@ import javax.xml.stream.XMLStreamReader;
  */
 public class POMReader {
 
-    private static final List READ_IGNORED_ELEMENTS = Arrays.asList(new String[]{
+    private static final List<String> READ_IGNORED_ELEMENTS = Arrays.asList(
                 "distributionManagement", "ciManagement", "prerequisites", "exclusions",
-                "repositories", "pluginRepositories", "reports", "modelVersion"});
+                "repositories", "pluginRepositories", "reports", "modelVersion");
     protected final XMLInputFactory factory = XMLInputFactory.newInstance();
 
     public POMInfo readPom(File originalPom) throws XMLStreamException, FileNotFoundException {
@@ -54,24 +54,24 @@ public class POMReader {
 
     public POMInfo readPom(Reader originalPom) throws XMLStreamException {
         XMLStreamReader parser = factory.createXMLStreamReader(new BufferedReader(originalPom));
-        List path = new ArrayList();
-        List dependencies = new ArrayList();
-        List dependencyManagement = new ArrayList();
-        List extensions = new ArrayList();
-        List plugins = new ArrayList();
-        List pluginManagement = new ArrayList();
-        List pluginManagementDependencies = new ArrayList();
-        List pluginDependencies = new ArrayList();
-        List reportingPlugins = new ArrayList();
-        List profileDependencies = new ArrayList();
-        List profileDependencyManagement = new ArrayList();
-        List profilePlugins = new ArrayList();
-        List profilePluginDependencies = new ArrayList();
-        List profilePluginManagement = new ArrayList();
-        List profileReportingPlugins = new ArrayList();
-        List modules = new ArrayList();
+        List<String> path = new ArrayList<String>();
+        List<Dependency> dependencies = new ArrayList<Dependency>();
+        List<Dependency> dependencyManagement = new ArrayList<Dependency>();
+        List<Dependency> extensions = new ArrayList<Dependency>();
+        List<Dependency> plugins = new ArrayList<Dependency>();
+        List<Dependency> pluginManagement = new ArrayList<Dependency>();
+        List<Dependency> pluginManagementDependencies = new ArrayList<Dependency>();
+        List<Dependency> pluginDependencies = new ArrayList<Dependency>();
+        List<Dependency> reportingPlugins = new ArrayList<Dependency>();
+        List<Dependency> profileDependencies = new ArrayList<Dependency>();
+        List<Dependency> profileDependencyManagement = new ArrayList<Dependency>();
+        List<Dependency> profilePlugins = new ArrayList<Dependency>();
+        List<Dependency> profilePluginDependencies = new ArrayList<Dependency>();
+        List<Dependency> profilePluginManagement = new ArrayList<Dependency>();
+        List<Dependency> profileReportingPlugins = new ArrayList<Dependency>();
+        List<String> modules = new ArrayList<String>();
 
-        Map properties = new TreeMap();
+        Map<String, String> properties = new TreeMap<String, String>();
         Dependency thisPom = new Dependency(null, null, "jar", null);
         Dependency parent = null;
         Dependency currentDependency = null;
@@ -104,11 +104,11 @@ public class POMReader {
                         } else if ("dependency".equals(element)) {
                             inDependency++;
                             currentDependency = new Dependency(null, null, "jar", null);
-                            String parentElement = (String) path.get(path.size() - 2);
-                            String parentParentElement = (String) path.get(path.size() - 3);
+                            String parentElement = path.get(path.size() - 2);
+                            String parentParentElement = path.get(path.size() - 3);
                             if ("dependencies".equals(parentElement)) {
                                 if ("dependencyManagement".equals(parentParentElement)) {
-                                    String p3Element = (String) path.get(path.size() - 4);
+                                    String p3Element = path.get(path.size() - 4);
                                     if ("project".equals(p3Element)) {
                                         dependencyManagement.add(currentDependency);
                                     } else if ("profile".equals(p3Element)) {
@@ -119,7 +119,7 @@ public class POMReader {
                                 } else if ("profile".equals(parentParentElement)) {
                                     profileDependencies.add(currentDependency);
                                 } else if ("plugin".equals(parentParentElement)) {
-                                    String p5Element = (String) path.get(path.size() - 6);
+                                    String p5Element = path.get(path.size() - 6);
                                     if ("project".equals(p5Element)) {
                                         pluginDependencies.add(currentDependency);
                                     } else if ("build".equals(p5Element)) {
@@ -135,15 +135,15 @@ public class POMReader {
                             inDependency++;
                         } else if ("plugin".equals(element)) {
                             inPlugin++;
-                            String parentElement = (String) path.get(path.size() - 2);
-                            String parentParentElement = (String) path.get(path.size() - 3);
+                            String parentElement = path.get(path.size() - 2);
+                            String parentParentElement = path.get(path.size() - 3);
                             String parentParentParentElement = null;
                             String p4Element = null;
                             if (path.size() > 4) {
-                                parentParentParentElement = (String) path.get(path.size() - 4);
+                                parentParentParentElement = path.get(path.size() - 4);
                             }
                             if (path.size() > 5) {
-                                p4Element = (String) path.get(path.size() - 5);
+                                p4Element = path.get(path.size() - 5);
                             }
                             currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
                             if ("plugins".equals(parentElement)) {
@@ -287,7 +287,7 @@ public class POMReader {
             thisPom.setVersion(parent.getVersion());
         }
 
-        Map inferedProperties = new TreeMap(properties);
+        Map<String, String> inferedProperties = new TreeMap<String, String>(properties);
         
         inferedProperties.put("pom.groupId", thisPom.getGroupId());
         inferedProperties.put("project.groupId", thisPom.getGroupId());
@@ -329,7 +329,7 @@ public class POMReader {
         if (properties.get("debian.originalVersion") != null) {
             Dependency originalPomDep = new Dependency(thisPom.getGroupId(),
                     thisPom.getArtifactId(), thisPom.getType(),
-                    (String) properties.get("debian.originalVersion"));
+                    properties.get("debian.originalVersion"));
             info.setOriginalPom(originalPomDep);
         }
         info.setThisPom(thisPom);
@@ -357,21 +357,20 @@ public class POMReader {
         return READ_IGNORED_ELEMENTS.contains(element);
     }
 
-    private void expendProperties(List dependencies, Map inferedProperties) {
-        for (Iterator i = dependencies.iterator(); i.hasNext();) {
-            Dependency dependency = (Dependency) i.next();
+    private void expendProperties(List<Dependency> dependencies, Map<String, String> inferedProperties) {
+        for (Dependency dependency : dependencies) {
             expandProperties(dependency, inferedProperties);
         }
     }
 
-    private void expandProperties(Dependency dependency, Map inferedProperties) {
+    private void expandProperties(Dependency dependency, Map<String, String> inferedProperties) {
         dependency.setGroupId(expandString(dependency.getGroupId(), inferedProperties));
         dependency.setArtifactId(expandString(dependency.getArtifactId(), inferedProperties));
         dependency.setType(expandString(dependency.getType(), inferedProperties));
         dependency.setVersion(expandString(dependency.getVersion(), inferedProperties));
     }
 
-    private String expandString(String str, Map inferedProperties) {
+    private String expandString(String str, Map<String, String> inferedProperties) {
         if (str == null) {
             return null;
         }
