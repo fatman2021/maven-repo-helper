@@ -115,6 +115,10 @@ public class Repository {
      * @return
      */
     public POMInfo searchMatchingPOM(Dependency dependency) {
+        if (dependency == null) {
+            return null;
+        }
+        
         POMInfo pom = getPOM(dependency);
         if (pom != null) {
             return pom;
