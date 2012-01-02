@@ -225,6 +225,23 @@ public class POMTransformerTest extends TestBase {
         assertEquals("1.2", transformedPOM.getParent().getVersion());
     }
 
+    public void testTransformPlexusComponentsPomUsingListOfPoms() throws Exception {
+        usePom("libplexus-components-java.poms");
+
+        instance.setVerbose(true);
+        instance.setRepository(getRepository());
+        instance.addDefaultRules();
+        instance.usePluginVersionsFromRepository();
+
+        ListOfPOMs listOfPoms = new ListOfPOMs(getFileInClasspath("libplexus-components-java.poms"));
+        listOfPoms.setBaseDir(getFileInClasspath("plexus-components/pom.xml").getParentFile());
+        instance.setListOfPOMs(listOfPoms);
+        instance.transformPoms("libplexus-components-java", false, null);
+
+        assertXMLEqual(read("plexus-components.transformed"), read("plexus-components/pom.xml"));
+
+    }
+
     private Repository getRepository() {
         Repository repo = new Repository(getFileInClasspath("repository/root.dir").getParentFile());
         repo.scan();

@@ -43,14 +43,11 @@ import javax.xml.stream.XMLStreamWriter;
 public class POMTransformer extends POMReader {
 
     private static final Logger log = Logger.getLogger(POMTransformer.class.getName());
-    private static final List<String> WRITE_IGNORED_ELEMENTS = Arrays.asList(new String[]{
-                "modelVersion", "parent"});
-    private static final List<String> DEBIAN_BUILD_IGNORED_ELEMENTS = Arrays.asList(new String[]{
-                "distributionManagement", "repositories", "pluginRepositories"});
-    private static final List<String> DEBIAN_DOC_IGNORED_ELEMENTS = Arrays.asList(new String[]{
-                "reports", "reporting", "site"});
-    private static final List<String> INFO_ELEMENTS = Arrays.asList(new String[]{"groupId",
-                "artifactId", "packaging", "version"});
+    private static final List<String> WRITE_IGNORED_ELEMENTS = Arrays.asList("modelVersion", "parent");
+    private static final List<String> DEBIAN_BUILD_IGNORED_ELEMENTS = Arrays.asList("distributionManagement", "repositories", "pluginRepositories");
+    private static final List<String> DEBIAN_DOC_IGNORED_ELEMENTS = Arrays.asList("reports", "reporting", "site");
+    private static final List<String> INFO_ELEMENTS = Arrays.asList("groupId",
+            "artifactId", "packaging", "version");
     private static final Pattern compactDependencyNotationMatcher =
             Pattern.compile("(\\w[a-zA-Z0-9\\-_\\.]*):(\\w[a-zA-Z0-9\\-_]*):(\\d[a-zA-Z0-9\\-_\\.]*)");
     private DependencyRuleSet rules = new DependencyRuleSet("Rules", new File("debian/maven.rules"));
@@ -182,13 +179,13 @@ public class POMTransformer extends POMReader {
     }
 
     public void addIgnoreModule(File pomFile, String module) {
+        pomFile = pomFile.getAbsoluteFile();
         Set<String> modules = ignoredModules.get(pomFile);
         if (modules == null) {
             modules = new HashSet<String>();
             ignoredModules.put(pomFile, modules);
         }
         modules.add(module);
-        System.out.println("Ignore module " + module + " in POM " + pomFile);
     }
 
     public void discoverModulesToIgnore() {
@@ -463,7 +460,7 @@ public class POMTransformer extends POMReader {
                                     if ("extensions".equals(parentElement)) {
                                         sawVersion = false;
                                         int index = inc(dependencyIndexes, POMInfo.EXTENSIONS);
-                                        dependency = (Dependency) info.getExtensions().get(index);
+                                        dependency = info.getExtensions().get(index);
                                     }
                                 }
                                 // Skip dependency if we can't find it (== null)
@@ -480,8 +477,11 @@ public class POMTransformer extends POMReader {
                                 String parentParentElement = path.get(path.size() - 3);
                                 if ("modules".equals(parentElement) && "project".equals(parentParentElement)) {
                                     int index = inc(dependencyIndexes, POMInfo.MODULES);
-                                    String module = (String) info.getModules().get(index);
+                                    String module = info.getModules().get(index);
                                     if (!acceptModule(module, originalPom)) {
+                                        if (verbose) {
+                                          System.out.println("Ignore module " + module + " in transformed POM");
+                                        }
                                         inIgnoredElement++;
                                         inLevel--;
                                         path.remove(path.size() - 1);
@@ -819,12 +819,12 @@ public class POMTransformer extends POMReader {
     private int inc(Map<String, Integer> dependencyIndexes, String selector) {
         Integer index = dependencyIndexes.get(selector);
         if (index == null) {
-            index = new Integer(0);
+            index = 0;
         } else {
-            index = new Integer(index.intValue() + 1);
+            index = index + 1;
         }
         dependencyIndexes.put(selector, index);
-        return index.intValue();
+        return index;
     }
 
     protected void createDebianProperties(POMInfo info, POMInfo original, String debianPackage, int inLevel) throws XMLStreamException {
@@ -886,7 +886,7 @@ public class POMTransformer extends POMReader {
     }
 
     private boolean acceptModule(String module, File pomFile) {
-        Set<String> modulesToSkip = ignoredModules.get(pomFile);
+        Set<String> modulesToSkip = ignoredModules.get(pomFile.getAbsoluteFile());
         return modulesToSkip == null || !modulesToSkip.contains(module);
     }
 
@@ -1029,14 +1029,14 @@ public class POMTransformer extends POMReader {
         ListOfPOMs listOfPOMs;
 
         if (singlePom) {
-            String pomPath = args[i++].trim();
+            String pomPath = args[i].trim();
             listOfPOMs = new ListOfPOMs();
             ListOfPOMs.POMOptions options = listOfPOMs.addPOM(pomPath);
             options.setNoParent(noParent);
         } else {
             File poms;
             if (i + 1 < args.length) {
-                poms = new File(args[i++].trim());
+                poms = new File(args[i].trim());
             } else {
                 poms = new File("debian/" + debianPackage + ".poms");
             }

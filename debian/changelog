@@ -2,8 +2,9 @@ maven-repo-helper (1.7.1) UNRELEASED; urgency=low
 
   * Build with Java 5, use generics. (Closes: #644260)
   * Fix resolution of versions from dependency management
+  * Fix ignore modules in a POM transformation
 
- -- Ludovic Claude <ludovic.claude@laposte.net>  Sun, 13 Nov 2011 23:59:09 +0100
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 02 Jan 2012 20:27:26 +0100
 
 maven-repo-helper (1.7) unstable; urgency=low
 

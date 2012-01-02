@@ -83,7 +83,7 @@ public class ListOfPOMs {
             POMOptions options = getPOMOptions(pomPath);
             if (options.isIgnore()) {
                 try {
-                    handler.ignorePOM(new File(pomPath));
+                    handler.ignorePOM(new File(baseDir, pomPath));
                 } catch (Exception e) {
                     log.log(Level.SEVERE, null, e);
                 }

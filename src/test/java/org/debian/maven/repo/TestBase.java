@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.commons.io.IOUtils;
 import org.custommonkey.xmlunit.XMLTestCase;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -56,7 +57,7 @@ public class TestBase extends XMLTestCase {
         if (updatedPom.exists()) {
             updatedPom.delete();
         }
-        for (Iterator<Reader> i = openedReaders.iterator(); i.hasNext(); ) {
+        for (Iterator<Reader> i = openedReaders.iterator(); i.hasNext();) {
             Reader reader = i.next();
             try {
                 reader.close();
@@ -71,7 +72,7 @@ public class TestBase extends XMLTestCase {
     protected void useFile(String resource, File file) throws IOException {
         final FileWriter out = new FileWriter(file);
         final Reader in = read(resource);
-        IOUtils.copy( in,out);
+        IOUtils.copy(in, out);
         in.close();
         out.close();
     }
@@ -81,15 +82,15 @@ public class TestBase extends XMLTestCase {
     }
 
     protected File getFileInClasspath(String resource) {
-        if (! resource.startsWith("/")) {
+        if (!resource.startsWith("/")) {
             resource = "/" + resource;
         }
         URL url = this.getClass().getResource(resource);
         File f;
         try {
-          f = new File(url.toURI());
-        } catch(URISyntaxException e) {
-          f = new File(url.getPath());
+            f = new File(url.toURI());
+        } catch (URISyntaxException e) {
+            f = new File(url.getPath());
         }
         return f;
     }
@@ -107,18 +108,18 @@ public class TestBase extends XMLTestCase {
     }
 
     protected void show(File f) {
-            try {
-        LineNumberReader lnr = new LineNumberReader(read(f));
-        do {
+        try {
+            LineNumberReader lnr = new LineNumberReader(read(f));
+            do {
                 String l = lnr.readLine();
                 if (l == null) {
                     break;
                 }
                 System.out.println(l);
-        } while (true);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            } while (true);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
 }
