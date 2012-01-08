@@ -146,7 +146,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
             out.println(description);
 
             for (DependencyRule rule: getRules()) {
-                if (dontDuplicate == null || !dontDuplicate.getRules().contains(rule)
+                if ((dontDuplicate == null || !dontDuplicate.getRules().contains(rule))
                         // Don't save implicit rules
                         && !DependencyRule.TO_DEBIAN_VERSION_RULE.equals(rule)
                         && !DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE.equals(rule)) {

@@ -65,4 +65,8 @@ public class DependencyRuleTest extends TestCase {
         assertEquals(0, servlet23.compareTo(servlet23));
     }
 
+    public void testEquals() {
+        DependencyRule mavenPlugin = new DependencyRule("* * maven-plugin * * *");
+        assertTrue(mavenPlugin.equals(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE));
+    }
 }
