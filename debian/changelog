@@ -1,4 +1,4 @@
-maven-repo-helper (1.7.1) UNRELEASED; urgency=low
+maven-repo-helper (1.7.1) unstable; urgency=low
 
   * Build with Java 5, use generics. (Closes: #644260)
   * Fix resolution of versions from dependency management
