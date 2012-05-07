@@ -1,3 +1,13 @@
+maven-repo-helper (1.7.2) UNRELEASED; urgency=low
+
+  * Move repository to Git, thanks to Thomas Koch.
+    (Closes: #644259)
+  * d/control:
+    - Bump Standards-Version to 3.9.3 (no changes needed).
+    - update Vcs-Browser and Vcs-Git fields following move to Git
+
+ -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 07 May 2012 22:18:21 +0200
+
 maven-repo-helper (1.7.1) unstable; urgency=low
 
   * Build with Java 5, use generics. (Closes: #644260)

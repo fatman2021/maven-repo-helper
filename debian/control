@@ -6,9 +6,9 @@ Uploaders: Ludovic Claude <ludovic.claude@laposte.net>, Damien Raude-Morvan <dra
 Build-Depends: debhelper (>= 7), cdbs, default-jdk, ant, help2man, markdown
 Build-Depends-Indep: ant-optional, libstax-java, junit, libxmlunit-java, libcommons-io-java
 Standards-Version: 3.9.2
-Vcs-Svn: svn://svn.debian.org/svn/pkg-java/trunk/maven-repo-helper/
-Vcs-Browser: http://svn.debian.org/wsvn/pkg-java/trunk/maven-repo-helper/
-Homepage: https://launchpad.net/maven-packaging-support
+Vcs-Git: git://git.debian.org/git/pkg-java/maven-repo-helper.git
+Vcs-Browser: http://git.debian.org/?p=pkg-java/maven-repo-helper.git
+Homepage: http://wiki.debian.org/Java/MavenRepoSpec
 
 Package: maven-repo-helper
 Architecture: all
