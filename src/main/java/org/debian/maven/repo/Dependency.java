@@ -23,7 +23,7 @@ import java.util.*;
  * 
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
-public class Dependency implements Comparable, Cloneable {
+public class Dependency implements Comparable<Dependency>, Cloneable {
 
     private String groupId;
     private String artifactId;
@@ -200,8 +200,7 @@ public class Dependency implements Comparable, Cloneable {
         return groupId + ":" + artifactId + ":" + type + ":" + version;
     }
 
-    public int compareTo(Object o) {
-        Dependency dependency = (Dependency) o; 
+    public int compareTo(Dependency dependency) {
         if (this.groupId != dependency.groupId) {
             if (this.groupId == null) return -1;
             if (! this.groupId.equals(dependency.groupId)) {
