@@ -280,30 +280,6 @@ public class POMTransformer extends POMReader {
                 automaticRules.add(new DependencyRule(original.getParent().getGroupId() + " "
                     + original.getParent().getArtifactId() + " * * * *"));
             }
-            /*
-            if (original.getParent() != null && !noParent) {
-                if (repository == null && keepPomVersion) {
-                    // Add a rule to also keep the parent version
-                    automaticRules.add(new DependencyRule(original.getParent().getGroupId() + " "
-                        + original.getParent().getArtifactId() + " * * * *"));
-                } else if (repository != null) {
-                    // Look in the repository and add the rules which match the parent POM
-                    List parentPoms = repository.searchMatchingPOMsIgnoreVersion(original.getParent());
-                    // If not found and keepPomVersion is set, in doubt keep the parent version
-                    if (parentPoms.isEmpty() && keepPomVersion) {
-                        automaticRules.add(new DependencyRule(original.getParent().getGroupId() + " "
-                            + original.getParent().getArtifactId() + " * * * *"));
-                    } else {
-                        // Otherwise use the transformation rules from the repository for the parent
-                        for (Iterator i = parentPoms.iterator(); i.hasNext(); ) {
-                            POMInfo potentialParentPOM = (POMInfo) i.next();
-                            automaticRules.addAll(potentialParentPOM.getPublishedRules(false));
-                        }
-                    }
-                }
-            } */
-
-            transformingPom(original);
 
             Set<DependencyRule> allRules = new TreeSet<DependencyRule>(rules.getRules());
             allRules.addAll(automaticRules.getRules());
@@ -888,9 +864,6 @@ public class POMTransformer extends POMReader {
     private boolean acceptModule(String module, File pomFile) {
         Set<String> modulesToSkip = ignoredModules.get(pomFile.getAbsoluteFile());
         return modulesToSkip == null || !modulesToSkip.contains(module);
-    }
-
-    protected void transformingPom(POMInfo info) {
     }
 
     public static void main(String[] args) {
