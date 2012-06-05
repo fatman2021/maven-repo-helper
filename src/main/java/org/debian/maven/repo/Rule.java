@@ -27,13 +27,18 @@ import java.util.regex.Pattern;
 public class Rule {
     private static Pattern generic = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.)");
 
-    private Pattern pattern;
-    private String replace;
-    private String rule;
-    private String description;
+    private final Pattern pattern;
+    private final String replace;
+    private final String rule;
+    private /*final*/ String description;
 
     public Rule(String rule) {
+        this(rule, "");
+    }
+    
+    public Rule(String rule, String description) {
         this.rule = rule;
+        this.description = description;
         if (rule.startsWith("s/")) {
             StringTokenizer st = new StringTokenizer(rule, "/");
             st.nextToken();
@@ -89,6 +94,7 @@ public class Rule {
         return description;
     }
 
+    @Deprecated
     public void setDescription(String description) {
         this.description = description;
     }
