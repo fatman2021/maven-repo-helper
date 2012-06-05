@@ -39,7 +39,6 @@ public class POMCleaner extends POMTransformer {
                 "repositories", "pluginRepositories", "reports", "reporting", "modelVersion",
                 "parent");
     private boolean keepAllElements = false;
-    private boolean isPOM = false;
     private Collection<String> keepElements = new ArrayList<String>();
 
     public POMCleaner() {
@@ -94,8 +93,6 @@ public class POMCleaner extends POMTransformer {
             addIgnoreRule(new DependencyRule(pom.getThisPom().getGroupId() + " "
                     + pom.getThisPom().getArtifactId() + " maven-plugin s/.*/"
                     + pom.getThisPom().getVersion() + "/"));
-        } else if (pom.getThisPom().getType().equals("pom")) {
-            isPOM = true;
         }
     }
 
