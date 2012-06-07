@@ -67,10 +67,23 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         this.superPom = dependency.superPom;
     }
 
+    public Dependency(Builder builder) {
+        this.groupId = builder.groupId;
+        this.artifactId = builder.artifactId;
+        this.type = builder.type;
+        this.version = builder.version;
+        this.scope = builder.scope;
+        this.optional = builder.optional;
+        this.classifier = builder.classifier;
+        this.relativePath = builder.relativePath;
+        this.superPom = builder.superPom;
+    }
+
     public String getArtifactId() {
         return artifactId;
     }
 
+    @Deprecated
     public void setArtifactId(String artifactId) {
         this.artifactId = artifactId;
     }
@@ -79,6 +92,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return groupId;
     }
 
+    @Deprecated
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
@@ -87,6 +101,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return type;
     }
 
+    @Deprecated
     public void setType(String type) {
         this.type = type;
     }
@@ -95,6 +110,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return version;
     }
 
+    @Deprecated
     public void setVersion(String version) {
         this.version = version;
     }
@@ -103,6 +119,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return optional;
     }
 
+    @Deprecated
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
@@ -115,6 +132,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return scope == null ? "runtime" : scope;
     }
 
+    @Deprecated
     public void setScope(String scope) {
         this.scope = scope;
     }
@@ -123,6 +141,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return classifier;
     }
 
+    @Deprecated
     public void setClassifier(String classifier) {
         this.classifier = (classifier == null) ? "" : classifier;
     }
@@ -131,10 +150,12 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return relativePath;
     }
 
+    @Deprecated
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
     }
 
+    @Deprecated
     public void setSuperPom(boolean superPom) {
         this.superPom = superPom;
     }
@@ -284,4 +305,29 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return type2 == null;
     }
 
+    public static class Builder {
+        private String groupId;
+        private String artifactId;
+        private String type;
+        private String version;
+        private boolean optional;
+        private String scope;
+        private String classifier;
+        private String relativePath;
+        private boolean superPom;
+
+        public void setGroupId(String groupId) { this.groupId = groupId; }
+        public void setArtifactId(String artifactId) { this.artifactId = artifactId; }
+        public void setType(String type) { this.type = type; }
+        public void setVersion(String version) { this.version = version; }
+        public void setOptional(boolean optional) { this.optional = optional; }
+        public void setScope(String scope) { this.scope = scope; }
+        public void setClassifier(String classifier) { this.classifier = classifier; }
+        public void setRelativePath(String relativePath) { this.relativePath = relativePath; }
+        public void setSuperPom(boolean superPom) { this.superPom = superPom; }
+
+        public Dependency build() {
+            return new Dependency(this);
+        }
+    }
 }
