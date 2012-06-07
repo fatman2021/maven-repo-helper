@@ -1,0 +1,4 @@
+* TODO add Coordinate class containing groupid, artifact name, version,
+   classifier
+  and use it as part of the Dependency class?
+* use an enum for Dependency type
