@@ -36,6 +36,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.debian.maven.cliargs.ArgumentsMap;
+
 /**
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
@@ -920,100 +922,43 @@ public class POMTransformer extends POMReader {
             return;
         }
         POMTransformer transformer = new POMTransformer();
-        int i = inc(-1, args);
-        boolean verbose = false;
-        boolean noRules = false;
-        boolean keepPomVersion = false;
-        boolean singlePom = false;
-        boolean noParent = false;
-        
-        String setVersion = null;
-        String debianPackage = "";
-        File rulesFile = null;
-        File publishedRulesFile = null;
-        File ignoreRulesFile = null;
-        File mavenRepo = null;
-        List<String> rulesExtra = new ArrayList<String>();
-        List<String> publishedRulesExtra = new ArrayList<String>();
-        List<String> ignoreRulesExtra = new ArrayList<String>();
 
-        while (i < args.length && (args[i].trim().startsWith("-") || args[i].trim().length() == 0)) {
-            String arg = args[i].trim();
-            if ("--verbose".equals(arg) || "-v".equals(arg)) {
-                verbose = true;
-            } else if ("--single".equals(arg)) {
-                singlePom = true;
-            } else if ("--no-parent".equals(arg)) {
-                noParent = true;
-            } else if ("--no-rules".equals(arg)) {
-                noRules = true;
-            } else if ("--no-publish-used-rule".equals(arg)) {
-                transformer.setPublishUsedRule(false);
-            } else if ("--keep-pom-version".equals(arg)) {
-                keepPomVersion = true;
-            } else if (arg.equals("--debian-build")) {
-                transformer.setDebianBuild(true);
-            } else if (arg.equals("--build-no-docs")) {
-                transformer.setBuildWithoutDoc(true);
-            } else if (arg.startsWith("-p")) {
-                debianPackage = arg.substring(2);
-            } else if (arg.startsWith("--package=")) {
-                debianPackage = arg.substring("--package=".length());
-            } else if (arg.startsWith("-r")) {
-                rulesFile = new File(arg.substring(2));
-            } else if (arg.startsWith("--rules=")) {
-                rulesFile = new File(arg.substring("--rules=".length()));
-            } else if (arg.startsWith("-R")) {
-                rulesExtra.add(arg.substring(2));
-            } else if (arg.startsWith("--extra-rule=")) {
-                rulesExtra.add(arg.substring("--extra-rule=".length()));
-            } else if (arg.startsWith("-u")) {
-                publishedRulesFile = new File(arg.substring(2));
-            } else if (arg.startsWith("--published-rules=")) {
-                publishedRulesFile = new File(arg.substring("--published-rules=".length()));
-            } else if (arg.startsWith("-U")) {
-                publishedRulesExtra.add(arg.substring(2));
-            } else if (arg.startsWith("--extra-published-rule=")) {
-                publishedRulesExtra.add(arg.substring("--extra-published-rule=".length()));
-            } else if (arg.startsWith("-i") || arg.startsWith("--ignore-rules=")) {
-                if (arg.startsWith("-i")) {
-                    ignoreRulesFile = new File(arg.substring(2));
-                } else {
-                    ignoreRulesFile = new File(arg.substring("--ignore-rules=".length()));
-                }
-            } else if (arg.startsWith("-I")) {
-                ignoreRulesExtra.add(arg.substring(2));
-            } else if (arg.startsWith("--extra-ignore-rule=")) {
-                ignoreRulesExtra.add(arg.substring("--extra-ignore-rule=".length()));
-            } else if (arg.startsWith("-e")) {
-                setVersion = arg.substring(2);
-            } else if (arg.startsWith("--set-version=")) {
-                setVersion = arg.substring("--set-version=".length());
-            } else if (arg.startsWith("-m")) {
-                mavenRepo = new File(arg.substring(2));
-            } else if (arg.startsWith("--maven-repo=")) {
-                mavenRepo = new File(arg.substring("--maven-repo=".length()));
-            }
-            i = inc(i, args);
-        }
+        ArgumentsMap argsMap = ArgumentsMap.fromArgs(args);
+
+        boolean verbose = argsMap.getBooleanLong("verbose");
+        boolean singlePom = argsMap.getBooleanLong("single");
+        boolean noParent = argsMap.getBooleanLong("no-parent");
+        boolean noRules = argsMap.getBooleanLong("no-rules");
+        boolean keepPomVersion = argsMap.getBooleanLong("keep-pom-version");
+
+        transformer.setPublishUsedRule(argsMap.getBooleanLong("no-publish-used-rule"));
+        transformer.setDebianBuild(argsMap.getBooleanLong("debian-build"));
+        transformer.setBuildWithoutDoc(argsMap.getBooleanLong("build-no-docs"));
+
+        String debianPackage = argsMap.getValue("package", "p", "");
+        File rulesFile = argsMap.getFile("rules", "r", null);
+        List<String> rulesExtra = argsMap.getValueList("extra-rule", "R");
+        File publishedRulesFile = argsMap.getFile("published-rules", null, null);
+        List<String> publishedRulesExtra = argsMap.getValueList("extra-published-rule", "U");
+        File ignoreRulesFile = argsMap.getFile("ignore-rules", "i", null);
+        List<String> ignoreRulesExtra = argsMap.getValueList("extra-ignore-rule", "I");
+        String setVersion = argsMap.getValue("set-version", "e", null);
+        File mavenRepo = argsMap.getFile("maven-repo", "m", null);
 
         transformer.setVerbose(verbose);
 
         ListOfPOMs listOfPOMs;
 
         if (singlePom) {
-            String pomPath = args[i].trim();
+            String pomPath = argsMap.getArguments().get(0);
             listOfPOMs = new ListOfPOMs();
             ListOfPOMs.POMOptions options = listOfPOMs.addPOM(pomPath);
             options.setNoParent(noParent);
         } else {
-            File poms;
-            if (i + 1 < args.length) {
-                poms = new File(args[i].trim());
-            } else {
-                poms = new File("debian/" + debianPackage + ".poms");
-            }
-            listOfPOMs = new ListOfPOMs(poms);
+            String pomsFileName = argsMap.getArguments().isEmpty()
+                    ? "debian/" + debianPackage + ".poms"
+                    : argsMap.getArguments().get(0);
+            listOfPOMs = new ListOfPOMs(new File(pomsFileName));
         }
         transformer.setListOfPOMs(listOfPOMs);
 
@@ -1057,7 +1002,7 @@ public class POMTransformer extends POMReader {
 
             }
             transformer.getPublishedRules().addAll(publishedRulesExtra);
-            
+
             transformer.addDefaultRules();
         }
 
@@ -1069,12 +1014,4 @@ public class POMTransformer extends POMReader {
 
         transformer.transformPoms(debianPackage, keepPomVersion, setVersion);
     }
-
-    private static int inc(int i, String[] args) {
-        do {
-            i++;
-        } while (i < args.length && args[i].length() == 0);
-        return i;
-    }
-    
 }
