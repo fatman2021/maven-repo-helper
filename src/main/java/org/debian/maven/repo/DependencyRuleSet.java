@@ -45,10 +45,12 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         this.rulesFile = rulesFile;
     }
 
+    @Deprecated
     public File getRulesFile() {
         return rulesFile;
     }
 
+    @Deprecated
     public void setRulesFile(File rulesFile) {
         this.rulesFile = rulesFile;
         rules = null;
@@ -70,6 +72,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return description;
     }
 
+    @Deprecated
     public void setDescription(String description) {
         this.description = description;
     }
@@ -78,6 +81,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return verbose;
     }
 
+    @Deprecated
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
@@ -86,6 +90,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return warnRulesFileNotFound;
     }
 
+    @Deprecated
     public void setWarnRulesFileNotFound(boolean warnRulesFileNotFound) {
         this.warnRulesFileNotFound = warnRulesFileNotFound;
     }
@@ -94,6 +99,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return dontDuplicate;
     }
 
+    @Deprecated
     public void setDontDuplicate(DependencyRuleSet dontDuplicate) {
         this.dontDuplicate = dontDuplicate;
     }
@@ -106,16 +112,19 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return getRules().isEmpty();
     }
 
+    @Deprecated
     public void add(DependencyRule rule) {
         getRules().add(rule);
     }
 
+    @Deprecated
     public void addAll(DependencyRuleSet newRules) {
         for (DependencyRule rule: newRules) {
             add(rule);
         }
     }
 
+    @Deprecated
     public void addAll(Collection<?> newRules) {
         for (Object rule : newRules) {
             if (rule instanceof DependencyRule) {
@@ -126,6 +135,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         }
     }
 
+    @Deprecated
     public void remove(DependencyRule rule) {
         getRules().remove(rule);
     }
@@ -140,9 +150,9 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return matchingRules;
     }
 
-    public void save() {
+    public void saveToFile(File rulesFile) {
         try {
-            PrintWriter out = new PrintWriter(new FileWriter(getRulesFile()));
+            PrintWriter out = new PrintWriter(new FileWriter(rulesFile));
             out.println(description);
 
             for (DependencyRule rule: getRules()) {
@@ -160,6 +170,11 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         }
     }
 
+    @Deprecated // the file name should be managed by the calling code
+    public void save() {
+        saveToFile(rulesFile);
+    }
+
     public void dump() {
         if (rules != null) {
             System.out.println(name + ":");
@@ -170,6 +185,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         }
     }
 
+    @Deprecated
     private void readRules() {
         rules = new TreeSet<DependencyRule>();
         if (rulesFile == null) {
