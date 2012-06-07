@@ -24,49 +24,41 @@ import java.util.StringTokenizer;
  */
 public class DependencyRule implements Comparable<DependencyRule> {
 
-    public static DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
-    public static DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
-    public static DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * * * *");
+    public static final DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
+    public static final DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
+    public static final DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * * * *");
 
-    private Rule groupRule;
-    private Rule artifactRule;
-    private Rule typeRule;
-    private Rule versionRule;
-    private Rule scopeRule;
-    private Rule classifierRule;
+    // TODO Rule is not yet immutable, since the description could change, but the description is irrelevant here.
+    private static final Rule STAR_RULE = new Rule("*");
+    private static final Rule DEBIAN_RULE = new Rule("s/.*/debian/");
+
+    private final Rule groupRule;
+    private final Rule artifactRule;
+    private final Rule typeRule;
+    private final Rule versionRule;
+    private final Rule scopeRule;
+    private final Rule classifierRule;
 
     public DependencyRule(String def) {
         StringTokenizer st = new StringTokenizer(def, " \t", false);
-        if (st.hasMoreTokens()) {
-            groupRule = new Rule(st.nextToken());
+        groupRule = maybeParseRule(st);
+        artifactRule = maybeParseRule(st);
+        typeRule = maybeParseRule(st);
+        versionRule = maybeParseRule(st, DEBIAN_RULE);
+        classifierRule = maybeParseRule(st);
+        scopeRule = maybeParseRule(st);
+    }
+
+    private static Rule maybeParseRule(StringTokenizer st, Rule defaultRule) {
+        if(st.hasMoreTokens()) {
+            return new Rule(st.nextToken());
         } else {
-            groupRule = new Rule("*");
+            return defaultRule;
         }
-        if (st.hasMoreTokens()) {
-            artifactRule = new Rule(st.nextToken());
-        } else {
-            artifactRule = new Rule("*");
-        }
-        if (st.hasMoreTokens()) {
-            typeRule = new Rule(st.nextToken());
-        } else {
-            typeRule = new Rule("*");
-        }
-        if (st.hasMoreTokens()) {
-            versionRule = new Rule(st.nextToken());
-        } else {
-            versionRule = new Rule("s/.*/debian/");
-        }
-        if (st.hasMoreTokens()) {
-            classifierRule = new Rule(st.nextToken());
-        } else {
-            classifierRule = new Rule("*");
-        }
-        if (st.hasMoreTokens()) {
-            scopeRule = new Rule(st.nextToken());
-        } else {
-            scopeRule = new Rule("*");
-        }
+    }
+
+    private static Rule maybeParseRule(StringTokenizer st) {
+        return maybeParseRule(st, STAR_RULE);
     }
 
     public Rule getArtifactRule() {
