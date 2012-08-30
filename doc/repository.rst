@@ -1,0 +1,528 @@
+`repository specification <repository.html>`_ \|
+`reference <reference.html>`_ \| `tutorial <tutorial.html>`_
+
+Maven Repository Specification
+==============================
+
+This page specifies how to install Java libraries in Maven compatible
+way which makes it possible to use Maven for Debian packaging. This
+specification is intended to be
+
+-  as short as possible,
+-  easy to understand,
+-  easy to use, and
+-  compatible with the Debian Java policy.
+
+Status
+------
+
+The specification is in use and implemented by maven-repo-helper and
+maven-debian-helper packages.
+
+Motivation: advantages of using Maven
+-------------------------------------
+
+Maven has advantages for the upstream developers that won't be repeated
+here. That is the reason why more and more projects are switching to
+Maven as their primary build tool. Detailed information about maven can
+be found at `Maven's homepage <http://maven.apache.org>`_ and in the
+book `Maven: The Definitive
+Guide <http://books.sonatype.com/maven-book/>`_.
+
+Maven maintains a model of a project in a file **pom.xml**: the
+developer can assign attributes to a project such as:
+
+-  name
+-  description
+-  URL
+-  information about developers and contributors
+-  license
+-  mailing lists
+-  issue tracker
+-  source code management (like subversion)
+-  dependencies
+
+Most of those attributes can directly be used for Debian packaging but
+the most interesting ones are the dependencies.
+
+Imagine a project 'a' that depends on 2 other projects 'b' and 'c' where
+'b' itself depends on 'd', 'e', 'f' and 'c' depends on 'f', 'g', 'h'.
+
+::
+
+    a ---> b ---> d
+       |      |
+       |      |-> e
+       |      |
+       |       -> f
+       |
+        -> c ---> f
+              |
+              |-> g
+              |
+               -> h
+
+In a later upstream version 'c' adds another depends 'i' and that means
+that we have to change all reverse depends of 'c' including 'a' (like
+adding **i.jar** to **DEB\_JARS** in **debian/rules**). But Maven will
+do this automatically for us and we do not have to touch reverse depends
+of any package when the dependencies change.
+
+Problems with upstream's repository (central)
+---------------------------------------------
+
+There is one central repository for Maven artifacts at
+http://repo2.maven.org/maven2/ that ships '''all''' releases of an
+artifact. The artifact log4j:log4j has 12 different versions at
+http://repo2.maven.org/maven2/log4j/log4j/ and maven downloads one of
+them during building a package that declares log4j:log4j as a
+dependency. Sometimes it is difficult to predict which version gets
+downloaded by maven and that is why it is hard to use maven in offline
+mode but for building Debian packages the offline mode is essential. All
+dependencies must be available as Debian packages and it is not
+acceptable to download artifacts during the build process from the
+central Maven repository.
+
+The package maven-repo-helper tries to solve this problem by providing a
+local repository below the following directory:
+
+::
+
+    REPO=/usr/share/maven-repo
+
+We will reference this location as **$REPO** in the specification.
+
+In Maven Central repository, there is one policy which mandates that
+projects upload a cleaned version of their POM files (see
+`http://maven.apache.org/guides/mini/guide-central-repository-upload.html <Guide%20to%20uploading%20artifacts%20to%20the%20Central%20Repository>`_).
+In particular, the tag in a POM files should be removed, as well as or
+tags as all dependencies should be already in Central. We will use
+similar rules for the Debian repository.
+
+Versions in Maven POM files and smooth updates of Debian packages
+-----------------------------------------------------------------
+
+The Maven repository should support smooth upgrades of Java libraries.
+When a new version of a library is installed in a Debian system, this is
+what should happend:
+
+1. Files in **:math:`REPO/`\ GROUPID/:math:`ARTIFACTID/`\ OLD\_VERSION/**
+   are deleted
+2. The new POM file and link to the jar are installed under
+   **:math:`REPO/`\ GROUPID/:math:`ARTIFACTID/`\ NEW\_VERSION/**
+3. Other POMs which have a dependency on **:math:`GROUPID:`\ ARTIFACTID::math:`OLD\_VERSION__ should see their dependencies updated to __`\ GROUPID::math:`ARTIFACTID:`\ NEW\_VERSION**
+
+Steps 1. and 2. are simple file operations, but 3. implies that dpkg
+should somehow parse all POM files installed under $REPO, and update the
+dependency version where necessary. This would imply changing files
+outside of the package affected by the update, and those files may
+belong to other packages. This is difficult and against the Debian
+guidelines.
+
+We are using a solution which keeps the amount of effort to a minimum,
+keeps $REPO consistent and useable at all times and works well with
+Maven.
+
+The idea is to maintain 2 versions of each artifact under the Maven
+repository. The first version uses the native version from Maven, to
+keep compatibility.
+
+The second version is more interesting: its version is converted to a
+Debian managed version, usually 'debian', but it could be '1.x' to
+represent any version compatible with the version 1 of the API.
+
+The Maven repository will look like this:
+
+::
+
+    /usr/share/java/
+      commons-beanutils-1.8.0.jar
+      commons-beanutils.jar -> commons-beanutils-1.8.0.jar
+      junit-3.8.2.jar
+      junit.jar -> junit-3.8.2.jar
+    /usr/share/maven-repo/
+       commons-beanutils/commons-beanutils/1.8.0/
+         commons-beanutils-1.8.0.jar -> ../../../../java/commons-beanutils-1.8.0.jar
+         commons-beanutils-1.8.0.pom
+       commons-beanutils/commons-beanutils/debian/
+         commons-beanutils-debian.jar -> ../../../../java/commons-beanutils-1.8.0.jar
+         commons-beanutils-debian.pom
+       junit/junit/3.8.2/
+         junit-3.8.2.jar -> ../../../../java/junit-3.8.2.jar
+         junit-3.8.2.pom
+       junit/junit/3.x/
+         junit-3.x.jar -> ../../../../java/junit-3.8.2.jar
+         junit-3.x.pom
+
+The jar for each package (here libcommons-beanutils-java and junit) are
+installed in /usr/share/java to comply with the Debian Java policy, then
+we create symlinks to those jars in the places where we need them. So we
+have a link for the jar under the current version folder in
+/usr/share/maven-repo, and there is a link to the jar under the Debian
+version in the Maven repository.
+
+Upgrading the jar is now a simple matter of deleting the jars, symlinks
+and folders used by the old version, creating the jars, symlinks and
+folders for the new version, and updating the symlinks for the
+versionless links in /usr/share/java (commons-beanutils.jar, junit.jar)
+and updating the symlinks for the Debian versioned symlinks
+(/usr/share/maven-repo/commons-beanutils/commons-beanutils/debian/commons-beanutils-debian.jar
+and /usr/share/maven-repo/junit/junit/3.x/junit-3.x.jar). Don't worry,
+the scripts provided by maven-repo-helper will do this for you.
+
+This layout makes it easy to upgrade libraries independenly of each
+others, it keeps some compatibility with the Maven central repository so
+that you can mix and match Debian-controlled parts of the repository
+with downloads from the Internet if you wish.
+
+Now the real trick is in how dependencies are versioned in each POM: we
+replace all native versions with Debian versions.
+
+This is the (simplified) content of commons-beanutils-1.8.0.pom:
+
+::
+
+    <project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>commons-beanutils</groupId>
+    <artifactId>commons-beanutils</artifactId>
+    <version>1.8.0</version>
+    <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>debian</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.x</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections-testframework</artifactId>
+            <version>debian</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.x</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    </project>
+
+commons-beanutils-debian.pom has the same content, except that is now
+'debian':
+
+::
+
+    <project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>commons-beanutils</groupId>
+    <artifactId>commons-beanutils</artifactId>
+    <version>debian</version> <!-- 'debian' version here ! -->
+    <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>debian</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.x</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections-testframework</artifactId>
+            <version>debian</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.x</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    </project>
+
+Note that all dependencies have also their versions replaced with the
+symbolic versions from Debian. For example, there is a dependency on
+version 3.x of junit. 3.x is a symbolic version for junit that we have
+defined earlier.
+
+If we need to update junit to a new version, let's suppose that the
+version 3.8.3 comes out, then junit 3.8.2 will be removed from the Maven
+repository and replaced by junit 3.8.3. But junit 3.x will not be
+affected by the change, except that the target for the symlink of
+junit-3.x.jar will now point to junit-3.8.3.jar. More importantly, the
+POM file for junit 3.x will not change, which means that we can keep
+pointing to it from other packages, like in this case
+libcommons-beanutils-java.
+
+Alternatives
+------------
+
+-  JPackage
+
+The documentation of JPackage can be found at
+http://www.jpackage.org/cgi-bin/viewvc.cgi/src/jpackage-utils/doc/jpackage-1.5-policy.xhtml?root=jpackage&view=co.
+There is no information there on how to use maven. JPackage uses a
+patched Maven that understands the package layout in /usr/share/java. As
+a maintainer you have to learn the toolset - and that is why JPackage
+fails the 'easy to use' requirement.
+
+JPackage cheats on version numbers - whenever a pom requests a specific
+version like 1.2.3 its Maven just delivers what is has in
+/usr/share/java without considering the requested version all. They
+obviously did not solved the problem of having multiple versions of an
+artifact installed at the same time but we have various versions of asm,
+commons-collections, junit, and more in Debian and we must have a
+solution for that.
+
+-  Version ranges
+
+Maven supports version ranges - see the `version ranges
+specification <http://docs.codehaus.org/display/MAVEN/Dependency+Mediation+and+Conflict+Resolution>`_.
+We could use replace strict versions in dependencies by version ranges,
+to allow smooth upgrades when a library is updated. For example, in the
+commons-beanutils POM we could replace the version for the junit
+dependency by a version range:
+
+::
+
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>[3.8.2,4.0)</version>
+        <scope>test</scope>
+    </dependency>
+
+With this new POM definition, we could easily update junit from version
+3.8.2 to version 3.8.3 without breaking commons-beanutils.
+
+That's a neet solution, unfortunately Maven 2 had quite a few issues
+with version ranges. To enable a reliable resolution of versions with
+version ranges, we need first to enforce a reliable numbering scheme for
+Java libraries. Some Java libraries in Debian have some really strange
+version schemes, some use for example dates, others -ALPHA, -BETA, -RC
+suffixes, others not. It looks like Maven 3.1 will adopt OSGi numering
+scheme, but nothing is written in stone at the moment. When things will
+have settled, we will probably update the Maven repository for Debian to
+use version ranges instead of symbolic versions.
+
+Targets
+=======
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in
+[[http://www.ietf.org/rfc/rfc2119.txt\|RFC 2119]].
+
+This specification is targeted at the following types of packages:
+
+1. Packages that use Maven for building SHALL install their artifacts
+   into **$REPO**. Those packages SHOULD use maven-repo-helper or
+   maven-debian-helper which will do most of the work automatically.
+2. Packages that don't use Maven (yet) but their upstream developers are
+   using Maven: they SHALL install their artifacts into **$REPO** after
+   making sure they follow the specification. Patching of the pom.xml
+   files might be necessary. Maven-repo-helper or maven-debian-helper
+   MAY be used to check the conformance to the spec.
+3. Package where the upstream developers don't use Maven but pom.xml are
+   provided for Maven users: the artifacts SHOULD be installed into
+   **$REPO** after making sure they follow the specification. Patching
+   of the pom.xml files might be necessary. Maven-repo-helper MAY be
+   used to check the conformance to the spec.
+4. All other packages: pom.xml files from other sources (central,
+   mvnrepository.com or hand written) MAY be installed into **$REPO**
+   after making sure the artifacts follow the specification. Patching of
+   the pom.xml files might be necessary. Maven-repo-helper MAY be used
+   to check the conformance to the spec. For packages that are used very
+   often by Maven based packages (example: junit) the MAY or SHOULD used
+   above SHOULD be upgraded to a SHALL.
+
+Specification
+=============
+
+Artifacts MUST be installed into **:math:`REPO/`\ GROUPID/:math:`ARTIFACTID/`\ VERSION/**
+where $GROUPID is the result of **groupId.replace( '.', '/' )** and
+:math:`VERSION is the current version of the artifact. The pom.xml files MUST be installed as __`\ ARTIFACTID-:math:`VERSION.pom__ and the symlink to the jar file as __`\ ARTIFACTID-:math:`VERSION.jar__. Following the Debian Java policy, the jar file itself SHOULD be installed as __`\ ARTIFACTID.jar\_\_
+into **/usr/share/java/**, but the name of the jar MAY be different.
+
+Artifacts SHOULD also be installed into **:math:`REPO/`\ GROUPID/:math:`ARTIFACTID/`\ DEBIAN\_VERSION/**,
+where $DEBIAN\_VERSION is the symbolic version used to facilitate
+updates of the artifact in Debian. As we need to guaranty that the new
+version of the package will keep running and won't break dependant
+packages, it is advised to use a symbolic version which will exclude API
+breaking changes in the library. A well behaved library will use the
+symbolic versions 1.x, 2.x, 3.x and so on to indicate that all versions
+starting with 1. will be mapped to the symbolic version 1.x and that
+minor updates in this version range will not break other packages, but
+version 2.0 onwards will contain breaking changes and require a bigger
+upgrade including updating the symbolic version 2.x for this library and
+for all dependant packages. It is expected that such a major change MAY
+require a new packaging for the library, for example
+libcommons-collections-java contains the version 2. of
+commons-collection and uses the symbolic version 2.x in the Maven
+repository, but libcommons-collections3-java contains the version 3. of
+commons-collections and uses the symbolic version 3.x in the Maven
+repository.
+
+Maven plugins cannot use symbolic versions, so when the artifact is a
+Maven plugin, then the symbolic version SHOULD NOT be used for that
+artifact.
+
+All compile and run time dependencies including parents and plugins MUST
+be resolved by packages that are available in Debian. Test dependencies
+need not be resolvable except if you want to build and run the test
+code.
+
+For all dependencies already packaged in Debian with the accompanying
+Maven metadata, hard coded version numbers for those dependencies SHOULD
+be replaced by their symbolic version. Example:
+
+::
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>2.0.9</version>
+    </dependency>
+
+should be changed to
+
+::
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>2.x</version>
+    </dependency>
+
+When the POM contains also a reference to a parent, then the version for
+this parent SHOULD also be replaced by a symbolic version. Example:
+
+::
+
+    <parent>
+        <groupId>asm</groupId>
+        <artifactId>asm-parent</artifactId>
+        <version>2.2.3</version>
+    </parent>
+
+    <parent>
+        <groupId>asm</groupId>
+        <artifactId>asm-parent</artifactId>
+        <version>2.x</version>
+    </parent>
+
+Dependencies that are not yet following this specification can be
+referred with **system** and **/usr/share/java/$ARTIFACTID.jar** but
+this SHOULD be avoided if possible. Example:
+
+::
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>2.0.9</version>
+    </dependency>
+
+could be changed to
+
+::
+
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>2.0.9</version>
+      <scope>system</scope>
+      <systemPath>/usr/share/java/maven2.jar</systemPath>
+    </dependency>
+
+as long as the Debian package maven2 does not ship its pom files. The
+hardcoded version number is ignored by Maven if the **** element is
+specified.
+
+The helper scripts provided by maven-repo-helper (in particular
+mh\_cleanpom and mh\_installpom) and maven-debian-helper (integrated in
+Maven as Maven plugins) will assist you to install the jar files and the
+POM descriptors in the repository, and replace the versions in the POM
+files by symbolic versions where needed. They perform further operations
+such as removing unecessary tags in the XML (, and in particular are
+removed), and they insert some useful additional information in the POM
+file as properties. Those additional properties provide guidance for
+those automatic tools when working on the package or on packages
+dependent upon this package.
+
+For example:
+
+::
+
+    <properties>
+        <debian.originalVersion>2.2.3</debian.originalVersion>
+        <debian.package>libasm2-java</debian.package>
+        <debian.mavenRules><![CDATA[asm * * s/2\..*/2.x/ * *]]></debian.mavenRules>
+    </properties>
+
+-  debian.originalVersion: Indicates the current version for the
+   library. Used in particular to manage updates.
+-  debian.package: Name of the binary Debian package containing this POM
+   file. It speeds up packaging, as launching dpkg--search is not really
+   efficient from Java.
+-  debian.mavenRules: Lists the rules used for this package. It
+   simplifies handling dependencies. For example, if the dependency
+   asm:asm:2.4.5 is found in a POM file, then we try to apply the rule
+   'asm \* \* s/2..\*/2.x/ \* \*'. It will match and return 'asm asm jar
+   2.x compile' after dependency resolution, and the tool will replace
+   version 2.4.5 by 2.x in the POM file.
+-  debian.hasPackageVersion: Indicates that there is a match between the
+   version in Maven and the Debian version of the package. For example
+   if the Maven version is 2.2.3 for asm, and the debian version of
+   libasm2-java is 2.2.3-1, then we can add this property flag to the
+   POM. For consumers of the package, it means that if they have a
+   dependency on asm with the version 2.2 for example, then they can use
+   a version constraint on their Depends and Build-Depends for the
+   libasm2-java package, like so:
+
+   Depends: ${misc:Depends}, libasm2-java ( >= 2.2 )
+
+Glossary
+========
+
+Some of Maven's concept are explained here but do not expect an exact
+reference, please.
+
+-  **Artifact**: An artifact is a module in a Maven project. Every
+   artifact has one pom.xml file (called the POM) and has zero or one
+   binary jar files. An artifact can be uniquely addressed by the ****,
+   ****, and **** elements.
+-  **Dependency**: A reference to another artifact that is needed for
+   building, testing, or during runtime. It is specified by the ****
+   element.
+-  **Parent**: Every artifact can have zero or one dependency specified
+   by the **** element. Parent are somewhat similar to dependencies but
+   not identical.
+-  **Plugin**: Maven uses plugins to carry out most of the work of build
+   process like the ''maven-clean-plugin'', ''maven-compile-plugin'',
+   and ''maven-jar-plugin'' - just to name a few. Specialized plugins
+   can be used to customize the build process and they are specified by
+   the **** element.
+-  **POM**: The ''project object model'' that describes the artifact and
+   its build process. It is represented as a file pom.xml in the source
+   code which gets renamed to :math:`ARTIFACTID-`\ VERSION.pom during
+   installation. It is also designed as Maven metadata as it contains
+   data about an artifact.
+-  **Project**: One or more modules can be built in one build process
+   and they usually share the same version number. In a multimodule
+   project the modules are specified by the **** element. That is why
+   every maven project is best packaged as one Debian source package.
+

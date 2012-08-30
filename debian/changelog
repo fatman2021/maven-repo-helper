@@ -1,10 +1,27 @@
 maven-repo-helper (1.7.2) UNRELEASED; urgency=low
 
+  [Ludovic Claude]
   * Move repository to Git, thanks to Thomas Koch.
     (Closes: #644259)
+  * Convert Markdown documentation into reStructuredText
+    format, as markdown package is not much maintained and not
+    officially supported in Ubuntu.
   * d/control:
     - Bump Standards-Version to 3.9.3 (no changes needed).
     - update Vcs-Browser and Vcs-Git fields following move to Git
+    - Build-Depends: replace dependency on markdown by python-docutils
+
+  [Thomas Kock]
+  * code refactorings and cleanups:
+    - Added a minimal cli parsing package
+    - deprecate setters in DependencyRuleSet
+    - make DependencyRule final and ctor shorter
+    - add TODO file
+    - provide Builder for Dependency class, deprecate setters
+    - remove dead code, since we've a VCS
+    - solve two eclipse warnings
+    - remove unused property isPOM in POMCleaner
+    - add complete constructor to Rule
 
  -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 07 May 2012 22:18:21 +0200
 

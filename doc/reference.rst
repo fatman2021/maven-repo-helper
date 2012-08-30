@@ -1,0 +1,13 @@
+`repository specification <repository.html>`_ \|
+`reference <reference.html>`_ \| `tutorial <tutorial.html>`_
+
+Reference for Maven Repo Helper
+===============================
+
+Working with POM files
+----------------------
+
+In Maven, POM files are xml files containing the full definition of a
+project and how to build it. maven-repo-helper can manipulate them in
+order to clean unecessary cruft and integrate seamlessly in a Debian
+environment.

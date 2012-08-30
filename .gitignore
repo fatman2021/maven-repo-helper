@@ -1,4 +1,5 @@
 .notes
 .mvn
 *.log
-
+*.iml
+*~
