@@ -10,6 +10,7 @@ maven-repo-helper (1.7.2) UNRELEASED; urgency=low
     - Bump Standards-Version to 3.9.3 (no changes needed).
     - update Vcs-Browser and Vcs-Git fields following move to Git
     - Build-Depends: replace dependency on markdown by python-docutils
+    - use junit4 instead of junit
 
   [Thomas Kock]
   * code refactorings and cleanups:

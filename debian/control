@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 Uploaders: Ludovic Claude <ludovic.claude@laposte.net>, Damien Raude-Morvan <drazzib@debian.org>
 Build-Depends: debhelper (>= 7), cdbs, default-jdk, ant, help2man, python-docutils
-Build-Depends-Indep: ant-optional, libstax-java, junit, libxmlunit-java, libcommons-io-java
+Build-Depends-Indep: ant-optional, libstax-java, junit4, libxmlunit-java, libcommons-io-java
 Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/pkg-java/maven-repo-helper.git
 Vcs-Browser: http://git.debian.org/?p=pkg-java/maven-repo-helper.git
