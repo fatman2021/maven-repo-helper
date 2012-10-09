@@ -38,6 +38,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.debian.maven.cliargs.ArgumentsMap;
 
+import static org.debian.maven.repo.DependencyRuleSet.*;
+
 /**
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
@@ -139,7 +141,7 @@ public class POMTransformer extends POMReader {
             POMInfo pom = i.next();
             if (pom.getThisPom().getType().equals("maven-plugin")) {
                 Set<DependencyRule> pomRules = pom.getPublishedRules();
-                rules.add(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
+                rules.add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
                 boolean found = false;
                 for (DependencyRule rule: pomRules) {
                     if (rule.matches(pom.getThisPom()) && rule.apply(pom.getThisPom()).equals(pom.getThisPom())
@@ -159,13 +161,13 @@ public class POMTransformer extends POMReader {
         }
         // Remove the default rules from the list of automatic rules, as they may be added by the scanning
         // but addDefaultRules() may not have been called
-        automaticRules.getRules().remove(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
-        automaticRules.getRules().remove(DependencyRule.TO_DEBIAN_VERSION_RULE);
+        automaticRules.getRules().remove(MAVEN_PLUGINS_KEEP_VERSION_RULE);
+        automaticRules.getRules().remove(TO_DEBIAN_VERSION_RULE);
     }
 
     public void addDefaultRules() {
-        addRule(DependencyRule.TO_DEBIAN_VERSION_RULE);
-        addRule(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
+        addRule(TO_DEBIAN_VERSION_RULE);
+        addRule(MAVEN_PLUGINS_KEEP_VERSION_RULE);
     }
 
     public void addRule(DependencyRule rule) {
@@ -813,7 +815,7 @@ public class POMTransformer extends POMReader {
         if (!info.getProperties().containsKey("debian.mavenRules")) {
             if (publishUsedRule && info.getOriginalPom() != null) {
                 DependencyRule usedRule = info.getOriginalPom().findMatchingRule(rules.getRules());
-                if (usedRule != null && !usedRule.equals(DependencyRule.TO_DEBIAN_VERSION_RULE) && !usedRule.equals(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE)) {
+                if (usedRule != null && !usedRule.equals(TO_DEBIAN_VERSION_RULE) && !usedRule.equals(MAVEN_PLUGINS_KEEP_VERSION_RULE)) {
                     addPublishedRule(usedRule);
                 }
             }
@@ -963,7 +965,7 @@ public class POMTransformer extends POMReader {
         transformer.setListOfPOMs(listOfPOMs);
 
         if (noRules) {
-            transformer.addRule(DependencyRule.NO_CHANGE_RULE);
+            transformer.addRule(NO_CHANGE_RULE);
         } else {
             if (rulesFile != null) {
                 if (!rulesFile.exists()) {

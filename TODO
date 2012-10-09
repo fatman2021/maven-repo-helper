@@ -3,3 +3,4 @@
   and use it as part of the Dependency class?
 * use an enum for Dependency type
 * #651901: mh_install should support creating additional links (at least one) for a jar
+

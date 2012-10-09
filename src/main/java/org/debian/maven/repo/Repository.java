@@ -40,6 +40,8 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import static org.debian.maven.repo.DependencyRuleSet.*;
+
 /**
  *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
@@ -128,8 +130,8 @@ public class Repository {
         Map<DependencyRule, POMInfo> potentialMatches = new TreeMap<DependencyRule, POMInfo>();
         for (POMInfo testPom: getAllPoms()) {
             Set<DependencyRule> rules = testPom.getPublishedRules();
-            rules.add(DependencyRule.MAVEN_PLUGINS_KEEP_VERSION_RULE);
-            rules.add(DependencyRule.TO_DEBIAN_VERSION_RULE);
+            rules.add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
+            rules.add(TO_DEBIAN_VERSION_RULE);
             
             for (DependencyRule rule: rules) {
                 if (rule.matches(dependency) && rule.apply(dependency).equals(testPom.getThisPom())) {

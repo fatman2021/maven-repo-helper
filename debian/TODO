@@ -1,1 +1,3 @@
 #651901: mh_install should support creating additional links (at least one) for a jar
+o Fix NPE at build time, see TODO
+o cleanup old .txt files in doc/

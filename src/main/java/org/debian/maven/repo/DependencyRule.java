@@ -24,10 +24,6 @@ import java.util.StringTokenizer;
  */
 public class DependencyRule implements Comparable<DependencyRule> {
 
-    public static final DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
-    public static final DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
-    public static final DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * * * *");
-
     // TODO Rule is not yet immutable, since the description could change, but the description is irrelevant here.
     private static final Rule STAR_RULE = new Rule("*");
     private static final Rule DEBIAN_RULE = new Rule("s/.*/debian/");
@@ -104,9 +100,9 @@ public class DependencyRule implements Comparable<DependencyRule> {
 
     /**
      * Natural sort order: from the most specific rules to the most generic rules,
-     * a rule is more generic if a generic match appears on th egroup rule, then
+     * a rule is more generic if a generic match appears on the group rule, then
      * artifact rule, then type rule, then version rule.
-     * If 2 rules have the same order of genericity, then use an alphabetical
+     * If 2 rules have the same order of genericness, then use an alphabetical
      * sorting of the pattern strings.
      */
     public int compareTo(DependencyRule other) {
