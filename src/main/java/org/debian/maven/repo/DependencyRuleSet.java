@@ -223,7 +223,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
             if (verbose) {
                 System.out.println("---------");
             }
-
+            lnr.close();
         } catch (IOException ex) {
             log.log(Level.SEVERE, null, ex);
         }
