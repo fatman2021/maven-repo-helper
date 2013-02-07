@@ -84,7 +84,6 @@ public class POMReader {
         int inIgnoredElement = 0;
         int inModule = 0;
         int inExtension = 0;
-        int inPlugin = 0;
         int inParent = 0;
         int inProperties = 0;
         String element = null;
@@ -96,7 +95,7 @@ public class POMReader {
                     element = parser.getLocalName();
                     path.addFirst(element);
                     if (isReadIgnoredElement(element) ||
-                            (inPlugin > 0 && PLUGIN_IGNORED_ELEMENTS.contains(element)) ||
+                            (path.contains("plugin") && PLUGIN_IGNORED_ELEMENTS.contains(element)) ||
                             (path.contains("dependency") && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
@@ -130,7 +129,6 @@ public class POMReader {
                     } else if (path.contains("dependency")) {
                         // Nothing to do, path.get(0) == "dependency" handled before!
                     } else if ("plugin".equals(element)) {
-                        inPlugin++;
                         currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
                         if ("plugins".equals(path.get(1))) {
                             if ("pluginManagement".equals(path.get(2))) {
@@ -151,8 +149,8 @@ public class POMReader {
                                 plugins.add(currentDependency);
                             }
                         }
-                    } else if (inPlugin > 0) {
-                        inPlugin++;
+                    } else if (path.contains("plugin")) {
+                        // nothing to do, path.get(0) == "plugin" handled before!
                     } else if ("extension".equals(element)) {
                         inExtension++;
                         currentDependency = new Dependency(null, null, "jar", null);
@@ -183,10 +181,8 @@ public class POMReader {
                     path.removeFirst();
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
-                    } else if (path.contains("dependency") || path.contains("exclusions")) {
+                    } else if (path.contains("dependency") || path.contains("exclusions") || path.contains("plugin")) {
                         // nothing to do
-                    } else if (inPlugin > 0) {
-                        inPlugin--;
                     } else if (inExtension > 0) {
                         inExtension--;
                     } else if (inModule > 0) {
@@ -204,7 +200,7 @@ public class POMReader {
                     String value = parser.getText().trim();
                     if (inIgnoredElement > 0 || path.contains("exclusions")) {
                         // ignore
-                    } else if (path.contains("dependency") || inPlugin > 1 || inExtension > 1) {
+                    } else if (path.contains("dependency") || path.contains("plugin") || inExtension > 1) {
                         if ("groupId".equals(element)) {
                             currentDependency.setGroupId(value);
                         } else if ("artifactId".equals(element)) {
