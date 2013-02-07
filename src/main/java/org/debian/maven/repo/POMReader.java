@@ -85,7 +85,6 @@ public class POMReader {
         int inModule = 0;
         int inExtension = 0;
         int inPlugin = 0;
-        int inExclusion = 0;
         int inParent = 0;
         int inProperties = 0;
         String element = null;
@@ -101,8 +100,8 @@ public class POMReader {
                             (path.contains("dependency") && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
-                    } else if ("exclusions".equals(element) || inExclusion > 0) {
-                        inExclusion++;
+                    } else if (path.contains("exclusions")) {
+                        // nothing to do
                     } else if ("dependency".equals(element)) {
                         currentDependency = new Dependency(null, null, "jar", null);
                         if ("dependencies".equals(path.get(1))) {
@@ -184,9 +183,7 @@ public class POMReader {
                     path.removeFirst();
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
-                    } else if (inExclusion > 0) {
-                        inExclusion--;
-                    } else if (path.contains("dependency")) {
+                    } else if (path.contains("dependency") || path.contains("exclusions")) {
                         // nothing to do
                     } else if (inPlugin > 0) {
                         inPlugin--;
@@ -205,7 +202,7 @@ public class POMReader {
 
                 case XMLStreamConstants.CHARACTERS: {
                     String value = parser.getText().trim();
-                    if (inIgnoredElement > 0 || inExclusion > 0) {
+                    if (inIgnoredElement > 0 || path.contains("exclusions")) {
                         // ignore
                     } else if (path.contains("dependency") || inPlugin > 1 || inExtension > 1) {
                         if ("groupId".equals(element)) {
