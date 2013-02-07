@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -56,7 +57,10 @@ public class POMReader {
 
     public POMInfo readPom(Reader originalPom) throws XMLStreamException {
         XMLStreamReader parser = factory.createXMLStreamReader(new BufferedReader(originalPom));
-        List<String> path = new ArrayList<String>();
+        
+        // Stack of the XML path currently parsed. Most deepest XML element is first in the list.
+        LinkedList<String> path = new LinkedList<String>();
+        
         List<Dependency> dependencies = new ArrayList<Dependency>();
         List<Dependency> dependencyManagement = new ArrayList<Dependency>();
         List<Dependency> extensions = new ArrayList<Dependency>();
@@ -100,68 +104,54 @@ public class POMReader {
                         inIgnoredElement++;
                     } else {
                         inLevel++;
-                        path.add(element);
+                        path.addFirst(element);
                         if ("exclusions".equals(element) || inExclusion > 0) {
                             inExclusion++;
                         } else if ("dependency".equals(element)) {
                             inDependency++;
                             currentDependency = new Dependency(null, null, "jar", null);
-                            String parentElement = path.get(path.size() - 2);
-                            String parentParentElement = path.get(path.size() - 3);
-                            if ("dependencies".equals(parentElement)) {
-                                if ("dependencyManagement".equals(parentParentElement)) {
-                                    String p3Element = path.get(path.size() - 4);
-                                    if ("project".equals(p3Element)) {
+                            if ("dependencies".equals(path.get(1))) {
+                                if ("dependencyManagement".equals(path.get(2))) {
+                                    if ("project".equals(path.get(3))) {
                                         dependencyManagement.add(currentDependency);
-                                    } else if ("profile".equals(p3Element)) {
+                                    } else if ("profile".equals(path.get(3))) {
                                         profileDependencyManagement.add(currentDependency);
                                     }
-                                } else if ("project".equals(parentParentElement)) {
+                                } else if ("project".equals(path.get(2))) {
                                     dependencies.add(currentDependency);
-                                } else if ("profile".equals(parentParentElement)) {
+                                } else if ("profile".equals(path.get(2))) {
                                     profileDependencies.add(currentDependency);
-                                } else if ("plugin".equals(parentParentElement)) {
-                                    String p5Element = path.get(path.size() - 6);
-                                    if ("project".equals(p5Element)) {
+                                } else if ("plugin".equals(path.get(2))) {
+                                    if ("project".equals(path.get(5))) {
                                         pluginDependencies.add(currentDependency);
-                                    } else if ("build".equals(p5Element)) {
+                                    } else if ("build".equals(path.get(5))) {
                                         pluginManagementDependencies.add(currentDependency);
-                                    } else if ("profile".equals(p5Element)) {
+                                    } else if ("profile".equals(path.get(5))) {
                                         profilePluginDependencies.add(currentDependency);
                                     }
                                 }
                             } else {
-                                System.err.println("Unexpected element: " + parentElement);
+                                System.err.println("Unexpected element: " + path.get(1));
                             }
                         } else if (inDependency > 0) {
                             inDependency++;
                         } else if ("plugin".equals(element)) {
                             inPlugin++;
-                            String parentElement = path.get(path.size() - 2);
-                            String parentParentElement = path.get(path.size() - 3);
-                            String parentParentParentElement = null;
-                            String p4Element = null;
-                            if (path.size() > 4) {
-                                parentParentParentElement = path.get(path.size() - 4);
-                            }
-                            if (path.size() > 5) {
-                                p4Element = path.get(path.size() - 5);
-                            }
                             currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
-                            if ("plugins".equals(parentElement)) {
-                                if ("pluginManagement".equals(parentParentElement)) {
-                                    if ("profile".equals(p4Element)) {
+                            if ("plugins".equals(path.get(1))) {
+                                if ("pluginManagement".equals(path.get(2))) {
+                                    if ("profile".equals(path.get(4))) {
                                         profilePluginManagement.add(currentDependency);
                                     } else {
                                         pluginManagement.add(currentDependency);
                                     }
-                                } else if ("reporting".equals(parentParentElement)) {
-                                    if ("profile".equals(parentParentParentElement)) {
+                                } else if ("reporting".equals(path.get(2))) {
+                                    if ("profile".equals(path.get(3))) {
                                         profileReportingPlugins.add(currentDependency);
                                     } else {
                                         reportingPlugins.add(currentDependency);
                                     }
-                                } else if ("profile".equals(parentParentParentElement)) {
+                                } else if ("profile".equals(path.get(3))) {
                                     profilePlugins.add(currentDependency);
                                 } else {
                                     plugins.add(currentDependency);
@@ -201,7 +191,7 @@ public class POMReader {
                         inIgnoredElement--;
                     } else {
                         inLevel--;
-                        path.remove(path.size() - 1);
+                        path.removeFirst();
                         if (inExclusion > 0) {
                             inExclusion--;
                         } else if (inDependency > 0) {
