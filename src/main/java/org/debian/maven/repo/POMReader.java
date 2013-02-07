@@ -81,7 +81,6 @@ public class POMReader {
         Dependency thisPom = new Dependency(null, null, "jar", null);
         Dependency parent = null;
         Dependency currentDependency = null;
-        int inLevel = 0;
         int inIgnoredElement = 0;
         int inModule = 0;
         int inDependency = 0;
@@ -103,7 +102,6 @@ public class POMReader {
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
                     } else {
-                        inLevel++;
                         path.addFirst(element);
                         if ("exclusions".equals(element) || inExclusion > 0) {
                             inExclusion++;
@@ -165,16 +163,16 @@ public class POMReader {
                             extensions.add(currentDependency);
                         } else if (inExtension > 0) {
                             inExtension++;
-                        } else if (inLevel == 2 && "modules".equals(element)) {
+                        } else if (path.size() == 2 && "modules".equals(element)) {
                             inModule++;
                         } else if (inModule > 0) {
                             inModule++;
-                        } else if (inLevel == 2 && "parent".equals(element)) {
+                        } else if (path.size() == 2 && "parent".equals(element)) {
                             inParent++;
                             parent = new Dependency(null, null, "pom", null);
                         } else if (inParent > 0) {
                             inParent++;
-                        } else if (inLevel == 2 && "properties".equals(element)) {
+                        } else if (path.size() == 2 && "properties".equals(element)) {
                             inProperties++;
                         } else if (inProperties == 1) {
                             properties.put(element, "true");
@@ -190,7 +188,6 @@ public class POMReader {
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
                     } else {
-                        inLevel--;
                         path.removeFirst();
                         if (inExclusion > 0) {
                             inExclusion--;
@@ -246,7 +243,7 @@ public class POMReader {
                         }
                     } else if (inProperties > 1) {
                         properties.put(element, value);
-                    } else if (inLevel == 2 && inIgnoredElement == 0) {
+                    } else if (path.size() == 2 && inIgnoredElement == 0) {
                         if ("groupId".equals(element)) {
                             thisPom.setGroupId(value);
                         } else if ("artifactId".equals(element)) {
