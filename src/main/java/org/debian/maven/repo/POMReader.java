@@ -42,6 +42,9 @@ public class POMReader {
     private static final List<String> READ_IGNORED_ELEMENTS = Arrays.asList(
                 "distributionManagement", "ciManagement", "prerequisites", "exclusions",
                 "repositories", "pluginRepositories", "reports", "modelVersion");
+    private static final List<String> PLUGIN_IGNORED_ELEMENTS = Arrays.asList(
+                "executions", "configuration", "goals", "reportSets" );
+
     protected final XMLInputFactory factory = XMLInputFactory.newInstance();
 
     public POMInfo readPom(File originalPom) throws XMLStreamException, FileNotFoundException {
@@ -91,7 +94,7 @@ public class POMReader {
                 case XMLStreamConstants.START_ELEMENT: {
                     element = parser.getLocalName();
                     if (isReadIgnoredElement(element) ||
-                            (inPlugin > 0 && ("executions".equals(element) || "configuration".equals(element)) || "goals".equals(element) || "reportSets".equals(element)) ||
+                            (inPlugin > 0 && PLUGIN_IGNORED_ELEMENTS.contains(element)) ||
                             (inDependency > 0 && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
