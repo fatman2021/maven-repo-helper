@@ -83,7 +83,6 @@ public class POMReader {
         Dependency currentDependency = null;
         int inIgnoredElement = 0;
         int inModule = 0;
-        int inExtension = 0;
         int inParent = 0;
         int inProperties = 0;
         String element = null;
@@ -152,11 +151,10 @@ public class POMReader {
                     } else if (path.contains("plugin")) {
                         // nothing to do, path.get(0) == "plugin" handled before!
                     } else if ("extension".equals(element)) {
-                        inExtension++;
                         currentDependency = new Dependency(null, null, "jar", null);
                         extensions.add(currentDependency);
-                    } else if (inExtension > 0) {
-                        inExtension++;
+                    } else if (path.contains("extension")) {
+                        // nothing to do
                     } else if (path.size() == 2 && "modules".equals(element)) {
                         inModule++;
                     } else if (inModule > 0) {
@@ -181,10 +179,9 @@ public class POMReader {
                     path.removeFirst();
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
-                    } else if (path.contains("dependency") || path.contains("exclusions") || path.contains("plugin")) {
+                    } else if (path.contains("dependency") || path.contains("exclusions") || path.contains("plugin") ||
+                               path.contains("extension")) {
                         // nothing to do
-                    } else if (inExtension > 0) {
-                        inExtension--;
                     } else if (inModule > 0) {
                         inModule--;
                     } else if (inParent > 0) {
@@ -200,7 +197,7 @@ public class POMReader {
                     String value = parser.getText().trim();
                     if (inIgnoredElement > 0 || path.contains("exclusions")) {
                         // ignore
-                    } else if (path.contains("dependency") || path.contains("plugin") || inExtension > 1) {
+                    } else if (path.contains("dependency") || path.contains("plugin") || path.contains("extension")) {
                         if ("groupId".equals(element)) {
                             currentDependency.setGroupId(value);
                         } else if ("artifactId".equals(element)) {
