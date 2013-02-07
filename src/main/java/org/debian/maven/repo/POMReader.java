@@ -23,9 +23,11 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -75,6 +77,10 @@ public class POMReader {
         List<Dependency> profilePluginDependencies = new ArrayList<Dependency>();
         List<Dependency> profilePluginManagement = new ArrayList<Dependency>();
         List<Dependency> profileReportingPlugins = new ArrayList<Dependency>();
+
+        // http://maven.apache.org/pom.html#Aggregation:
+        // "the ordering of the modules [...] is not important"
+        // However the POMTransformer depends on the ordering...
         List<String> modules = new ArrayList<String>();
 
         Map<String, String> properties = new TreeMap<String, String>();
@@ -82,9 +88,6 @@ public class POMReader {
         Dependency parent = null;
         Dependency currentDependency = null;
         int inIgnoredElement = 0;
-        int inModule = 0;
-        int inParent = 0;
-        int inProperties = 0;
         String element = null;
 
         // First pass - collect version and parent information
@@ -153,24 +156,13 @@ public class POMReader {
                     } else if ("extension".equals(element)) {
                         currentDependency = new Dependency(null, null, "jar", null);
                         extensions.add(currentDependency);
-                    } else if (path.contains("extension")) {
+                    } else if (path.contains("extension") || path.contains("modules")) {
                         // nothing to do
-                    } else if (path.size() == 2 && "modules".equals(element)) {
-                        inModule++;
-                    } else if (inModule > 0) {
-                        inModule++;
                     } else if (path.size() == 2 && "parent".equals(element)) {
-                        inParent++;
                         parent = new Dependency(null, null, "pom", null);
-                    } else if (inParent > 0) {
-                        inParent++;
-                    } else if (path.size() == 2 && "properties".equals(element)) {
-                        inProperties++;
-                    } else if (inProperties == 1) {
+                    } else if (path.size() == 3 && "properties".equals(path.get(1))) {
+                        // in case the property does not contain any text, might be overwritten be the nested characters
                         properties.put(element, "true");
-                        inProperties++;
-                    } else if (inProperties > 0) {
-                        inProperties++;
                     }
                     break;
                 }
@@ -179,15 +171,6 @@ public class POMReader {
                     path.removeFirst();
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
-                    } else if (path.contains("dependency") || path.contains("exclusions") || path.contains("plugin") ||
-                               path.contains("extension")) {
-                        // nothing to do
-                    } else if (inModule > 0) {
-                        inModule--;
-                    } else if (inParent > 0) {
-                        inParent--;
-                    } else if (inProperties > 0) {
-                        inProperties--;
                     }
                     element = null;
                     break;
@@ -213,9 +196,10 @@ public class POMReader {
                         } else if ("classifier".equals(element)) {
                             currentDependency.setClassifier(value);
                         }
-                    } else if (inModule > 1) {
+                    } else if (path.size() == 3 && "modules".equals(path.get(1))) {
+                        // we're not interested in the modules section inside a profiles section
                         modules.add(value);
-                    } else if (inParent > 1) {
+                    } else if (path.size() == 3 && "parent".equals(path.get(1))) {
                         if ("groupId".equals(element)) {
                             parent.setGroupId(value);
                         } else if ("artifactId".equals(element)) {
@@ -225,7 +209,7 @@ public class POMReader {
                         } else if ("relativePath".equals(element)) {
                             parent.setRelativePath(value);
                         }
-                    } else if (inProperties > 1) {
+                    } else if (path.size() == 3 && "properties".equals(path.get(1))) {
                         properties.put(element, value);
                     } else if (path.size() == 2 && inIgnoredElement == 0) {
                         if ("groupId".equals(element)) {
@@ -243,7 +227,7 @@ public class POMReader {
 
                 case XMLStreamConstants.CDATA: {
                     String value = parser.getText().trim();
-                    if (inProperties > 1) {
+                    if (path.size() == 3 && "properties".equals(path.get(1))) {
                         properties.put(element, value);
                     }
                     break;
