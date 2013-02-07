@@ -96,114 +96,110 @@ public class POMReader {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT: {
                     element = parser.getLocalName();
+                    path.addFirst(element);
                     if (isReadIgnoredElement(element) ||
                             (inPlugin > 0 && PLUGIN_IGNORED_ELEMENTS.contains(element)) ||
                             (inDependency > 0 && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
-                    } else {
-                        path.addFirst(element);
-                        if ("exclusions".equals(element) || inExclusion > 0) {
-                            inExclusion++;
-                        } else if ("dependency".equals(element)) {
-                            inDependency++;
-                            currentDependency = new Dependency(null, null, "jar", null);
-                            if ("dependencies".equals(path.get(1))) {
-                                if ("dependencyManagement".equals(path.get(2))) {
-                                    if ("project".equals(path.get(3))) {
-                                        dependencyManagement.add(currentDependency);
-                                    } else if ("profile".equals(path.get(3))) {
-                                        profileDependencyManagement.add(currentDependency);
-                                    }
-                                } else if ("project".equals(path.get(2))) {
-                                    dependencies.add(currentDependency);
-                                } else if ("profile".equals(path.get(2))) {
-                                    profileDependencies.add(currentDependency);
-                                } else if ("plugin".equals(path.get(2))) {
-                                    if ("project".equals(path.get(5))) {
-                                        pluginDependencies.add(currentDependency);
-                                    } else if ("build".equals(path.get(5))) {
-                                        pluginManagementDependencies.add(currentDependency);
-                                    } else if ("profile".equals(path.get(5))) {
-                                        profilePluginDependencies.add(currentDependency);
-                                    }
-                                }
-                            } else {
-                                System.err.println("Unexpected element: " + path.get(1));
-                            }
-                        } else if (inDependency > 0) {
-                            inDependency++;
-                        } else if ("plugin".equals(element)) {
-                            inPlugin++;
-                            currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
-                            if ("plugins".equals(path.get(1))) {
-                                if ("pluginManagement".equals(path.get(2))) {
-                                    if ("profile".equals(path.get(4))) {
-                                        profilePluginManagement.add(currentDependency);
-                                    } else {
-                                        pluginManagement.add(currentDependency);
-                                    }
-                                } else if ("reporting".equals(path.get(2))) {
-                                    if ("profile".equals(path.get(3))) {
-                                        profileReportingPlugins.add(currentDependency);
-                                    } else {
-                                        reportingPlugins.add(currentDependency);
-                                    }
+                    } else if ("exclusions".equals(element) || inExclusion > 0) {
+                        inExclusion++;
+                    } else if ("dependency".equals(element)) {
+                        inDependency++;
+                        currentDependency = new Dependency(null, null, "jar", null);
+                        if ("dependencies".equals(path.get(1))) {
+                            if ("dependencyManagement".equals(path.get(2))) {
+                                if ("project".equals(path.get(3))) {
+                                    dependencyManagement.add(currentDependency);
                                 } else if ("profile".equals(path.get(3))) {
-                                    profilePlugins.add(currentDependency);
-                                } else {
-                                    plugins.add(currentDependency);
+                                    profileDependencyManagement.add(currentDependency);
+                                }
+                            } else if ("project".equals(path.get(2))) {
+                                dependencies.add(currentDependency);
+                            } else if ("profile".equals(path.get(2))) {
+                                profileDependencies.add(currentDependency);
+                            } else if ("plugin".equals(path.get(2))) {
+                                if ("project".equals(path.get(5))) {
+                                    pluginDependencies.add(currentDependency);
+                                } else if ("build".equals(path.get(5))) {
+                                    pluginManagementDependencies.add(currentDependency);
+                                } else if ("profile".equals(path.get(5))) {
+                                    profilePluginDependencies.add(currentDependency);
                                 }
                             }
-                        } else if (inPlugin > 0) {
-                            inPlugin++;
-                        } else if ("extension".equals(element)) {
-                            inExtension++;
-                            currentDependency = new Dependency(null, null, "jar", null);
-                            extensions.add(currentDependency);
-                        } else if (inExtension > 0) {
-                            inExtension++;
-                        } else if (path.size() == 2 && "modules".equals(element)) {
-                            inModule++;
-                        } else if (inModule > 0) {
-                            inModule++;
-                        } else if (path.size() == 2 && "parent".equals(element)) {
-                            inParent++;
-                            parent = new Dependency(null, null, "pom", null);
-                        } else if (inParent > 0) {
-                            inParent++;
-                        } else if (path.size() == 2 && "properties".equals(element)) {
-                            inProperties++;
-                        } else if (inProperties == 1) {
-                            properties.put(element, "true");
-                            inProperties++;
-                        } else if (inProperties > 0) {
-                            inProperties++;
+                        } else {
+                            System.err.println("Unexpected element: " + path.get(1));
                         }
+                    } else if (inDependency > 0) {
+                        inDependency++;
+                    } else if ("plugin".equals(element)) {
+                        inPlugin++;
+                        currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
+                        if ("plugins".equals(path.get(1))) {
+                            if ("pluginManagement".equals(path.get(2))) {
+                                if ("profile".equals(path.get(4))) {
+                                    profilePluginManagement.add(currentDependency);
+                                } else {
+                                    pluginManagement.add(currentDependency);
+                                }
+                            } else if ("reporting".equals(path.get(2))) {
+                                if ("profile".equals(path.get(3))) {
+                                    profileReportingPlugins.add(currentDependency);
+                                } else {
+                                    reportingPlugins.add(currentDependency);
+                                }
+                            } else if ("profile".equals(path.get(3))) {
+                                profilePlugins.add(currentDependency);
+                            } else {
+                                plugins.add(currentDependency);
+                            }
+                        }
+                    } else if (inPlugin > 0) {
+                        inPlugin++;
+                    } else if ("extension".equals(element)) {
+                        inExtension++;
+                        currentDependency = new Dependency(null, null, "jar", null);
+                        extensions.add(currentDependency);
+                    } else if (inExtension > 0) {
+                        inExtension++;
+                    } else if (path.size() == 2 && "modules".equals(element)) {
+                        inModule++;
+                    } else if (inModule > 0) {
+                        inModule++;
+                    } else if (path.size() == 2 && "parent".equals(element)) {
+                        inParent++;
+                        parent = new Dependency(null, null, "pom", null);
+                    } else if (inParent > 0) {
+                        inParent++;
+                    } else if (path.size() == 2 && "properties".equals(element)) {
+                        inProperties++;
+                    } else if (inProperties == 1) {
+                        properties.put(element, "true");
+                        inProperties++;
+                    } else if (inProperties > 0) {
+                        inProperties++;
                     }
                     break;
                 }
 
                 case XMLStreamConstants.END_ELEMENT: {
+                    path.removeFirst();
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
-                    } else {
-                        path.removeFirst();
-                        if (inExclusion > 0) {
-                            inExclusion--;
-                        } else if (inDependency > 0) {
-                            inDependency--;
-                        } else if (inPlugin > 0) {
-                            inPlugin--;
-                        } else if (inExtension > 0) {
-                            inExtension--;
-                        } else if (inModule > 0) {
-                            inModule--;
-                        } else if (inParent > 0) {
-                            inParent--;
-                        } else if (inProperties > 0) {
-                            inProperties--;
-                        }
+                    } else if (inExclusion > 0) {
+                        inExclusion--;
+                    } else if (inDependency > 0) {
+                        inDependency--;
+                    } else if (inPlugin > 0) {
+                        inPlugin--;
+                    } else if (inExtension > 0) {
+                        inExtension--;
+                    } else if (inModule > 0) {
+                        inModule--;
+                    } else if (inParent > 0) {
+                        inParent--;
+                    } else if (inProperties > 0) {
+                        inProperties--;
                     }
                     element = null;
                     break;
