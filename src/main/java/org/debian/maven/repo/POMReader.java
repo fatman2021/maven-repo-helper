@@ -291,7 +291,7 @@ public class POMReader {
         }
         info.setThisPom(thisPom);
         info.setParent(parent);
-        info.setModules(modules);
+        info.setModules(new ArrayList<String>(modules));
         info.setDependencies(dependencies);
         info.setDependencyManagement(dependencyManagement);
         info.setExtensions(extensions);
