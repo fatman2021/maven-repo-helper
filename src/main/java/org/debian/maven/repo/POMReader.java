@@ -101,8 +101,6 @@ public class POMReader {
                             (path.contains("dependency") && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
-                    } else if (path.contains("exclusions")) {
-                        // nothing to do
                     } else if ("dependency".equals(element)) {
                         currentDependency = new Dependency(null, null, "jar", null);
                         if(path.matches("project/dependencyManagement/dependencies/dependency"))
@@ -122,8 +120,6 @@ public class POMReader {
                         else {
                             System.err.println("Unexpected element: " + path.parent(1));
                         }
-                    } else if (path.contains("dependency")) {
-                        // Nothing to do, path.parent(0) == "dependency" handled before!
                     } else if ("plugin".equals(element)) {
                         currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
 
@@ -140,13 +136,9 @@ public class POMReader {
                         else if(path.matches("plugin"))
                             plugins.add(currentDependency);
 
-                    } else if (path.contains("plugin")) {
-                        // nothing to do, path.parent(0) == "plugin" handled before!
                     } else if (path.matches("extension")) {
                         currentDependency = new Dependency(null, null, "jar", null);
                         extensions.add(currentDependency);
-                    } else if (path.contains("extension") || path.contains("modules")) {
-                        // nothing to do
                     } else if (path.size() == 2 && "parent".equals(element)) {
                         parent = new Dependency(null, null, "pom", null);
                     } else if (path.size() == 3 && "properties".equals(path.parent(1))) {
