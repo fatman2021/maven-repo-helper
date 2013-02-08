@@ -1,5 +1,7 @@
 package org.debian.maven.repo;
 
+import org.debian.maven.repo.POMReader.TreePath;
+
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -355,4 +357,21 @@ public class POMReaderTest {
         assertEquals(0, info.getModules().size());
     }
 
+    public void testTreePathMatches() {
+        TreePath<String> path = new TreePath<String>();
+        path.add("a");
+        path.add("b");
+        path.add("c");
+        path.add("d");
+
+        assertTrue(path.matches("a/b/c/d"));
+        assertTrue(path.matches("b/c/d"));
+        assertTrue(path.matches("c/d"));
+        assertTrue(path.matches("d"));
+
+        assertTrue(path.matches("*/b/c/d"));
+        assertTrue(path.matches("a/*/c/d"));
+        assertTrue(path.matches("a/b/*/d"));
+        assertTrue(path.matches("a/b/c/*"));
+    }
 }

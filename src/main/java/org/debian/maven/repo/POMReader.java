@@ -105,55 +105,44 @@ public class POMReader {
                         // nothing to do
                     } else if ("dependency".equals(element)) {
                         currentDependency = new Dependency(null, null, "jar", null);
-                        if ("dependencies".equals(path.parent(1))) {
-                            if ("dependencyManagement".equals(path.parent(2))) {
-                                if ("project".equals(path.parent(3))) {
-                                    dependencyManagement.add(currentDependency);
-                                } else if ("profile".equals(path.parent(3))) {
-                                    profileDependencyManagement.add(currentDependency);
-                                }
-                            } else if ("project".equals(path.parent(2))) {
-                                dependencies.add(currentDependency);
-                            } else if ("profile".equals(path.parent(2))) {
-                                profileDependencies.add(currentDependency);
-                            } else if ("plugin".equals(path.parent(2))) {
-                                if ("project".equals(path.parent(5))) {
-                                    pluginDependencies.add(currentDependency);
-                                } else if ("build".equals(path.parent(5))) {
-                                    pluginManagementDependencies.add(currentDependency);
-                                } else if ("profile".equals(path.parent(5))) {
-                                    profilePluginDependencies.add(currentDependency);
-                                }
-                            }
-                        } else {
+                        if(path.matches("project/dependencyManagement/dependencies/dependency"))
+                            dependencyManagement.add(currentDependency);
+                        else if(path.matches("profile/dependencyManagement/dependencies/dependency"))
+                            profileDependencyManagement.add(currentDependency);
+                        else if(path.matches("project/dependencies/dependency"))
+                            dependencies.add(currentDependency);
+                        else if(path.matches("profile/dependencies/dependency"))
+                            profileDependencies.add(currentDependency);
+                        else if(path.matches("project/*/*/plugin/dependencies/dependency"))
+                            pluginDependencies.add(currentDependency);
+                        else if(path.matches("build/*/*/plugin/dependencies/dependency"))
+                            pluginManagementDependencies.add(currentDependency);
+                        else if(path.matches("profile/*/*/plugin/dependencies/dependency"))
+                            profilePluginDependencies.add(currentDependency);
+                        else {
                             System.err.println("Unexpected element: " + path.parent(1));
                         }
                     } else if (path.contains("dependency")) {
                         // Nothing to do, path.parent(0) == "dependency" handled before!
                     } else if ("plugin".equals(element)) {
                         currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
-                        if ("plugins".equals(path.parent(1))) {
-                            if ("pluginManagement".equals(path.parent(2))) {
-                                if ("profile".equals(path.parent(4))) {
-                                    profilePluginManagement.add(currentDependency);
-                                } else {
-                                    pluginManagement.add(currentDependency);
-                                }
-                            } else if ("reporting".equals(path.parent(2))) {
-                                if ("profile".equals(path.parent(3))) {
-                                    profileReportingPlugins.add(currentDependency);
-                                } else {
-                                    reportingPlugins.add(currentDependency);
-                                }
-                            } else if ("profile".equals(path.parent(3))) {
-                                profilePlugins.add(currentDependency);
-                            } else {
-                                plugins.add(currentDependency);
-                            }
-                        }
+
+                        if(path.matches("profile/*/pluginManagement/plugins/plugin"))
+                            profilePluginManagement.add(currentDependency);
+                        else if(path.matches("pluginManagement/plugins/plugin"))
+                            pluginManagement.add(currentDependency);
+                        else if(path.matches("profile/reporting/plugins/plugin"))
+                            profileReportingPlugins.add(currentDependency);
+                        else if(path.matches("reporting/plugins/plugin"))
+                            reportingPlugins.add(currentDependency);
+                        else if(path.matches("profile/*/*/plugin"))
+                            profilePlugins.add(currentDependency);
+                        else if(path.matches("plugin"))
+                            plugins.add(currentDependency);
+
                     } else if (path.contains("plugin")) {
                         // nothing to do, path.parent(0) == "plugin" handled before!
-                    } else if ("extension".equals(element)) {
+                    } else if (path.matches("extension")) {
                         currentDependency = new Dependency(null, null, "jar", null);
                         extensions.add(currentDependency);
                     } else if (path.contains("extension") || path.contains("modules")) {
@@ -360,6 +349,20 @@ public class POMReader {
         public S parent(int generations) {
             int index = (path.size() - 1) - generations;
             return index >= 0 ? path.get(index) : null;
+        }
+
+        public boolean matches(String patternString) {
+            String[] pattern = patternString.split("/");
+            int pathIndex = path.size() - pattern.length - 1;
+            if(pathIndex < -1) return false;
+
+            for(int i=0; i<pattern.length; ++i) {
+                ++pathIndex;
+                String patternElement = pattern[i];
+                if("*".equals(patternElement)) continue;
+                if(!patternElement.equals(path.get(pathIndex)) ) return false;
+            }
+            return true;
         }
     }
 }
