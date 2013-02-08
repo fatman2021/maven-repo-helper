@@ -316,18 +316,55 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         private String relativePath;
         private boolean superPom;
 
-        public void setGroupId(String groupId) { this.groupId = groupId; }
-        public void setArtifactId(String artifactId) { this.artifactId = artifactId; }
-        public void setType(String type) { this.type = type; }
-        public void setVersion(String version) { this.version = version; }
-        public void setOptional(boolean optional) { this.optional = optional; }
-        public void setScope(String scope) { this.scope = scope; }
-        public void setClassifier(String classifier) { this.classifier = classifier; }
-        public void setRelativePath(String relativePath) { this.relativePath = relativePath; }
-        public void setSuperPom(boolean superPom) { this.superPom = superPom; }
+        public Builder setGroupId(String groupId) { this.groupId = groupId; return this; }
+        public Builder setArtifactId(String artifactId) { this.artifactId = artifactId; return this; }
+        public Builder setType(String type) { this.type = type; return this; }
+        public Builder setVersion(String version) { this.version = version; return this; }
+        public Builder setOptional(boolean optional) { this.optional = optional; return this; }
+        public Builder setScope(String scope) { this.scope = scope; return this; }
+        public Builder setClassifier(String classifier) { this.classifier = classifier; return this; }
+        public Builder setRelativePath(String relativePath) { this.relativePath = relativePath; return this; }
+        public Builder setSuperPom(boolean superPom) { this.superPom = superPom; return this; }
+
+        public Builder set(Field field, String value) {
+            switch (field) {
+                case GROUPID: setGroupId(value); return this;
+                case ARTIFACTID: setArtifactId(value); return this;
+                case CLASSIFIER: setClassifier(value); return this;
+                case OPTIONAL: setOptional("true".equals(value)); return this;
+                case RELATIVEPATH: setRelativePath(value); return this;
+                case SCOPE: setScope(value); return this;
+                case TYPE: setType(value); return this;
+                case VERSION: setVersion(value); return this;
+            }
+            return this;
+        }
 
         public Dependency build() {
             return new Dependency(this);
+        }
+    }
+
+    public enum Field {
+        GROUPID("groupId"), ARTIFACTID("artifactId"), TYPE("type"), VERSION("version"),
+        OPTIONAL("optional"), SCOPE("scope"), CLASSIFIER("classifier"), RELATIVEPATH("relativePath");
+
+        public final static Map<String, Field> map;
+        static {
+            map = new HashMap<String, Field>();
+            for(Field field : Field.values()) {
+                map.put(field.TAG, field);
+            }
+        }
+
+        public final String TAG;
+
+        Field(String tag) {
+            TAG = tag;
+        }
+
+        public static Field get(String tag) {
+            return map.get(tag);
         }
     }
 }
