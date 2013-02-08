@@ -61,7 +61,7 @@ public class POMReader {
         XMLStreamReader parser = factory.createXMLStreamReader(new BufferedReader(originalPom));
         
         // Stack of the XML path currently parsed. Most deepest XML element is first in the list.
-        LinkedList<String> path = new LinkedList<String>();
+        TreePath<String> path = new TreePath<String>();
         
         List<Dependency> dependencies = new ArrayList<Dependency>();
         List<Dependency> dependencyManagement = new ArrayList<Dependency>();
@@ -95,7 +95,7 @@ public class POMReader {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT: {
                     element = parser.getLocalName();
-                    path.addFirst(element);
+                    path.add(element);
                     if (isReadIgnoredElement(element) ||
                             (path.contains("plugin") && PLUGIN_IGNORED_ELEMENTS.contains(element)) ||
                             (path.contains("dependency") && "exclusions".equals(element)) ||
@@ -105,54 +105,54 @@ public class POMReader {
                         // nothing to do
                     } else if ("dependency".equals(element)) {
                         currentDependency = new Dependency(null, null, "jar", null);
-                        if ("dependencies".equals(path.get(1))) {
-                            if ("dependencyManagement".equals(path.get(2))) {
-                                if ("project".equals(path.get(3))) {
+                        if ("dependencies".equals(path.parent(1))) {
+                            if ("dependencyManagement".equals(path.parent(2))) {
+                                if ("project".equals(path.parent(3))) {
                                     dependencyManagement.add(currentDependency);
-                                } else if ("profile".equals(path.get(3))) {
+                                } else if ("profile".equals(path.parent(3))) {
                                     profileDependencyManagement.add(currentDependency);
                                 }
-                            } else if ("project".equals(path.get(2))) {
+                            } else if ("project".equals(path.parent(2))) {
                                 dependencies.add(currentDependency);
-                            } else if ("profile".equals(path.get(2))) {
+                            } else if ("profile".equals(path.parent(2))) {
                                 profileDependencies.add(currentDependency);
-                            } else if ("plugin".equals(path.get(2))) {
-                                if ("project".equals(path.get(5))) {
+                            } else if ("plugin".equals(path.parent(2))) {
+                                if ("project".equals(path.parent(5))) {
                                     pluginDependencies.add(currentDependency);
-                                } else if ("build".equals(path.get(5))) {
+                                } else if ("build".equals(path.parent(5))) {
                                     pluginManagementDependencies.add(currentDependency);
-                                } else if ("profile".equals(path.get(5))) {
+                                } else if ("profile".equals(path.parent(5))) {
                                     profilePluginDependencies.add(currentDependency);
                                 }
                             }
                         } else {
-                            System.err.println("Unexpected element: " + path.get(1));
+                            System.err.println("Unexpected element: " + path.parent(1));
                         }
                     } else if (path.contains("dependency")) {
-                        // Nothing to do, path.get(0) == "dependency" handled before!
+                        // Nothing to do, path.parent(0) == "dependency" handled before!
                     } else if ("plugin".equals(element)) {
                         currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
-                        if ("plugins".equals(path.get(1))) {
-                            if ("pluginManagement".equals(path.get(2))) {
-                                if ("profile".equals(path.get(4))) {
+                        if ("plugins".equals(path.parent(1))) {
+                            if ("pluginManagement".equals(path.parent(2))) {
+                                if ("profile".equals(path.parent(4))) {
                                     profilePluginManagement.add(currentDependency);
                                 } else {
                                     pluginManagement.add(currentDependency);
                                 }
-                            } else if ("reporting".equals(path.get(2))) {
-                                if ("profile".equals(path.get(3))) {
+                            } else if ("reporting".equals(path.parent(2))) {
+                                if ("profile".equals(path.parent(3))) {
                                     profileReportingPlugins.add(currentDependency);
                                 } else {
                                     reportingPlugins.add(currentDependency);
                                 }
-                            } else if ("profile".equals(path.get(3))) {
+                            } else if ("profile".equals(path.parent(3))) {
                                 profilePlugins.add(currentDependency);
                             } else {
                                 plugins.add(currentDependency);
                             }
                         }
                     } else if (path.contains("plugin")) {
-                        // nothing to do, path.get(0) == "plugin" handled before!
+                        // nothing to do, path.parent(0) == "plugin" handled before!
                     } else if ("extension".equals(element)) {
                         currentDependency = new Dependency(null, null, "jar", null);
                         extensions.add(currentDependency);
@@ -160,7 +160,7 @@ public class POMReader {
                         // nothing to do
                     } else if (path.size() == 2 && "parent".equals(element)) {
                         parent = new Dependency(null, null, "pom", null);
-                    } else if (path.size() == 3 && "properties".equals(path.get(1))) {
+                    } else if (path.size() == 3 && "properties".equals(path.parent(1))) {
                         // in case the property does not contain any text, might be overwritten be the nested characters
                         properties.put(element, "true");
                     }
@@ -168,7 +168,7 @@ public class POMReader {
                 }
 
                 case XMLStreamConstants.END_ELEMENT: {
-                    path.removeFirst();
+                    path.remove();
                     if (inIgnoredElement > 0) {
                         inIgnoredElement--;
                     }
@@ -196,10 +196,10 @@ public class POMReader {
                         } else if ("classifier".equals(element)) {
                             currentDependency.setClassifier(value);
                         }
-                    } else if (path.size() == 3 && "modules".equals(path.get(1))) {
+                    } else if (path.size() == 3 && "modules".equals(path.parent(1))) {
                         // we're not interested in the modules section inside a profiles section
                         modules.add(value);
-                    } else if (path.size() == 3 && "parent".equals(path.get(1))) {
+                    } else if (path.size() == 3 && "parent".equals(path.parent(1))) {
                         if ("groupId".equals(element)) {
                             parent.setGroupId(value);
                         } else if ("artifactId".equals(element)) {
@@ -209,7 +209,7 @@ public class POMReader {
                         } else if ("relativePath".equals(element)) {
                             parent.setRelativePath(value);
                         }
-                    } else if (path.size() == 3 && "properties".equals(path.get(1))) {
+                    } else if (path.size() == 3 && "properties".equals(path.parent(1))) {
                         properties.put(element, value);
                     } else if (path.size() == 2 && inIgnoredElement == 0) {
                         if ("groupId".equals(element)) {
@@ -227,7 +227,7 @@ public class POMReader {
 
                 case XMLStreamConstants.CDATA: {
                     String value = parser.getText().trim();
-                    if (path.size() == 3 && "properties".equals(path.get(1))) {
+                    if (path.size() == 3 && "properties".equals(path.parent(1))) {
                         properties.put(element, value);
                     }
                     break;
@@ -346,5 +346,20 @@ public class POMReader {
             }
         }
         return str;
+    }
+
+    static class TreePath<S> {
+        private LinkedList<S> path = new LinkedList<S>();
+
+        // forwarding functions to the inner LinkedList
+        public void add(S el) { path.addLast(el); }
+        public void remove() { path.removeLast(); }
+        public boolean contains(S el) { return path.contains(el); }
+        public int size() { return path.size(); }
+
+        public S parent(int generations) {
+            int index = (path.size() - 1) - generations;
+            return index >= 0 ? path.get(index) : null;
+        }
     }
 }
