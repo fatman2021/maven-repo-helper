@@ -48,6 +48,9 @@ public class POMReader {
     private static final List<String> PLUGIN_IGNORED_ELEMENTS = Arrays.asList(
                 "executions", "configuration", "goals", "reportSets" );
 
+    private static final Dependency PROTO_DEP_JAR = new Dependency(null, null, "jar", null);
+    private static final Dependency PROTO_DEP_PLUGIN = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
+
     protected final XMLInputFactory factory = XMLInputFactory.newInstance();
 
     public POMInfo readPom(File originalPom) throws XMLStreamException, FileNotFoundException {
@@ -84,7 +87,7 @@ public class POMReader {
         List<String> modules = new ArrayList<String>();
 
         Map<String, String> properties = new TreeMap<String, String>();
-        Dependency thisPom = new Dependency(null, null, "jar", null);
+        Dependency thisPom = new Dependency(PROTO_DEP_JAR);
         Dependency parent = null;
         Dependency currentDependency = null;
         int inIgnoredElement = 0;
@@ -121,7 +124,7 @@ public class POMReader {
                             System.err.println("Unexpected element: " + path.parent(1));
                         }
                     } else if ("plugin".equals(element)) {
-                        currentDependency = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
+                        currentDependency = new Dependency(PROTO_DEP_PLUGIN);
 
                         if(path.matches("profile/*/pluginManagement/plugins/plugin"))
                             profilePluginManagement.add(currentDependency);
@@ -137,7 +140,7 @@ public class POMReader {
                             plugins.add(currentDependency);
 
                     } else if (path.matches("extension")) {
-                        currentDependency = new Dependency(null, null, "jar", null);
+                        currentDependency = new Dependency(PROTO_DEP_JAR);
                         extensions.add(currentDependency);
                     } else if (path.size() == 2 && "parent".equals(element)) {
                         parent = new Dependency(null, null, "pom", null);
