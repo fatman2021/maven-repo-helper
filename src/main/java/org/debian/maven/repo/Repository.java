@@ -40,6 +40,8 @@ import java.util.logging.Logger;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.debian.maven.repo.POMInfo.DependencyType;
+
 import static org.debian.maven.repo.DependencyRuleSet.*;
 
 /**
@@ -217,13 +219,13 @@ public class Repository {
                 File pom = entry.getKey();
                 POMInfo pomInfo = entry.getValue();
                 writer.printItem(pom.getAbsolutePath());
-                for (Dependency dependency: pomInfo.getDependencies()) {
+                for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
                     	writer.printItem(dependency.toString());
                     	writer.endItem();
                     }
                 }
-                for (Dependency dependency: pomInfo.getPlugins()) {
+                for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
                     	writer.printItem(dependency.toString());
                     	writer.endItem();
@@ -245,7 +247,7 @@ public class Repository {
             if (pomInfo.getThisPom().getVersion().endsWith("-SNAPSHOT")) {
                 issues.add("Snapshot version in " + pom);
             }
-            for (Dependency dependency: pomInfo.getDependencies()) {
+            for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
                 if (!dep2info.containsKey(dependency)) {
                     issues.add("Unpackaged dependency: " + dependency + " in " + pom);
                     List<Dependency> pomIssues = pomsWithIssues.get(pom);
@@ -256,7 +258,7 @@ public class Repository {
                     pomIssues.add(dependency);
                 }
             }
-            for (Dependency dependency: pomInfo.getPlugins()) {
+            for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
                 if (!dep2info.containsKey(dependency)) {
                     issues.add("Unpackaged plugin: " + dependency + " in " + pom);
                     List<Dependency> pomIssues = pomsWithIssues.get(pom);
@@ -406,12 +408,12 @@ public class Repository {
             pomInfo.setParentPOM(parentPOM);
 
             pomsWithMissingVersions.remove(file);
-            for (Dependency dependency : pomInfo.getDependencies()) {
+            for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
                 if (dependency.getVersion() == null) {
                     pomsWithMissingVersions.put(file, pomInfo);
                 }
             }
-            for (Dependency dependency : pomInfo.getPlugins()) {
+            for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
                 if (dependency.getVersion() == null) {
                     pomsWithMissingVersions.put(file, pomInfo);
                 }

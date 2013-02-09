@@ -24,6 +24,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 
+import org.debian.maven.repo.POMInfo.DependencyType;
+
 /**
  * Cleans up a POM for inclusion in the /usr/share/maven-repo/ repository.
  *
@@ -129,7 +131,7 @@ public class POMCleaner extends POMTransformer {
 
     protected void createDebianProperties(POMInfo info, POMInfo original, String debianPackage, int inLevel) throws XMLStreamException {
         super.createDebianProperties(info, original, debianPackage, inLevel);
-        for (Dependency dependency : original.getDependencies()) {
+        for (Dependency dependency : original.getDependencies().get(DependencyType.DEPENDENCIES)) {
             if (dependency.getVersion() != null) {
                 String versionProperty = "debian." + dependency.getGroupId() + "." + dependency.getArtifactId() + ".originalVersion";
                 info.getProperties().put(versionProperty, dependency.getVersion());

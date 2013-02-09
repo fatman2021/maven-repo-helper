@@ -37,6 +37,9 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.debian.maven.cliargs.ArgumentsMap;
+import org.debian.maven.repo.POMInfo.DependencyType;
+
+import static org.debian.maven.repo.POMInfo.DependencyType.*;
 
 import static org.debian.maven.repo.DependencyRuleSet.*;
 
@@ -322,7 +325,8 @@ public class POMTransformer extends POMReader {
             List<String> path = new ArrayList<String>();
             List<Dependency> dependencyList = null;
             int dependencyIndex = -1;
-            Map<String, Integer> dependencyIndexes = new HashMap<String, Integer>();
+            Map<DependencyType, Integer> dependencyIndexes = new HashMap<DependencyType, Integer>();
+            int moduleDependencyIndex = 0;
             Map<String, String> visitedProperties = new HashMap<String, String>();
             Dependency dependency = null;
             Dependency parentDependency = null;
@@ -371,31 +375,31 @@ public class POMTransformer extends POMReader {
                                     String parentParentElement = path.get(path.size() - 3);
                                     if ("dependencies".equals(parentElement)) {
                                         sawVersion = false;
-                                        String listSelector = null;
+                                        DependencyType listSelector = null;
                                         if ("dependencyManagement".equals(parentParentElement)) {
                                             String p3Element = path.get(path.size() - 4);
                                             if ("project".equals(p3Element)) {
-                                                listSelector = POMInfo.DEPENDENCY_MANAGEMENT_LIST;
+                                                listSelector = DEPENDENCY_MANAGEMENT_LIST;
                                             } else if ("profile".equals(p3Element)) {
-                                                listSelector = POMInfo.PROFILE_DEPENDENCY_MANAGEMENT_LIST;
+                                                listSelector = PROFILE_DEPENDENCY_MANAGEMENT_LIST;
                                             }
                                         } else if ("project".equals(parentParentElement)) {
-                                            listSelector = POMInfo.DEPENDENCIES;
+                                            listSelector = DEPENDENCIES;
                                         } else if ("profile".equals(parentParentElement)) {
-                                            listSelector = POMInfo.PROFILE_DEPENDENCIES;
+                                            listSelector = PROFILE_DEPENDENCIES;
                                         } else if ("plugin".equals(parentParentElement)) {
                                             String p5Element = path.get(path.size() - 6);
                                             if ("project".equals(p5Element)) {
-                                                listSelector = POMInfo.PLUGIN_DEPENDENCIES;
+                                                listSelector = PLUGIN_DEPENDENCIES;
                                             } else if ("build".equals(p5Element)) {
-                                                listSelector = POMInfo.PLUGIN_MANAGEMENT_DEPENDENCIES;
+                                                listSelector = PLUGIN_MANAGEMENT_DEPENDENCIES;
                                             } else if ("profile".equals(p5Element)) {
-                                                listSelector = POMInfo.PROFILE_PLUGIN_DEPENDENCIES;
+                                                listSelector = PROFILE_PLUGIN_DEPENDENCIES;
                                             }
                                         }
                                         if (listSelector != null) {
                                             dependencyIndex = inc(dependencyIndexes, listSelector);
-                                            dependencyList = info.getDependencyList(listSelector);
+                                            dependencyList = info.getDependencies().get(listSelector);
                                             if (dependency != null) {
                                                 parentDependency = dependency;
                                             }
@@ -415,32 +419,32 @@ public class POMTransformer extends POMReader {
                                     }
                                     if ("plugins".equals(parentElement)) {
                                         sawVersion = false;
-                                        String listSelector = POMInfo.PLUGINS;
+                                        DependencyType listSelector = PLUGINS;
                                         if ("pluginManagement".equals(parentParentElement)) {
                                             if ("profile".equals(p4Element)) {
-                                                listSelector = POMInfo.PROFILE_PLUGIN_MANAGEMENT;
+                                                listSelector = PROFILE_PLUGIN_MANAGEMENT;
                                             } else {
-                                                listSelector = POMInfo.PLUGIN_MANAGEMENT;
+                                                listSelector = PLUGIN_MANAGEMENT;
                                             }
                                         } else if ("reporting".equals(parentParentElement)) {
                                             if ("profile".equals(parentParentParentElement)) {
-                                                listSelector = POMInfo.PROFILE_REPORTING_PLUGINS;
+                                                listSelector = PROFILE_REPORTING_PLUGINS;
                                             } else {
-                                                listSelector = POMInfo.REPORTING_PLUGINS;
+                                                listSelector = REPORTING_PLUGINS;
                                             }
                                         } else if ("profile".equals(parentParentParentElement)) {
-                                            listSelector = POMInfo.PROFILE_PLUGINS;
+                                            listSelector = PROFILE_PLUGINS;
                                         }
                                         dependencyIndex = inc(dependencyIndexes, listSelector);
-                                        dependencyList = info.getDependencyList(listSelector);
+                                        dependencyList = info.getDependencies().get(listSelector);
                                         dependency = dependencyList.get(dependencyIndex);
                                     }
                                 } else if ("extension".equals(element)) {
                                     String parentElement = path.get(path.size() - 2);
                                     if ("extensions".equals(parentElement)) {
                                         sawVersion = false;
-                                        int index = inc(dependencyIndexes, POMInfo.EXTENSIONS);
-                                        dependency = info.getExtensions().get(index);
+                                        int index = inc(dependencyIndexes, EXTENSIONS);
+                                        dependency = info.getDependencies().get(EXTENSIONS).get(index);
                                     }
                                 }
                                 // Skip dependency if we can't find it (== null)
@@ -456,8 +460,8 @@ public class POMTransformer extends POMReader {
                                 String parentElement = path.get(path.size() - 2);
                                 String parentParentElement = path.get(path.size() - 3);
                                 if ("modules".equals(parentElement) && "project".equals(parentParentElement)) {
-                                    int index = inc(dependencyIndexes, POMInfo.MODULES);
-                                    String module = info.getModules().get(index);
+                                    String module = info.getModules().get(moduleDependencyIndex);
+                                    ++moduleDependencyIndex;
                                     if (!acceptModule(module, originalPom)) {
                                         if (verbose) {
                                           System.out.println("Ignore module " + module + " in transformed POM");
@@ -796,7 +800,7 @@ public class POMTransformer extends POMReader {
         return dependency.findMatchingRule(ignoreRules.getRules()) == null;
     }
 
-    private int inc(Map<String, Integer> dependencyIndexes, String selector) {
+    private int inc(Map<DependencyType, Integer> dependencyIndexes, DependencyType selector) {
         Integer index = dependencyIndexes.get(selector);
         if (index == null) {
             index = 0;

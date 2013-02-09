@@ -23,6 +23,8 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +35,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import org.debian.maven.repo.POMInfo.DependencyType;
 
 /**
  * Reads relevant information from the POM.
@@ -48,9 +52,6 @@ public class POMReader {
     private static final List<String> PLUGIN_IGNORED_ELEMENTS = Arrays.asList(
                 "executions", "configuration", "goals", "reportSets" );
 
-    private static final Dependency PROTO_DEP_JAR = new Dependency(null, null, "jar", null);
-    private static final Dependency PROTO_DEP_PLUGIN = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
-
     protected final XMLInputFactory factory = XMLInputFactory.newInstance();
 
     public POMInfo readPom(File originalPom) throws XMLStreamException, FileNotFoundException {
@@ -65,21 +66,6 @@ public class POMReader {
         
         // Stack of the XML path currently parsed. Most deepest XML element is first in the list.
         TreePath<String> path = new TreePath<String>();
-        
-        List<Dependency> dependencies = new ArrayList<Dependency>();
-        List<Dependency> dependencyManagement = new ArrayList<Dependency>();
-        List<Dependency> extensions = new ArrayList<Dependency>();
-        List<Dependency> plugins = new ArrayList<Dependency>();
-        List<Dependency> pluginManagement = new ArrayList<Dependency>();
-        List<Dependency> pluginManagementDependencies = new ArrayList<Dependency>();
-        List<Dependency> pluginDependencies = new ArrayList<Dependency>();
-        List<Dependency> reportingPlugins = new ArrayList<Dependency>();
-        List<Dependency> profileDependencies = new ArrayList<Dependency>();
-        List<Dependency> profileDependencyManagement = new ArrayList<Dependency>();
-        List<Dependency> profilePlugins = new ArrayList<Dependency>();
-        List<Dependency> profilePluginDependencies = new ArrayList<Dependency>();
-        List<Dependency> profilePluginManagement = new ArrayList<Dependency>();
-        List<Dependency> profileReportingPlugins = new ArrayList<Dependency>();
 
         // http://maven.apache.org/pom.html#Aggregation:
         // "the ordering of the modules [...] is not important"
@@ -87,7 +73,8 @@ public class POMReader {
         List<String> modules = new ArrayList<String>();
 
         Map<String, String> properties = new TreeMap<String, String>();
-        Dependency thisPom = new Dependency(PROTO_DEP_JAR);
+        Map<DependencyType, List<Dependency>> dependencies = POMInfo.initDependenciesMultiMap();
+        Dependency thisPom = new Dependency(Dependency.PROTO_JAR);
         Dependency parent = null;
         Dependency currentDependency = null;
         int inIgnoredElement = 0;
@@ -104,44 +91,12 @@ public class POMReader {
                             (path.contains("dependency") && "exclusions".equals(element)) ||
                             inIgnoredElement > 0) {
                         inIgnoredElement++;
-                    } else if ("dependency".equals(element)) {
-                        currentDependency = new Dependency(null, null, "jar", null);
-                        if(path.matches("project/dependencyManagement/dependencies/dependency"))
-                            dependencyManagement.add(currentDependency);
-                        else if(path.matches("profile/dependencyManagement/dependencies/dependency"))
-                            profileDependencyManagement.add(currentDependency);
-                        else if(path.matches("project/dependencies/dependency"))
-                            dependencies.add(currentDependency);
-                        else if(path.matches("profile/dependencies/dependency"))
-                            profileDependencies.add(currentDependency);
-                        else if(path.matches("project/*/*/plugin/dependencies/dependency"))
-                            pluginDependencies.add(currentDependency);
-                        else if(path.matches("build/*/*/plugin/dependencies/dependency"))
-                            pluginManagementDependencies.add(currentDependency);
-                        else if(path.matches("profile/*/*/plugin/dependencies/dependency"))
-                            profilePluginDependencies.add(currentDependency);
-                        else {
-                            System.err.println("Unexpected element: " + path.parent(1));
+                    } else if ("dependency".equals(element) || "plugin".equals(element) || path.matches("extension")) {
+                        DependencyType depType = path.match();
+                        if(depType != null) {
+                            currentDependency = new Dependency(depType.dependencyPrototype());
+                            dependencies.get(depType).add(currentDependency);
                         }
-                    } else if ("plugin".equals(element)) {
-                        currentDependency = new Dependency(PROTO_DEP_PLUGIN);
-
-                        if(path.matches("profile/*/pluginManagement/plugins/plugin"))
-                            profilePluginManagement.add(currentDependency);
-                        else if(path.matches("pluginManagement/plugins/plugin"))
-                            pluginManagement.add(currentDependency);
-                        else if(path.matches("profile/reporting/plugins/plugin"))
-                            profileReportingPlugins.add(currentDependency);
-                        else if(path.matches("reporting/plugins/plugin"))
-                            reportingPlugins.add(currentDependency);
-                        else if(path.matches("profile/*/*/plugin"))
-                            profilePlugins.add(currentDependency);
-                        else if(path.matches("plugin"))
-                            plugins.add(currentDependency);
-
-                    } else if (path.matches("extension")) {
-                        currentDependency = new Dependency(PROTO_DEP_JAR);
-                        extensions.add(currentDependency);
                     } else if (path.size() == 2 && "parent".equals(element)) {
                         parent = new Dependency(null, null, "pom", null);
                     } else if (path.size() == 3 && "properties".equals(path.parent(1))) {
@@ -250,21 +205,15 @@ public class POMReader {
             inferedProperties.put("project.parent.artifactId", parent.getArtifactId());
             inferedProperties.put("project.parent.version", parent.getVersion());
         }
-        
+
         expandProperties(thisPom, inferedProperties);
-        expendProperties(dependencies, inferedProperties);
-        expendProperties(dependencyManagement, inferedProperties);
-        expendProperties(plugins, inferedProperties);
-        expendProperties(pluginManagement, inferedProperties);
-        expendProperties(pluginDependencies, inferedProperties);
-        expendProperties(pluginManagementDependencies, inferedProperties);
-        expendProperties(reportingPlugins, inferedProperties);
-        expendProperties(profileDependencies, inferedProperties);
-        expendProperties(profileDependencyManagement, inferedProperties);
-        expendProperties(profilePlugins, inferedProperties);
-        expendProperties(profilePluginDependencies, inferedProperties);
-        expendProperties(profilePluginManagement, inferedProperties);
-        expendProperties(profileReportingPlugins, inferedProperties);
+
+        // the former code did not call expandProperties for EXTENSIONS
+        for(List<Dependency> deplist : dependencies.values()) {
+            for (Dependency dependency : deplist) {
+                expandProperties(dependency, inferedProperties);
+            }
+        }
 
         POMInfo info = new POMInfo();
         if (properties.get("debian.originalVersion") != null) {
@@ -277,31 +226,12 @@ public class POMReader {
         info.setParent(parent);
         info.setModules(new ArrayList<String>(modules));
         info.setDependencies(dependencies);
-        info.setDependencyManagement(dependencyManagement);
-        info.setExtensions(extensions);
-        info.setPlugins(plugins);
-        info.setPluginManagement(pluginManagement);
-        info.setPluginDependencies(pluginDependencies);
-        info.setPluginManagementDependencies(pluginManagementDependencies);
-        info.setReportingPlugins(reportingPlugins);
-        info.setProfileDependencies(profileDependencies);
-        info.setProfileDependencyManagement(profileDependencyManagement);
-        info.setProfilePlugins(profilePlugins);
-        info.setProfilePluginDependencies(profilePluginDependencies);
-        info.setProfilePluginManagement(profilePluginManagement);
-        info.setProfileReportingPlugins(profileReportingPlugins);
         info.setProperties(properties);
         return info;
     }
 
     protected boolean isReadIgnoredElement(String element) {
         return READ_IGNORED_ELEMENTS.contains(element);
-    }
-
-    private void expendProperties(List<Dependency> dependencies, Map<String, String> inferedProperties) {
-        for (Dependency dependency : dependencies) {
-            expandProperties(dependency, inferedProperties);
-        }
     }
 
     private void expandProperties(Dependency dependency, Map<String, String> inferedProperties) {
@@ -358,6 +288,15 @@ public class POMReader {
                 if(!patternElement.equals(path.get(pathIndex)) ) return false;
             }
             return true;
+        }
+
+        public DependencyType match() {
+            for(DependencyType depType : DependencyType.values()) {
+                if(matches(depType.pattern)) {
+                    return depType;
+                }
+            }
+            return null;
         }
     }
 }

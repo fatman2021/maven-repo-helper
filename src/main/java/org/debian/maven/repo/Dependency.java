@@ -25,6 +25,9 @@ import java.util.*;
  */
 public class Dependency implements Comparable<Dependency>, Cloneable {
 
+    public static final Dependency PROTO_JAR = new Dependency(null, null, "jar", null);
+    public static final Dependency PROTO_PLUGIN = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
+
     private String groupId;
     private String artifactId;
     private String type;

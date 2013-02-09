@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.custommonkey.xmlunit.XMLUnit;
+
 import org.debian.maven.TemporaryPomFolder;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,6 +32,9 @@ import static org.debian.maven.TemporaryPomFolder.basename;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+
+import static org.debian.maven.repo.POMInfo.DependencyType.*;
+
 
 public class POMTransformerTest {
 
@@ -128,12 +132,12 @@ public class POMTransformerTest {
         POMInfo transformedPOM = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, true, null, "libantlr3-java");
         assertCleanedXMLEqual();
         assertEquals("3.2", transformedPOM.getParent().getVersion());
-        assertEquals(1, transformedPOM.getDependencies().size());
-        assertTrue(transformedPOM.getDependencies().contains(new Dependency("org.antlr", "stringtemplate", "jar", "3.x")));
-        assertEquals(1, transformedPOM.getExtensions().size());
-        assertTrue(transformedPOM.getExtensions().contains(new Dependency("org.apache.maven.wagon", "wagon-ssh-external", "jar", "debian")));
-        assertEquals(1, transformedPOM.getPlugins().size());
-        assertTrue(transformedPOM.getPlugins().contains(new Dependency("org.apache.maven.plugins", "maven-compiler-plugin", "maven-plugin", "2.0.2")));
+        assertEquals(1, transformedPOM.getDependencies().get(DEPENDENCIES).size());
+        assertTrue(transformedPOM.getDependencies().get(DEPENDENCIES).contains(new Dependency("org.antlr", "stringtemplate", "jar", "3.x")));
+        assertEquals(1, transformedPOM.getDependencies().get(EXTENSIONS).size());
+        assertTrue(transformedPOM.getDependencies().get(EXTENSIONS).contains(new Dependency("org.apache.maven.wagon", "wagon-ssh-external", "jar", "debian")));
+        assertEquals(1, transformedPOM.getDependencies().get(PLUGINS).size());
+        assertTrue(transformedPOM.getDependencies().get(PLUGINS).contains(new Dependency("org.apache.maven.plugins", "maven-compiler-plugin", "maven-plugin", "2.0.2")));
     }
 
     @Test
@@ -240,7 +244,7 @@ public class POMTransformerTest {
 
         POMInfo transformedPom = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, false, null, "libantlr-maven-plugin-java");
         assertCleanedXMLEqual();
-        assertEquals("2.3", ((Dependency) transformedPom.getPluginManagement().get(2)).getVersion());
+        assertEquals("2.3", ((Dependency) transformedPom.getDependencies().get(PLUGIN_MANAGEMENT).get(2)).getVersion());
     }
 
     @Test

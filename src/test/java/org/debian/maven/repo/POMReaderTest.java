@@ -1,6 +1,7 @@
 package org.debian.maven.repo;
 
 import org.debian.maven.repo.POMReader.TreePath;
+import static org.debian.maven.repo.POMInfo.DependencyType.*;
 
 /*
  * Copyright 2009 Ludovic Claude.
@@ -49,41 +50,41 @@ public class POMReaderTest {
         assertEquals("2.1.0-SNAPSHOT", info.getThisPom().getVersion());
         assertEquals("pom", info.getThisPom().getType());
 
-        assertEquals(1, info.getDependencies().size());
-        Dependency dependency = info.getDependencies().get(0);
+        assertEquals(1, info.getDependencies().get(DEPENDENCIES).size());
+        Dependency dependency = info.getDependencies().get(DEPENDENCIES).get(0);
         assertEquals("junit", dependency.getGroupId());
         assertEquals("junit", dependency.getArtifactId());
         assertEquals("3.8.1", dependency.getVersion());
         assertEquals("jar", dependency.getType());
 
-        assertEquals(34, info.getDependencyManagement().size());
-        dependency = (Dependency) info.getDependencyManagement().get(0);
+        assertEquals(34, info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST).size());
+        dependency = (Dependency) info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST).get(0);
         assertEquals("org.apache.maven", dependency.getGroupId());
         assertEquals("maven-plugin-descriptor", dependency.getArtifactId());
         assertEquals("2.1.0-SNAPSHOT", dependency.getVersion());
         assertEquals("jar", dependency.getType());
 
-        assertEquals(0, info.getProfileDependencies().size());
-        assertEquals(0, info.getProfileDependencyManagement().size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCIES).size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCY_MANAGEMENT_LIST).size());
 
-        assertEquals(14, info.getPluginManagement().size());
-        dependency = (Dependency) info.getPluginManagement().get(0);
+        assertEquals(14, info.getDependencies().get(PLUGIN_MANAGEMENT).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGIN_MANAGEMENT).get(0);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-jar-plugin", dependency.getArtifactId());
         assertEquals("2.1", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(0, info.getPlugins().size());
-        assertEquals(0, info.getReportingPlugins().size());
+        assertEquals(0, info.getDependencies().get(PLUGINS).size());
+        assertEquals(0, info.getDependencies().get(REPORTING_PLUGINS).size());
 
-        assertEquals(2, info.getProfilePlugins().size());
-        dependency = (Dependency) info.getProfilePlugins().get(0);
+        assertEquals(2, info.getDependencies().get(PROFILE_PLUGINS).size());
+        dependency = (Dependency) info.getDependencies().get(PROFILE_PLUGINS).get(0);
         assertEquals("org.codehaus.mojo", dependency.getGroupId());
         assertEquals("clirr-maven-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(4, info.getProfileReportingPlugins().size());
+        assertEquals(4, info.getDependencies().get(PROFILE_REPORTING_PLUGINS).size());
 
         assertEquals(2, info.getProperties().size());
         assertEquals("2.1.0-SNAPSHOT", info.getProperties().get("mavenVersion"));
@@ -110,26 +111,26 @@ public class POMReaderTest {
         assertEquals("4.0.2.GA", info.getThisPom().getVersion());
         assertEquals("jar", info.getThisPom().getType());
 
-        assertEquals(6, info.getDependencies().size());
-        Dependency dependency = info.getDependencies().get(5);
+        assertEquals(6, info.getDependencies().get(DEPENDENCIES).size());
+        Dependency dependency = info.getDependencies().get(DEPENDENCIES).get(5);
         assertEquals("org.jboss.test-harness", dependency.getGroupId());
         assertEquals("jboss-test-harness-jboss-as-51", dependency.getArtifactId());
         assertEquals("1.0.0", dependency.getVersion());
         assertEquals("jar", dependency.getType());
 
-        assertEquals(0, info.getDependencyManagement().size());
-        assertEquals(0, info.getProfileDependencies().size());
-        assertEquals(0, info.getProfileDependencyManagement().size());
-        assertEquals(0, info.getPluginManagement().size());
+        assertEquals(0, info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST).size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCIES).size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCY_MANAGEMENT_LIST).size());
+        assertEquals(0, info.getDependencies().get(PLUGIN_MANAGEMENT).size());
 
-        assertEquals(3, info.getPlugins().size());
-        dependency = (Dependency) info.getPlugins().get(1);
+        assertEquals(3, info.getDependencies().get(PLUGINS).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(1);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-surefire-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(2, info.getProfilePlugins().size());
+        assertEquals(2, info.getDependencies().get(PROFILE_PLUGINS).size());
 
         assertEquals(3, info.getProperties().size());
         assertEquals("/opt/java/jboss-5.1.0.GA", info.getProperties().get("jboss.home"));
@@ -154,8 +155,8 @@ public class POMReaderTest {
         assertEquals("4.0.2.GA", info.getThisPom().getVersion());
         assertEquals("jar", info.getThisPom().getType());
 
-        assertEquals(6, info.getDependencies().size());
-        Dependency dependency = info.getDependencies().get(0);
+        assertEquals(6, info.getDependencies().get(DEPENDENCIES).size());
+        Dependency dependency = info.getDependencies().get(DEPENDENCIES).get(0);
         assertEquals("javax.validation", dependency.getGroupId());
         assertEquals("validation-api", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -163,7 +164,7 @@ public class POMReaderTest {
         assertEquals("runtime", dependency.getScope());
         assertEquals(false, dependency.isOptional());
 
-        dependency = info.getDependencies().get(1);
+        dependency = info.getDependencies().get(DEPENDENCIES).get(1);
         assertEquals("org.slf4j", dependency.getGroupId());
         assertEquals("slf4j-api", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -171,7 +172,7 @@ public class POMReaderTest {
         assertEquals("runtime", dependency.getScope());
         assertEquals(false, dependency.isOptional());
 
-        dependency = info.getDependencies().get(2);
+        dependency = info.getDependencies().get(DEPENDENCIES).get(2);
         assertEquals("com.googlecode.jtype", dependency.getGroupId());
         assertEquals("jtype", dependency.getArtifactId());
         assertEquals("0.1.0", dependency.getVersion());
@@ -179,7 +180,7 @@ public class POMReaderTest {
         assertEquals("runtime", dependency.getScope());
         assertEquals(false, dependency.isOptional());
 
-        dependency = info.getDependencies().get(3);
+        dependency = info.getDependencies().get(DEPENDENCIES).get(3);
         assertEquals("org.slf4j", dependency.getGroupId());
         assertEquals("slf4j-log4j12", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -187,7 +188,7 @@ public class POMReaderTest {
         assertEquals("runtime", dependency.getScope());
         assertEquals(true, dependency.isOptional());
 
-        dependency = info.getDependencies().get(4);
+        dependency = info.getDependencies().get(DEPENDENCIES).get(4);
         assertEquals("org.hibernate.java-persistence", dependency.getGroupId());
         assertEquals("jpa-api", dependency.getArtifactId());
         assertEquals("2.0.Beta-20090815", dependency.getVersion());
@@ -195,7 +196,7 @@ public class POMReaderTest {
         assertEquals("runtime", dependency.getScope());
         assertEquals(true, dependency.isOptional());
 
-        dependency = info.getDependencies().get(5);
+        dependency = info.getDependencies().get(DEPENDENCIES).get(5);
         assertEquals("org.testng", dependency.getGroupId());
         assertEquals("testng", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
@@ -204,76 +205,76 @@ public class POMReaderTest {
         assertEquals(false, dependency.isOptional());
         assertEquals("jdk15", dependency.getClassifier());
 
-        assertEquals(0, info.getDependencyManagement().size());
-        assertEquals(2, info.getProfileDependencies().size());
-        assertEquals(0, info.getProfileDependencyManagement().size());
-        assertEquals(0, info.getPluginManagement().size());
+        assertEquals(0, info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST).size());
+        assertEquals(2, info.getDependencies().get(PROFILE_DEPENDENCIES).size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCY_MANAGEMENT_LIST).size());
+        assertEquals(0, info.getDependencies().get(PLUGIN_MANAGEMENT).size());
 
-        assertEquals(1, info.getReportingPlugins().size());
-        dependency = (Dependency) info.getReportingPlugins().get(0);
+        assertEquals(1, info.getDependencies().get(REPORTING_PLUGINS).size());
+        dependency = (Dependency) info.getDependencies().get(REPORTING_PLUGINS).get(0);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-project-info-reports-plugin", dependency.getArtifactId());
         assertEquals("2.0.1", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(9, info.getPlugins().size());
-        dependency = (Dependency) info.getPlugins().get(0);
+        assertEquals(9, info.getDependencies().get(PLUGINS).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(0);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-source-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(1);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(1);
         assertEquals("org.codehaus.mojo", dependency.getGroupId());
         assertEquals("jaxb2-maven-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(2);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(2);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-surefire-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(3);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(3);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-surefire-report-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(4);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(4);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-shade-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(5);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(5);
         assertEquals("org.jboss.maven.plugins", dependency.getGroupId());
         assertEquals("maven-jdocbook-plugin", dependency.getArtifactId());
         assertEquals("2.2.0", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(6);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(6);
         assertEquals("org.jboss.maven.plugins", dependency.getGroupId());
         assertEquals("maven-jdocbook-style-plugin", dependency.getArtifactId());
         assertEquals("2.0.0", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(7);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(7);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-assembly-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        dependency = (Dependency) info.getPlugins().get(8);
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(8);
         assertEquals("org.twdata.maven", dependency.getGroupId());
         assertEquals("maven-cli-plugin", dependency.getArtifactId());
         assertEquals("0.6.3.CR3", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(0, info.getProfilePlugins().size());
-        assertEquals(1, info.getPluginDependencies().size());
-        dependency = (Dependency) info.getPluginDependencies().get(0);
+        assertEquals(0, info.getDependencies().get(PROFILE_PLUGINS).size());
+        assertEquals(1, info.getDependencies().get(PLUGIN_DEPENDENCIES).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGIN_DEPENDENCIES).get(0);
         assertEquals("org.hibernate", dependency.getGroupId());
         assertEquals("hibernate-jdocbook-style", dependency.getArtifactId());
         assertEquals("2.0.0", dependency.getVersion());
@@ -298,54 +299,54 @@ public class POMReaderTest {
         assertEquals("27", info.getThisPom().getVersion());
         assertEquals("pom", info.getThisPom().getType());
 
-        assertEquals(0, info.getDependencies().size());
-        assertEquals(2, info.getDependencyManagement().size());
-        Dependency dependency = (Dependency) info.getDependencyManagement().get(0);
+        assertEquals(0, info.getDependencies().get(DEPENDENCIES).size());
+        assertEquals(2, info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST).size());
+        Dependency dependency = (Dependency) info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST).get(0);
         assertEquals("org.apache.maven", dependency.getGroupId());
         assertEquals("maven-plugin-api", dependency.getArtifactId());
         assertEquals("2.0", dependency.getVersion());
         assertEquals("jar", dependency.getType());
 
-        assertEquals(1, info.getExtensions().size());
+        assertEquals(1, info.getDependencies().get(EXTENSIONS).size());
 
-        assertEquals(24, info.getPluginManagement().size());
-        dependency = (Dependency) info.getPluginManagement().get(17);
+        assertEquals(24, info.getDependencies().get(PLUGIN_MANAGEMENT).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGIN_MANAGEMENT).get(17);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-site-plugin", dependency.getArtifactId());
         assertEquals("2.1.1", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
-        dependency = (Dependency) info.getPluginManagement().get(18);
+        dependency = (Dependency) info.getDependencies().get(PLUGIN_MANAGEMENT).get(18);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-source-plugin", dependency.getArtifactId());
         assertEquals("2.1.2", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(1, info.getPluginManagementDependencies().size());
-        dependency = (Dependency) info.getPluginManagementDependencies().get(0);
+        assertEquals(1, info.getDependencies().get(PLUGIN_MANAGEMENT_DEPENDENCIES).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGIN_MANAGEMENT_DEPENDENCIES).get(0);
         assertEquals("org.apache.maven.doxia", dependency.getGroupId());
         assertEquals("doxia-module-xhtml", dependency.getArtifactId());
         assertEquals("1.1.3", dependency.getVersion());
         assertEquals("jar", dependency.getType());
 
-        assertEquals(2, info.getPlugins().size());
-        dependency = (Dependency) info.getPlugins().get(1);
+        assertEquals(2, info.getDependencies().get(PLUGINS).size());
+        dependency = (Dependency) info.getDependencies().get(PLUGINS).get(1);
         assertEquals("org.codehaus.mojo", dependency.getGroupId());
         assertEquals("cobertura-maven-plugin", dependency.getArtifactId());
         assertEquals(null, dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(2, info.getReportingPlugins().size());
-        dependency = (Dependency) info.getReportingPlugins().get(1);
+        assertEquals(2, info.getDependencies().get(REPORTING_PLUGINS).size());
+        dependency = (Dependency) info.getDependencies().get(REPORTING_PLUGINS).get(1);
         assertEquals("org.apache.maven.plugins", dependency.getGroupId());
         assertEquals("maven-project-info-reports-plugin", dependency.getArtifactId());
         assertEquals("2.2", dependency.getVersion());
         assertEquals("maven-plugin", dependency.getType());
 
-        assertEquals(6, info.getProfilePlugins().size());
-        assertEquals(8, info.getProfileReportingPlugins().size());
-        assertEquals(1, info.getProfilePluginManagement().size());
-        assertEquals(0, info.getProfileDependencies().size());
-        assertEquals(0, info.getProfileDependencyManagement().size());
+        assertEquals(6, info.getDependencies().get(PROFILE_PLUGINS).size());
+        assertEquals(8, info.getDependencies().get(PROFILE_REPORTING_PLUGINS).size());
+        assertEquals(1, info.getDependencies().get(PROFILE_PLUGIN_MANAGEMENT).size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCIES).size());
+        assertEquals(0, info.getDependencies().get(PROFILE_DEPENDENCY_MANAGEMENT_LIST).size());
 
         assertEquals(5, info.getProperties().size());
         assertEquals("UTF-8", info.getProperties().get("project.build.sourceEncoding"));
