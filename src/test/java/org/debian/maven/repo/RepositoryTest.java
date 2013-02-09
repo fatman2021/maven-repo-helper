@@ -18,11 +18,24 @@ package org.debian.maven.repo;
 
 
 import javax.xml.stream.XMLStreamException;
+
+import org.debian.maven.TemporaryPomFolder;
+import org.junit.Test;
+import org.junit.Rule;
+
 import java.io.File;
 import java.io.IOException;
 
-public class RepositoryTest extends TestBase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
+public class RepositoryTest {
+
+    @Rule
+    public TemporaryPomFolder tmpDir = new TemporaryPomFolder();
+
+    @Test
     public void testScan() throws Exception {
         Repository repo = getRepository();
         repo.scan();
@@ -40,11 +53,12 @@ public class RepositoryTest extends TestBase {
         assertEquals(pom, repo.searchMatchingPOM(dependency));
     }
 
+    @Test
     public void testRegisterPom() throws Exception {
         Repository repo = getRepository();
         repo.scan();
 
-        File pomFile = getFileInClasspath("hibernate-validator.pom");
+        File pomFile = TemporaryPomFolder.getFileInClasspath("hibernate-validator.pom");
         POMInfo pom = getAntlrPom(repo, pomFile);
         try {
             repo.registerPom(pomFile, pom);
@@ -59,6 +73,7 @@ public class RepositoryTest extends TestBase {
         assertEquals(pom, repo.searchMatchingPOM(pom.getThisPom()));
     }
 
+    @Test
     public void testSearchMatchingPOM() throws Exception {
 
         Repository repo = getRepository();
@@ -79,7 +94,7 @@ public class RepositoryTest extends TestBase {
         Dependency antlrToolsDep = new Dependency("org.antlr", "antlr", "jar", "3.x");
         assertNull(repo.searchMatchingPOM(antlrToolsDep));
 
-        File pomFile = getFileInClasspath("antlr3-tools.xml");
+        File pomFile = TemporaryPomFolder.getFileInClasspath("antlr3-tools.xml");
         POMInfo pom = getAntlrPom(repo, pomFile);
         try {
             repo.registerPom(pomFile, pom);
@@ -106,12 +121,12 @@ public class RepositoryTest extends TestBase {
         POMCleaner pomCleaner = new POMCleaner();
         pomCleaner.addDefaultRules();
         pomCleaner.addRule(new DependencyRule("org.antlr * * s/3\\..*/3.x/"));
-        POMInfo pom = pomCleaner.transformPom(pomFile, updatedPom);
+        POMInfo pom = pomCleaner.transformPom(pomFile, tmpDir.updatedPom());
         return pom;
     }
 
     private Repository getRepository() {
-        File baseDir = getFileInClasspath("repository/root.dir");
+        File baseDir = TemporaryPomFolder.getFileInClasspath("repository/root.dir");
         baseDir = baseDir.getParentFile();
 
         return new Repository(baseDir);

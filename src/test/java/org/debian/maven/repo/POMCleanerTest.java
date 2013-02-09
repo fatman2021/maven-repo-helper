@@ -18,44 +18,49 @@ package org.debian.maven.repo;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Properties;
 
-public class POMCleanerTest extends TestBase {
+import org.custommonkey.xmlunit.XMLUnit;
+import org.debian.maven.TemporaryPomFolder;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import static org.junit.Assert.assertEquals;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.debian.maven.TemporaryPomFolder.basename;
+
+public class POMCleanerTest {
+
+    @Rule
+    public TemporaryPomFolder tmpDir = new TemporaryPomFolder();
 
     private File pomProperties;
     private File specialDependencies;
 
     private POMCleaner instance;
 
+    @Before
     public void setUp() {
-        super.setUp();
+        XMLUnit.setIgnoreWhitespace(true);
         instance = new POMCleaner();
         instance.getRules().setRulesFile(null);
         instance.getIgnoreRules().setRulesFile(null);
         instance.getPublishedRules().setRulesFile(null);
     }
 
-
-    public void tearDown() {
-        super.tearDown();
-        if (specialDependencies != null && specialDependencies.exists()) {
-            specialDependencies.delete();
-            specialDependencies = null;
-        }
-        if (pomProperties != null && pomProperties.exists()) {
-            pomProperties.delete();
-            pomProperties = null;
-        }
-    }
-
+    @Test
     public void testCleanMavenPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("maven.xml");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("maven.xml");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "maven2");
-        assertXMLEqual(read("maven.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "maven2");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.apache.maven", pomInfo.get("groupId"));
@@ -65,13 +70,14 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanModelloPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("modello-core.xml");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("modello-core.xml");
         boolean noParent = false;
         instance.addDefaultRules();
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libmodello-java");
-        assertXMLEqual(read("modello-core.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libmodello-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.modello", pomInfo.get("groupId"));
@@ -80,8 +86,8 @@ public class POMCleanerTest extends TestBase {
         assertEquals("1.0-alpha-22", pomInfo.get("version"));
         assertEquals("debian", pomInfo.get("debianVersion"));
 
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, true, true, null, "libmodello-java");
-        assertXMLEqual(read("modello-core.keep.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, false, true, true, null, "libmodello-java");
+        assertXMLEqual(tmpDir.read("modello-core.keep.cleaned"), tmpDir.read(tmpDir.updatedPom()));
         pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.modello", pomInfo.get("groupId"));
@@ -92,13 +98,14 @@ public class POMCleanerTest extends TestBase {
 
     }
 
+    @Test
     public void testCleanWagonPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("wagon-http-lightweight.xml");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("wagon-http-lightweight.xml");
         boolean noParent = false;
         instance.addDefaultRules();
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libwagon-java");
-        assertXMLEqual(read("wagon-http-lightweight.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libwagon-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.apache.maven.wagon", pomInfo.get("groupId"));
@@ -108,14 +115,15 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanPlexusContainerDefaultPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("plexus-container-default.xml");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("plexus-container-default.xml");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libplexus-container-default-java");
-        assertXMLEqual(read("plexus-container-default.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-container-default-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
@@ -125,16 +133,17 @@ public class POMCleanerTest extends TestBase {
         assertEquals("1.0-alpha", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanPlexusActiveCollectionsPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("plexus-active-collections.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("plexus-active-collections.pom");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha.*/1.0-alpha/"));
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-maven-plugin maven-plugin s/.*/1.3.8/"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libplexus-active-collections-java");
-        assertXMLEqual(read("plexus-active-collections.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-active-collections-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
@@ -144,13 +153,14 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanPlexusArchiverPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("plexus-archiver.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("plexus-archiver.pom");
         boolean noParent = true;
         instance.addDefaultRules();
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libplexus-archiver-java");
-        assertXMLEqual(read("plexus-archiver.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-archiver-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
@@ -160,13 +170,14 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanSlf4jPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("slf4j.xml");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("slf4j.xml");
         boolean noParent = true;
         instance.addDefaultRules();
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libslf4j-java");
-        assertXMLEqual(read("slf4j.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libslf4j-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.slf4j", pomInfo.get("groupId"));
@@ -176,14 +187,15 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanCommonsValidatorPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("commons-validator.xml");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("commons-validator.xml");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libcommons-validator-java");
-        assertXMLEqual(read("commons-validator.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libcommons-validator-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("commons-validator", pomInfo.get("groupId"));
@@ -193,14 +205,15 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanServletApiPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("servlet-api.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("servlet-api.pom");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libservlet2.5-java");
-        assertXMLEqual(read("servlet-api.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libservlet2.5-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("javax.servlet", pomInfo.get("groupId"));
@@ -210,15 +223,16 @@ public class POMCleanerTest extends TestBase {
         assertEquals("2.5", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanHibernateValidatorParentPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("hibernate-validator-parent.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("hibernate-validator-parent.pom");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon wagon-webdav jar *"));
         instance.addIgnoreRule(new DependencyRule("org.jboss.maven.plugins maven-jdocbook-plugin maven-plugin *"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libhibernate-validator-java");
-        assertXMLEqual(read("hibernate-validator-parent.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libhibernate-validator-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.hibernate", pomInfo.get("groupId"));
@@ -228,10 +242,10 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanApacheParentPom() throws Exception {
-
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("apache.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("apache.pom");
         boolean noParent = true;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.apache apache-jar-resource-bundle * s/1\\..*/1.x/"));
@@ -247,8 +261,8 @@ public class POMCleanerTest extends TestBase {
         instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-source-plugin * *"));
         instance.addElementToKeep("build");
         instance.addElementToKeep("reporting");
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, false, false, false, null, "libmaven-parent-poms");
-        assertXMLEqual(read("apache.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, false, false, false, null, "libmaven-parent-poms");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.apache", pomInfo.get("groupId"));
@@ -258,16 +272,17 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanPlexusUtils2Pom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("plexus-utils2.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("plexus-utils2.pom");
         boolean noParent = false;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus-utils jar s/2\\..*/2.x/ * *"));
         instance.addRule(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));        
         instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libplexus-utils2-java");
-        assertXMLEqual(read("plexus-utils2.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-utils2-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.plexus", pomInfo.get("groupId"));
@@ -277,9 +292,10 @@ public class POMCleanerTest extends TestBase {
         assertEquals("2.x", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testCleanMojoParentPom() throws Exception {
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("mojo-parent.pom");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("mojo-parent.pom");
         boolean noParent = false;
         instance.addDefaultRules();
         instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/ * *"));
@@ -294,8 +310,8 @@ public class POMCleanerTest extends TestBase {
         instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo cobertura-maven-plugin * * * *"));
         instance.addElementToKeep("build");
         instance.addElementToKeep("reporting");
-        instance.cleanPom(pom, updatedPom, pomProperties, noParent, true, false, false, null, "libmojo-parent-java");
-        assertXMLEqual(read("mojo-parent.cleaned"), read(updatedPom));
+        instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libmojo-parent-java");
+        assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
         pomInfo.load(new FileInputStream(pomProperties));
         assertEquals("org.codehaus.mojo", pomInfo.get("groupId"));
@@ -305,14 +321,19 @@ public class POMCleanerTest extends TestBase {
         assertEquals("debian", pomInfo.get("debianVersion"));
     }
 
+    @Test
     public void testMain() throws Exception {
-        specialDependencies = new File(testDir, "special-cases.txt");
-        pomProperties = new File(testDir, "pom.properties");
-        usePom("maven.xml");
-        useFile("maven.rules", specialDependencies);
+        specialDependencies = tmpDir.newFile("special-cases.txt");
+        pomProperties = tmpDir.newFile("pom.properties");
+        File pom = tmpDir.usePom("maven.xml");
+        tmpDir.copyResource("maven.rules", specialDependencies);
         String[] args = {"--no-parent", "--has-package-version", "-pmaven2", "-r" + specialDependencies.getAbsolutePath(),
-                pom.getAbsolutePath(), updatedPom.getAbsolutePath(), pomProperties.getAbsolutePath()};
+                pom.getAbsolutePath(), tmpDir.updatedPom().getAbsolutePath(), pomProperties.getAbsolutePath()};
         POMCleaner.main(args);
-        assertXMLEqual(read("maven.cleaned"), read(updatedPom));
+        assertCleanedXMLEqual();
+    }
+
+    private void assertCleanedXMLEqual() throws SAXException, IOException {
+        assertXMLEqual(tmpDir.read(basename(tmpDir.pomInUse)+".cleaned"), tmpDir.read(tmpDir.updatedPom()));
     }
 }

@@ -16,15 +16,19 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import static org.debian.maven.repo.DependencyRuleSet.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-public class DependencyRuleTest extends TestCase {
-    
+public class DependencyRuleTest {
+
     /**
      * Test of matches method, of class DependencyRule.
      */
+    @Test
     public void testMatches() {
         DependencyRule generic = new DependencyRule("");
         DependencyRule servlet23 = new DependencyRule("javax.servlet * * 2.3");
@@ -34,7 +38,7 @@ public class DependencyRuleTest extends TestCase {
         assertTrue(generic.matches(dependency));
         assertTrue(servlet23.matches(dependency));
         assertFalse(log4j12.matches(dependency));
-        
+
         Dependency dependencyNullVersion = new Dependency("javax.servlet", "servlet-api", "jar", null);
         assertTrue(generic.matches(dependencyNullVersion));
         assertFalse(servlet23.matches(dependencyNullVersion));
@@ -44,6 +48,7 @@ public class DependencyRuleTest extends TestCase {
     /**
      * Test of apply method, of class DependencyRule.
      */
+    @Test
     public void testApply() {
         Dependency dependency = new Dependency("javax.servlet", "servlet-api", "jar", "2.3");
         DependencyRule generic = new DependencyRule("");
@@ -55,6 +60,7 @@ public class DependencyRuleTest extends TestCase {
     /**
      * Test of compareTo method, of class DependencyRule.
      */
+    @Test
     public void testCompareTo() {
         DependencyRule generic = new DependencyRule("");
         DependencyRule servlet23 = new DependencyRule("javax.servlet * * 2.3");
@@ -67,6 +73,7 @@ public class DependencyRuleTest extends TestCase {
         assertEquals(0, servlet23.compareTo(servlet23));
     }
 
+    @Test
     public void testEquals() {
         DependencyRule mavenPlugin = new DependencyRule("* * maven-plugin * * *");
         assertTrue(mavenPlugin.equals(MAVEN_PLUGINS_KEEP_VERSION_RULE));

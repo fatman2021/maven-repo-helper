@@ -16,15 +16,26 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
-public class POMReaderTest extends TestBase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+
+import org.debian.maven.TemporaryPomFolder;
+import org.junit.Rule;
+import org.junit.Test;
+
+public class POMReaderTest {
+
+    @Rule
+    public TemporaryPomFolder tmpDir = new TemporaryPomFolder();
 
     /**
      * Test of cleanPom method, of class POMReader.
      */
+    @Test
     public void testReadMavenPom() throws Exception {
-        usePom("maven.xml");
         POMReader instance = new POMReader();
-        POMInfo info = instance.readPom(pom);
+        POMInfo info = instance.readPom(tmpDir.usePom("maven.xml"));
         assertNotNull(info.getParent());
         assertEquals("org.apache.maven", info.getParent().getGroupId());
         assertEquals("maven-parent", info.getParent().getArtifactId());
@@ -82,10 +93,10 @@ public class POMReaderTest extends TestBase {
 
     }
 
+    @Test
     public void testReadHibernateValidatorTckRunner() throws Exception {
-        usePom("hibernate-validator-tck-runner.pom");
         POMReader instance = new POMReader();
-        POMInfo info = instance.readPom(pom);
+        POMInfo info = instance.readPom(tmpDir.usePom("hibernate-validator-tck-runner.pom"));
         assertNotNull(info.getParent());
         assertEquals("org.hibernate", info.getParent().getGroupId());
         assertEquals("hibernate-validator-parent", info.getParent().getArtifactId());
@@ -126,10 +137,10 @@ public class POMReaderTest extends TestBase {
         assertEquals(0, info.getModules().size());
     }
 
+    @Test
     public void testReadHibernateValidator() throws Exception {
-        usePom("hibernate-validator.pom");
         POMReader instance = new POMReader();
-        POMInfo info = instance.readPom(pom);
+        POMInfo info = instance.readPom(tmpDir.usePom("hibernate-validator.pom"));
         assertNotNull(info.getParent());
         assertEquals("org.hibernate", info.getParent().getGroupId());
         assertEquals("hibernate-validator-parent", info.getParent().getArtifactId());
@@ -270,10 +281,10 @@ public class POMReaderTest extends TestBase {
         assertEquals(0, info.getModules().size());
     }
 
+    @Test
     public void testReadMojoParent() throws Exception {
-        usePom("mojo-parent.pom");
         POMReader instance = new POMReader();
-        POMInfo info = instance.readPom(pom);
+        POMInfo info = instance.readPom(tmpDir.usePom("mojo-parent.pom"));
         assertNotNull(info.getParent());
         assertEquals("org.codehaus", info.getParent().getGroupId());
         assertEquals("codehaus-parent", info.getParent().getArtifactId());

@@ -16,10 +16,19 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
-public class ListOfPOMsTest extends TestBase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
+import org.debian.maven.TemporaryPomFolder;
+import org.junit.Test;
+
+public class ListOfPOMsTest {
+
+    @Test
     public void testRead() throws Exception {
-        ListOfPOMs poms = new ListOfPOMs(getFileInClasspath("antlr3.poms"));
+        ListOfPOMs poms = new ListOfPOMs(TemporaryPomFolder.getFileInClasspath("antlr3.poms"));
         assertEquals(6, poms.getPomOptions().size());
         assertTrue(poms.getPOMOptions("pom.xml").isNoParent());
         assertFalse(poms.getPOMOptions("runtime/Java/pom.xml").isNoParent());
