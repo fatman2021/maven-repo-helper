@@ -288,7 +288,8 @@ public class POMInfo implements Cloneable {
         }
         return dependencies;
     }
-    enum DependencyType{
+
+    public enum DependencyType{
         // The order of the patterns is important! More specific patterns first!
         DEPENDENCY_MANAGEMENT_LIST("project/dependencyManagement/dependencies/dependency"),
         PROFILE_DEPENDENCY_MANAGEMENT_LIST("profile/dependencyManagement/dependencies/dependency"),
