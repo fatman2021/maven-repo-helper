@@ -148,10 +148,6 @@ public class Repository {
         return null;
     }
 
-    public Iterator<POMInfo> resolvedPomsIterator() {
-        return resolvedPoms.values().iterator();
-    }
-
     public List<POMInfo> searchMatchingPOMsIgnoreVersion(Dependency dependency) {
         List<POMInfo> result = new ArrayList<POMInfo>();
         POMInfo pom = searchMatchingPOM(dependency);
@@ -160,8 +156,7 @@ public class Repository {
             return result;
         }
 
-        for (Iterator<POMInfo> i = resolvedPomsIterator(); i.hasNext();) {
-            POMInfo testPom = i.next();
+        for (POMInfo testPom : resolvedPoms.values()) {
             if (testPom.getThisPom().equalsIgnoreVersion(dependency)) {
                 result.add(testPom);
             }

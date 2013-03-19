@@ -140,8 +140,7 @@ public class POMTransformer extends POMReader {
 
     public void usePluginVersionsFromRepository() {
         repository.scanOnce();
-        for (Iterator<POMInfo> i = repository.resolvedPomsIterator(); i.hasNext();) {
-            POMInfo pom = i.next();
+        for (POMInfo pom : repository.getResolvedPoms().values()) {
             if (pom.getThisPom().getType().equals("maven-plugin")) {
                 Set<DependencyRule> pomRules = pom.getPublishedRules();
                 rules.add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
