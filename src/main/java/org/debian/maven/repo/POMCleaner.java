@@ -98,8 +98,12 @@ public class POMCleaner extends POMTransformer {
         }
     }
 
-    protected boolean isWriteIgnoredElement(String element, List<String> path, Dependency dependency) {
-        if ("relativePath".equals(element) && path.size() == 0) {
+    @Override
+    protected boolean shouldWriteRelativePath() { return false; }
+
+    @Override
+    protected boolean isWriteIgnoredElement(String element, TreePath<String> path, Dependency dependency) {
+        if (path.matches("parent/relativePath")) {
             return true;
         }
         boolean ignore = super.isWriteIgnoredElement(element, path, dependency);
@@ -111,8 +115,7 @@ public class POMCleaner extends POMTransformer {
         }
         if (path.size() > 2 && keepElements.contains(path.get(1))) {
             if ("version".equals(element)) {
-                String parent = path.get(path.size() - 1);
-                if ("plugin".equals(parent)) {
+                if ("plugin".equals(path.parent(1))) {
                     return true;
                 }
             }
@@ -121,7 +124,7 @@ public class POMCleaner extends POMTransformer {
 //        if (WRITE_IGNORED_ELEMENTS.contains(element)) {
 //            System.out.println("Write ignored " + element + " " + printPath(path) + " for " + dependency);
 //        }
-        return path.size() == 1 && WRITE_IGNORED_ELEMENTS.contains(element);
+        return path.size() == 2 && WRITE_IGNORED_ELEMENTS.contains(element);
     }
 
     protected boolean acceptDependency(Dependency dependency, POMInfo info) {

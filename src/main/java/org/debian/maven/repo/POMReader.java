@@ -266,12 +266,22 @@ public class POMReader {
         public void remove() { path.removeLast(); }
         public boolean contains(S el) { return path.contains(el); }
         public int size() { return path.size(); }
+        public S get(int index) { return path.get(index); }
 
         public S parent(int generations) {
             int index = (path.size() - 1) - generations;
             return index >= 0 ? path.get(index) : null;
         }
 
+        /**
+         * Does this path match the pattern?
+         * 
+         * The pattern is separated by slashes / and can contain the * wildcard for any path element to match
+         * anything. The matching is anchored at the end of the path. So the pattern does not need to start at
+         * the root.
+         * 
+         * @param patternString
+         */
         public boolean matches(String patternString) {
             String[] pattern = patternString.split("/");
             int pathIndex = path.size() - pattern.length - 1;

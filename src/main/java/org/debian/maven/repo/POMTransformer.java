@@ -311,6 +311,8 @@ public class POMTransformer extends POMReader {
             Dependency parent = noParent ? null : info.getParent();
 
             // Second pass - create the new document
+            // Stack of the XML path currently parsed. Most deepest XML element is first in the list.
+            TreePath<String> path = new TreePath<String>();
             int inIgnoredElement = 0;
             int inCopyOnlyElement = 0;
             int inDependency = 0;
@@ -321,7 +323,6 @@ public class POMTransformer extends POMReader {
             int inLevel = 0;
             int inModule = 0;
             boolean sawVersion = false;
-            List<String> path = new ArrayList<String>();
             List<Dependency> dependencyList = null;
             int dependencyIndex = -1;
             Map<DependencyType, Integer> dependencyIndexes = new HashMap<DependencyType, Integer>();
@@ -341,7 +342,8 @@ public class POMTransformer extends POMReader {
                 switch (event) {
                     case XMLStreamConstants.START_ELEMENT: {
                         element = parser.getLocalName();
-                        if (isWriteIgnoredElement(element, path, dependency) || (inLevel == 1 && isInfoElement(element))) {
+                        path.add(element);
+                        if (isWriteIgnoredElement(element, path, dependency) || (inLevel == 1 && INFO_ELEMENTS.contains(element))) {
                             inIgnoredElement++;
                             if ("version".equals(element)) {
                                 sawVersion = true;
@@ -355,7 +357,6 @@ public class POMTransformer extends POMReader {
                             inCopyOnlyElement++;
 
                             inLevel++;
-                            path.add(element);
 
                             indent(writer, inLevel - 1);
                             writer.writeStartElement(element);
@@ -363,36 +364,31 @@ public class POMTransformer extends POMReader {
 
                         } else {
                             inLevel++;
-                            path.add(element);
 
                             // Handle the special case of dependencies or plugins which can be ignored
                             // such as test dependencies during a clean operation
                             if ("dependency".equals(element) || "plugin".equals(element) || "extension".equals(element)) {
                                 dependency = null;
                                 if ("dependency".equals(element)) {
-                                    String parentElement = path.get(path.size() - 2);
-                                    String parentParentElement = path.get(path.size() - 3);
-                                    if ("dependencies".equals(parentElement)) {
+                                    if ("dependencies".equals(path.parent(1))) {
                                         sawVersion = false;
                                         DependencyType listSelector = null;
-                                        if ("dependencyManagement".equals(parentParentElement)) {
-                                            String p3Element = path.get(path.size() - 4);
-                                            if ("project".equals(p3Element)) {
+                                        if ("dependencyManagement".equals(path.parent(2))) {
+                                            if ("project".equals(path.parent(3))) {
                                                 listSelector = DEPENDENCY_MANAGEMENT_LIST;
-                                            } else if ("profile".equals(p3Element)) {
+                                            } else if ("profile".equals(path.parent(3))) {
                                                 listSelector = PROFILE_DEPENDENCY_MANAGEMENT_LIST;
                                             }
-                                        } else if ("project".equals(parentParentElement)) {
+                                        } else if ("project".equals(path.parent(2))) {
                                             listSelector = DEPENDENCIES;
-                                        } else if ("profile".equals(parentParentElement)) {
+                                        } else if ("profile".equals(path.parent(2))) {
                                             listSelector = PROFILE_DEPENDENCIES;
-                                        } else if ("plugin".equals(parentParentElement)) {
-                                            String p5Element = path.get(path.size() - 6);
-                                            if ("project".equals(p5Element)) {
+                                        } else if ("plugin".equals(path.parent(2))) {
+                                            if ("project".equals(path.parent(5))) {
                                                 listSelector = PLUGIN_DEPENDENCIES;
-                                            } else if ("build".equals(p5Element)) {
+                                            } else if ("build".equals(path.parent(5))) {
                                                 listSelector = PLUGIN_MANAGEMENT_DEPENDENCIES;
-                                            } else if ("profile".equals(p5Element)) {
+                                            } else if ("profile".equals(path.parent(5))) {
                                                 listSelector = PROFILE_PLUGIN_DEPENDENCIES;
                                             }
                                         }
@@ -406,32 +402,22 @@ public class POMTransformer extends POMReader {
                                         }
                                     }
                                 } else if ("plugin".equals(element)) {
-                                    String parentElement = path.get(path.size() - 2);
-                                    String parentParentElement = path.get(path.size() - 3);
-                                    String parentParentParentElement = null;
-                                    String p4Element = null;
-                                    if (path.size() > 4) {
-                                        parentParentParentElement = path.get(path.size() - 4);
-                                    }
-                                    if (path.size() > 5) {
-                                        p4Element = path.get(path.size() - 5);
-                                    }
-                                    if ("plugins".equals(parentElement)) {
+                                    if ("plugins".equals(path.parent(1))) {
                                         sawVersion = false;
                                         DependencyType listSelector = PLUGINS;
-                                        if ("pluginManagement".equals(parentParentElement)) {
-                                            if ("profile".equals(p4Element)) {
+                                        if ("pluginManagement".equals(path.parent(2))) {
+                                            if ("profile".equals(path.parent(4))) {
                                                 listSelector = PROFILE_PLUGIN_MANAGEMENT;
                                             } else {
                                                 listSelector = PLUGIN_MANAGEMENT;
                                             }
-                                        } else if ("reporting".equals(parentParentElement)) {
-                                            if ("profile".equals(parentParentParentElement)) {
+                                        } else if ("reporting".equals(path.parent(2))) {
+                                            if ("profile".equals(path.parent(3))) {
                                                 listSelector = PROFILE_REPORTING_PLUGINS;
                                             } else {
                                                 listSelector = REPORTING_PLUGINS;
                                             }
-                                        } else if ("profile".equals(parentParentParentElement)) {
+                                        } else if ("profile".equals(path.parent(3))) {
                                             listSelector = PROFILE_PLUGINS;
                                         }
                                         dependencyIndex = inc(dependencyIndexes, listSelector);
@@ -439,8 +425,7 @@ public class POMTransformer extends POMReader {
                                         dependency = dependencyList.get(dependencyIndex);
                                     }
                                 } else if ("extension".equals(element)) {
-                                    String parentElement = path.get(path.size() - 2);
-                                    if ("extensions".equals(parentElement)) {
+                                    if ("extensions".equals(path.parent(1))) {
                                         sawVersion = false;
                                         int index = inc(dependencyIndexes, EXTENSIONS);
                                         dependency = info.getDependencies().get(EXTENSIONS).get(index);
@@ -450,15 +435,12 @@ public class POMTransformer extends POMReader {
                                 if (dependency == null || !acceptDependency(dependency, info)) {
                                     inIgnoredElement++;
                                     inLevel--;
-                                    path.remove(path.size() - 1);
                                     dependency = null;
                                     continue;
                                 }
                             }
                             if ("module".equals(element)) {
-                                String parentElement = path.get(path.size() - 2);
-                                String parentParentElement = path.get(path.size() - 3);
-                                if ("modules".equals(parentElement) && "project".equals(parentParentElement)) {
+                                if ("modules".equals(path.parent(1)) && "project".equals(path.parent(2))) {
                                     String module = info.getModules().get(moduleDependencyIndex);
                                     ++moduleDependencyIndex;
                                     if (!acceptModule(module, originalPom)) {
@@ -467,7 +449,6 @@ public class POMTransformer extends POMReader {
                                         }
                                         inIgnoredElement++;
                                         inLevel--;
-                                        path.remove(path.size() - 1);
                                         continue;
                                     }
                                 }
@@ -513,6 +494,7 @@ public class POMTransformer extends POMReader {
                     }
 
                     case XMLStreamConstants.END_ELEMENT: {
+                        path.remove();
                         if (inIgnoredElement > 0) {
                             inIgnoredElement--;
                         } else {
@@ -555,7 +537,6 @@ public class POMTransformer extends POMReader {
                             }
 
                             inLevel--;
-                            path.remove(path.size() - 1);
                             if (inExclusion > 0) {
                                 inExclusion--;
                             } else if (inCopyOnlyElement > 0) {
@@ -610,7 +591,7 @@ public class POMTransformer extends POMReader {
                                     sawVersion = true;
                                 }
                             } else if (inPlugin > 0 && path.contains("configuration")) {
-                                if ("resourceBundle".equals(path.get(path.size() - 1))) {
+                                if ("resourceBundle".equals(path.parent(0))) {
                                     Matcher dependencyMatcher = compactDependencyNotationMatcher.matcher(value);
                                     if (dependencyMatcher.matches()) {
                                         Dependency embeddedDependency = new Dependency(dependencyMatcher.group(1),
@@ -660,6 +641,8 @@ public class POMTransformer extends POMReader {
         }
     }
 
+    protected boolean shouldWriteRelativePath() { return true; }
+    
     private void copyAndFillProjectHeader(XMLStreamReader parser, XMLStreamWriter writer, int inLevel, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
         if (parser.getNamespaceCount() == 0) {
             writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
@@ -708,7 +691,7 @@ public class POMTransformer extends POMReader {
             writer.writeStartElement("version");
             writer.writeCharacters(parent.getVersion());
             writer.writeEndElement();
-            if (!isWriteIgnoredElement("relativePath", new ArrayList<String>(), null) && null != parent.getRelativePath()) {
+            if (shouldWriteRelativePath() && null != parent.getRelativePath()) {
                 indent(writer, inLevel + 1);
                 writer.writeStartElement("relativePath");
                 writer.writeCharacters(parent.getRelativePath());
@@ -767,7 +750,7 @@ public class POMTransformer extends POMReader {
         }
     }
 
-    protected boolean isWriteIgnoredElement(String element, List<String> path, Dependency dependency) {
+    protected boolean isWriteIgnoredElement(String element, TreePath<String> path, Dependency dependency) {
 //        if (isDebianBuild() && DEBIAN_BUILD_IGNORED_ELEMENTS.contains(element)) {
 //            System.out.println("Build ignored " + element + " " + printPath(path) + " for " + dependency);
 //        }
@@ -790,10 +773,6 @@ public class POMTransformer extends POMReader {
 //        }
 //        return sb.toString();
 //    }
-
-    protected boolean isInfoElement(String element) {
-        return INFO_ELEMENTS.contains(element);
-    }
 
     protected boolean acceptDependency(Dependency dependency, POMInfo info) {
         return dependency.findMatchingRule(ignoreRules.getRules()) == null;
