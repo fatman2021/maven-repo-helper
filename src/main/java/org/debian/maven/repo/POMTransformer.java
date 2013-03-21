@@ -435,17 +435,15 @@ public class POMTransformer extends POMReader {
                                     continue;
                                 }
                             }
-                            if ("module".equals(element)) {
-                                if ("modules".equals(path.parent(1)) && "project".equals(path.parent(2))) {
-                                    String module = info.getModules().get(moduleDependencyIndex);
-                                    ++moduleDependencyIndex;
-                                    if (!acceptModule(module, originalPom)) {
-                                        if (verbose) {
-                                          System.out.println("Ignore module " + module + " in transformed POM");
-                                        }
-                                        inIgnoredElement++;
-                                        continue;
+                            if (path.matches("/project/modules/module")) {
+                                String module = info.getModules().get(moduleDependencyIndex);
+                                ++moduleDependencyIndex;
+                                if (!acceptModule(module, originalPom)) {
+                                    if (verbose) {
+                                      System.out.println("Ignore module " + module + " in transformed POM");
                                     }
+                                    inIgnoredElement++;
+                                    continue;
                                 }
                             }
 
