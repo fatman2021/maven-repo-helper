@@ -414,7 +414,7 @@ public class POMTransformer extends POMReader {
                                 copyAndFillProjectHeader(parser, writerWrapper, keepPomVersion, info, original, parent, debianPackage);
                             } else if (path.matches("/project/properties")) {
                                 inProperties++;
-                            } else if (inProperties > 0) {
+                            } else if (path.matches("/project/properties/*")) {
                                 visitedProperties.put(element, "true");
                                 inProperties++;
                             } else if ("dependency".equals(element)) {
@@ -427,13 +427,9 @@ public class POMTransformer extends POMReader {
                                 } else {
                                     inDependency++;
                                 }
-                            } else if ("plugin".equals(element)) {
+                            } else if (path.contains("plugin")) {
                                 inPlugin++;
-                            } else if (inPlugin > 0) {
-                                inPlugin++;
-                            } else if ("extension".equals(element)) {
-                                inExtension++;
-                            } else if (inExtension > 0) {
+                            } else if (path.contains("extension")) {
                                 inExtension++;
                             }
                         }
