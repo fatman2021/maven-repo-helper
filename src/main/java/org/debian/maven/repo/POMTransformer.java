@@ -321,7 +321,6 @@ public class POMTransformer extends POMReader {
             int inExtension = 0;
             int inPlugin = 0;
             int inProperties = 0;
-            int inModule = 0;
             boolean sawVersion = false;
             List<Dependency> dependencyList = null;
             int dependencyIndex = -1;
@@ -418,10 +417,6 @@ public class POMTransformer extends POMReader {
                             } else if (inProperties > 0) {
                                 visitedProperties.put(element, "true");
                                 inProperties++;
-                            } else if (path.matches("/project/modules")) {
-                                inModule++;
-                            } else if (inModule > 0) {
-                                inModule++;
                             } else if ("dependency".equals(element)) {
                                 inDependency++;
                             } else if (inExclusion > 0) {
@@ -494,8 +489,6 @@ public class POMTransformer extends POMReader {
                                 inPlugin--;
                             } else if (inExtension > 0) {
                                 inExtension--;
-                            } else if (inModule > 0) {
-                                inModule--;
                             }
                             if (inDependency + inPlugin + inExtension == 0) {
                                 dependency = null;
