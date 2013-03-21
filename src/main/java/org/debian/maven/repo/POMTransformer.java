@@ -476,15 +476,10 @@ public class POMTransformer extends POMReader {
                                     // only if a real version (not 'debian') is forced on that plugin and the plugin is not
                                     // declared in any pluginManagement section in this pom or its parents
                                     // For simple dependencies, we avoid inserting the version if it's in the dependency management
-                                    boolean insertVersion = (info.getVersionFromManagementDependency(dependency) == null);
-                                    if (inPlugin == 1 && insertVersion) {
-                                        insertVersion = !"debian".equals(dependency.getVersion());
-                                    }
-                                    if (insertVersion) {
-                                        writerWrapper.indent(path.size());
-                                        writer.writeStartElement("version");
-                                        writer.writeCharacters(dependency.getVersion());
-                                        writer.writeEndElement();
+                                    if (null == info.getVersionFromManagementDependency(dependency)
+                                            && !( inPlugin == 1
+                                                && "debian".equals(dependency.getVersion()))) {
+                                        writerWrapper.writeFilledElement("version", dependency.getVersion(), path.size());
                                     }
                                 }
                             }
