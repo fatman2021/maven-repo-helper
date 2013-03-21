@@ -402,19 +402,15 @@ public class POMTransformer extends POMReader {
                                     if ("plugins".equals(path.parent(1))) {
                                         sawVersion = false;
                                         DependencyType listSelector = PLUGINS;
-                                        if ("pluginManagement".equals(path.parent(2))) {
-                                            if ("profile".equals(path.parent(4))) {
-                                                listSelector = PROFILE_PLUGIN_MANAGEMENT;
-                                            } else {
-                                                listSelector = PLUGIN_MANAGEMENT;
-                                            }
-                                        } else if ("reporting".equals(path.parent(2))) {
-                                            if ("profile".equals(path.parent(3))) {
-                                                listSelector = PROFILE_REPORTING_PLUGINS;
-                                            } else {
-                                                listSelector = REPORTING_PLUGINS;
-                                            }
-                                        } else if ("profile".equals(path.parent(3))) {
+                                        if (path.matches("profile/*/pluginManagement/plugins/plugin")) {
+                                            listSelector = PROFILE_PLUGIN_MANAGEMENT;
+                                        } else if (path.matches("pluginManagement/plugins/plugin")) {
+                                            listSelector = PLUGIN_MANAGEMENT;
+                                        } else if (path.matches("profile/reporting/plugins/plugin")) {
+                                            listSelector = PROFILE_REPORTING_PLUGINS;
+                                        } else if(path.matches("*/reporting/plugins/plugin")) {
+                                            listSelector = REPORTING_PLUGINS;
+                                        } else if (path.matches("profile/*/plugins/plugin")) {
                                             listSelector = PROFILE_PLUGINS;
                                         }
                                         dependencyIndex = inc(dependencyIndexes, listSelector);
