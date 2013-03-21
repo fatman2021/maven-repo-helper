@@ -20,6 +20,7 @@ import static org.debian.maven.repo.POMInfo.DependencyType.*;
  */
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
@@ -374,5 +375,14 @@ public class POMReaderTest {
         assertTrue(path.matches("a/*/c/d"));
         assertTrue(path.matches("a/b/*/d"));
         assertTrue(path.matches("a/b/c/*"));
+
+        assertTrue(path.matches("/*/b/c/d"));
+        assertTrue(path.matches("/a/*/c/d"));
+        assertTrue(path.matches("/a/b/*/d"));
+        assertTrue(path.matches("/a/b/c/*"));
+
+        assertFalse(path.matches("/b/c/d"));
+        assertFalse(path.matches("/c/d"));
+        assertFalse(path.matches("/d"));
     }
 }

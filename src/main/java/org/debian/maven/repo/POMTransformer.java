@@ -321,7 +321,6 @@ public class POMTransformer extends POMReader {
             int inExtension = 0;
             int inPlugin = 0;
             int inProperties = 0;
-            int inLevel = 0;
             int inModule = 0;
             boolean sawVersion = false;
             List<Dependency> dependencyList = null;
@@ -345,12 +344,12 @@ public class POMTransformer extends POMReader {
                     case XMLStreamConstants.START_ELEMENT: {
                         element = parser.getLocalName();
                         path.add(element);
-                        if (isWriteIgnoredElement(element, path, dependency) || (inLevel == 1 && INFO_ELEMENTS.contains(element))) {
+                        if (isWriteIgnoredElement(element, path, dependency) || (path.size() == 2 && INFO_ELEMENTS.contains(element))) {
                             inIgnoredElement++;
                             if ("version".equals(element)) {
                                 sawVersion = true;
                             }
-                        } else if (inLevel == 1 && "properties".equals(element) && original.getProperties().isEmpty()) {
+                        } else if (path.matches("/project/properties") && original.getProperties().isEmpty()) {
                             inIgnoredElement++;
                         } else if (inIgnoredElement > 0) {
                             inIgnoredElement++;
@@ -358,15 +357,11 @@ public class POMTransformer extends POMReader {
                                 (inDependency > 0 && "exclusions".equals(element))) {
                             inCopyOnlyElement++;
 
-                            inLevel++;
-
                             writerWrapper.indent(path.size() - 1);
                             writer.writeStartElement(element);
                             copyNsAndAttributes(parser, writer);
 
                         } else {
-                            inLevel++;
-
                             // Handle the special case of dependencies or plugins which can be ignored
                             // such as test dependencies during a clean operation
                             if ("dependency".equals(element) || "plugin".equals(element) || "extension".equals(element)) {
@@ -436,7 +431,6 @@ public class POMTransformer extends POMReader {
                                 // Skip dependency if we can't find it (== null)
                                 if (dependency == null || !acceptDependency(dependency, info)) {
                                     inIgnoredElement++;
-                                    inLevel--;
                                     dependency = null;
                                     continue;
                                 }
@@ -450,7 +444,6 @@ public class POMTransformer extends POMReader {
                                           System.out.println("Ignore module " + module + " in transformed POM");
                                         }
                                         inIgnoredElement++;
-                                        inLevel--;
                                         continue;
                                     }
                                 }
@@ -460,14 +453,14 @@ public class POMTransformer extends POMReader {
                             writer.writeStartElement(element);
                             copyNsAndAttributes(parser, writer);
 
-                            if ("project".equals(element) && inLevel == 1) {
-                                copyAndFillProjectHeader(parser, writerWrapper, inLevel, keepPomVersion, info, original, parent, debianPackage);
-                            } else if (inLevel == 2 && "properties".equals(element)) {
+                            if (path.matches("/project")) {
+                                copyAndFillProjectHeader(parser, writerWrapper, keepPomVersion, info, original, parent, debianPackage);
+                            } else if (path.matches("/project/properties")) {
                                 inProperties++;
                             } else if (inProperties > 0) {
                                 visitedProperties.put(element, "true");
                                 inProperties++;
-                            } else if (inLevel == 2 && "modules".equals(element)) {
+                            } else if (path.matches("/project/modules")) {
                                 inModule++;
                             } else if (inModule > 0) {
                                 inModule++;
@@ -538,7 +531,6 @@ public class POMTransformer extends POMReader {
                                 }
                             }
 
-                            inLevel--;
                             if (inExclusion > 0) {
                                 inExclusion--;
                             } else if (inCopyOnlyElement > 0) {
@@ -564,8 +556,8 @@ public class POMTransformer extends POMReader {
                             if (inProperties > 0) {
                                 inProperties--;
                                 if (inProperties == 0) {
-                                    createDebianProperties(info, original, debianPackage, inLevel);
-                                    writeMissingProperties(writerWrapper, inLevel, info, visitedProperties);
+                                    createDebianProperties(info, original, debianPackage, path.size());
+                                    writeMissingProperties(writerWrapper, path.size(), info, visitedProperties);
                                 }
                             }
                             if (!afterText) {
@@ -645,7 +637,7 @@ public class POMTransformer extends POMReader {
 
     protected boolean shouldWriteRelativePath() { return true; }
     
-    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLWriterWrapper writerWrapper, int inLevel, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
+    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLWriterWrapper writerWrapper, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
         XMLStreamWriter writer = writerWrapper.getWriter();
         if (parser.getNamespaceCount() == 0) {
             writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
@@ -656,34 +648,34 @@ public class POMTransformer extends POMReader {
                     "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd");
         }
         writerWrapper
-            .writeFilledElement("modelVersion", "4.0.0", inLevel)
-            .writeFilledElement("groupId", info.getThisPom().getGroupId(), inLevel)
-            .writeFilledElement("artifactId", info.getThisPom().getArtifactId(), inLevel)
-            .writeFilledElement("version", keepPomVersion ? info.getOriginalVersion() : info.getThisPom().getVersion(), inLevel)
-            .writeFilledElement("packaging", info.getThisPom().getType(), inLevel);
+            .writeFilledElement("modelVersion", "4.0.0", 1)
+            .writeFilledElement("groupId", info.getThisPom().getGroupId(), 1)
+            .writeFilledElement("artifactId", info.getThisPom().getArtifactId(), 1)
+            .writeFilledElement("version", keepPomVersion ? info.getOriginalVersion() : info.getThisPom().getVersion(), 1)
+            .writeFilledElement("packaging", info.getThisPom().getType(), 1);
 
         if (parent != null) {
-            writerWrapper.indent(inLevel);
+            writerWrapper.indent(1);
             writer.writeStartElement("parent");
             writerWrapper
-                .writeFilledElement("groupId", parent.getGroupId(), inLevel + 1)
-                .writeFilledElement("artifactId", parent.getArtifactId(), inLevel + 1)
-                .writeFilledElement("version", parent.getVersion(), inLevel + 1);
+                .writeFilledElement("groupId", parent.getGroupId(), 2)
+                .writeFilledElement("artifactId", parent.getArtifactId(), 2)
+                .writeFilledElement("version", parent.getVersion(), 2);
 
             if (shouldWriteRelativePath() && null != parent.getRelativePath()) {
-                writerWrapper.writeFilledElement("relativePath", parent.getRelativePath(), inLevel + 1);
+                writerWrapper.writeFilledElement("relativePath", parent.getRelativePath(), 2);
             }
-            writerWrapper.indent(inLevel);
+            writerWrapper.indent(1);
             writer.writeEndElement();
-            writerWrapper.indent(inLevel);
+            writerWrapper.indent(1);
         }
         if (original.getProperties().isEmpty()) {
             writer.writeStartElement("properties");
-            createDebianProperties(info, original, debianPackage, inLevel);
-            writeMissingProperties(writerWrapper, inLevel, info, new HashMap<String, String>());
-            writerWrapper.indent(inLevel);
+            createDebianProperties(info, original, debianPackage, 1);
+            writeMissingProperties(writerWrapper, 1, info, new HashMap<String, String>());
+            writerWrapper.indent(1);
             writer.writeEndElement();
-            writerWrapper.indent(inLevel);
+            writerWrapper.indent(1);
         }
     }
 

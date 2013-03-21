@@ -273,17 +273,11 @@ public class POMReader {
             return index >= 0 ? path.get(index) : null;
         }
 
-        /**
-         * Does this path match the pattern?
-         * 
-         * The pattern is separated by slashes / and can contain the * wildcard for any path element to match
-         * anything. The matching is anchored at the end of the path. So the pattern does not need to start at
-         * the root.
-         * 
-         * @param patternString
-         */
-        public boolean matches(String patternString) {
+        private boolean matches(String patternString, boolean anchored) {
             String[] pattern = patternString.split("/");
+
+            if(anchored && pattern.length != path.size()) return false;
+
             int pathIndex = path.size() - pattern.length - 1;
             if(pathIndex < -1) return false;
 
@@ -296,6 +290,25 @@ public class POMReader {
             return true;
         }
 
+        /**
+         * Does this path match the pattern?
+         * 
+         * The pattern is separated by slashes / and can contain the * wildcard for any path element to match
+         * anything. The matching is anchored at the end of the path. So the pattern does not need to start at
+         * the root.
+         * 
+         * A pattern that starts with a slash is also anchored at the start.
+         * 
+         * @param patternString
+         */
+        public boolean matches(String patternString) {
+            if(patternString.startsWith("/")) {
+                return matches(patternString.substring(1), true);
+            } else {
+                return matches(patternString, false);
+            }
+        }
+        
         public DependencyType match() {
             for(DependencyType depType : DependencyType.values()) {
                 if(matches(depType.pattern)) {
