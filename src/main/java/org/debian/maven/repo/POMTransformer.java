@@ -772,15 +772,16 @@ public class POMTransformer extends POMReader {
             }
             if (!publishedRules.isEmpty()) {
                 StringWriter sw = new StringWriter();
-                for (Iterator i = publishedRules.iterator(); i.hasNext();) {
-                    DependencyRule dependencyRule = (DependencyRule) i.next();
-                    sw.append(dependencyRule.toString());
-                    if (i.hasNext()) {
+                boolean first = true;
+                for (DependencyRule dependencyRule : publishedRules) {
+                    if (!first) {
                         sw.append(",\n");
                         for (int j = 0; j <= inLevel; j++) {
                             sw.append("\t");
                         }
                     }
+                    first = false;
+                    sw.append(dependencyRule.toString());
                 }
                 info.getProperties().put("debian.mavenRules", sw.toString());
             }
