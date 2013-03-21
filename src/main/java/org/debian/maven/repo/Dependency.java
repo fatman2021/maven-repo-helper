@@ -17,6 +17,8 @@ package org.debian.maven.repo;
  */
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a Maven dependency of any type (dependency, plugin, parent POM)
@@ -27,6 +29,8 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
 
     public static final Dependency PROTO_JAR = new Dependency(null, null, "jar", null);
     public static final Dependency PROTO_PLUGIN = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
+    private static final Pattern compactDependencyNotationMatcher =
+            Pattern.compile("(\\w[a-zA-Z0-9\\-_\\.]*):(\\w[a-zA-Z0-9\\-_]*):(\\d[a-zA-Z0-9\\-_\\.]*)");
 
     private String groupId;
     private String artifactId;
@@ -306,6 +310,21 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
             return type1.equals(type2);
         }
         return type2 == null;
+    }
+
+    public static Dependency fromCompactNotation(String depNotation) {
+        Matcher dependencyMatcher = compactDependencyNotationMatcher.matcher(depNotation);
+        if (dependencyMatcher.matches()) {
+            return new Dependency(dependencyMatcher.group(1),
+                    dependencyMatcher.group(2), "jar", dependencyMatcher.group(3));
+        }
+        return null;
+    }
+
+    public String formatCompactNotation() {
+        return getGroupId() + ":" +
+               getArtifactId() + ":" +
+               getVersion();
     }
 
     public static class Builder {

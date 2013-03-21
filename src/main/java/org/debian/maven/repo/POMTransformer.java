@@ -56,8 +56,6 @@ public class POMTransformer extends POMReader {
     private static final List<String> DEBIAN_DOC_IGNORED_ELEMENTS = Arrays.asList("reports", "reporting", "site");
     private static final List<String> INFO_ELEMENTS = Arrays.asList("groupId",
             "artifactId", "packaging", "version");
-    private static final Pattern compactDependencyNotationMatcher =
-            Pattern.compile("(\\w[a-zA-Z0-9\\-_\\.]*):(\\w[a-zA-Z0-9\\-_]*):(\\d[a-zA-Z0-9\\-_\\.]*)");
     private DependencyRuleSet rules = new DependencyRuleSet("Rules", new File("debian/maven.rules"));
     private DependencyRuleSet automaticRules = new DependencyRuleSet("Automatic rules");
     private DependencyRuleSet publishedRules = new DependencyRuleSet("Published rules", new File("debian/maven.publishedRules"));
@@ -526,17 +524,10 @@ public class POMTransformer extends POMReader {
                                     value = dependency.getVersion();
                                     sawVersion = true;
                                 }
-                            } else if (inPlugin > 0 && path.contains("configuration")) {
-                                if ("resourceBundle".equals(path.parent(0))) {
-                                    Matcher dependencyMatcher = compactDependencyNotationMatcher.matcher(value);
-                                    if (dependencyMatcher.matches()) {
-                                        Dependency embeddedDependency = new Dependency(dependencyMatcher.group(1),
-                                                dependencyMatcher.group(2), "jar", dependencyMatcher.group(3));
-                                        embeddedDependency = embeddedDependency.applyRules(rules.getRules());
-                                        value = embeddedDependency.getGroupId() + ":" +
-                                                embeddedDependency.getArtifactId() + ":" +
-                                                embeddedDependency.getVersion();
-                                    }
+                            } else if (inPlugin > 0 && path.matches("configuration/resourceBundles/resourceBundle")) {
+                                Dependency embeddedDependency = Dependency.fromCompactNotation(value);
+                                if(null != embeddedDependency) {
+                                    value = embeddedDependency.applyRules(rules.getRules()).formatCompactNotation();
                                 }
                             } else if (inProperties > 1) {
                                 visitedProperties.put(element, value);
