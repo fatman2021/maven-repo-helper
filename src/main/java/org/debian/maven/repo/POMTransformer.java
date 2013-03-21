@@ -368,22 +368,7 @@ public class POMTransformer extends POMReader {
                                 dependency = null;
                                 if (path.matches("dependencies/dependency")) {
                                     sawVersion = false;
-                                    DependencyType listSelector = null;
-                                    if (path.matches("/project/dependencyManagement/dependencies/dependency")) {
-                                        listSelector = DEPENDENCY_MANAGEMENT_LIST;
-                                    } else if (path.matches("profile/dependencyManagement/dependencies/dependency")) {
-                                        listSelector = PROFILE_DEPENDENCY_MANAGEMENT_LIST;
-                                    } else if (path.matches("/project/dependencies/dependency")) {
-                                        listSelector = DEPENDENCIES;
-                                    } else if (path.matches("profile/dependencies/dependency")) {
-                                        listSelector = PROFILE_DEPENDENCIES;
-                                    } else if (path.matches("/project/*/*/plugin/dependencies/dependency")) {
-                                        listSelector = PLUGIN_DEPENDENCIES;
-                                    } else if (path.matches("build/*/*/plugin/dependencies/dependency")) {
-                                        listSelector = PLUGIN_MANAGEMENT_DEPENDENCIES;
-                                    } else if (path.matches("profile/*/*/plugin/dependencies/dependency")) {
-                                        listSelector = PROFILE_PLUGIN_DEPENDENCIES;
-                                    }
+                                    DependencyType listSelector = path.match();
                                     if (listSelector != null) {
                                         dependencyIndex = inc(dependencyIndexes, listSelector);
                                         dependencyList = info.getDependencies().get(listSelector);
@@ -392,25 +377,12 @@ public class POMTransformer extends POMReader {
                                         }
                                         dependency = dependencyList.get(dependencyIndex);
                                     }
-                                } else if ("plugin".equals(element)) {
-                                    if ("plugins".equals(path.parent(1))) {
-                                        sawVersion = false;
-                                        DependencyType listSelector = PLUGINS;
-                                        if (path.matches("profile/*/pluginManagement/plugins/plugin")) {
-                                            listSelector = PROFILE_PLUGIN_MANAGEMENT;
-                                        } else if (path.matches("pluginManagement/plugins/plugin")) {
-                                            listSelector = PLUGIN_MANAGEMENT;
-                                        } else if (path.matches("profile/reporting/plugins/plugin")) {
-                                            listSelector = PROFILE_REPORTING_PLUGINS;
-                                        } else if(path.matches("*/reporting/plugins/plugin")) {
-                                            listSelector = REPORTING_PLUGINS;
-                                        } else if (path.matches("profile/*/plugins/plugin")) {
-                                            listSelector = PROFILE_PLUGINS;
-                                        }
-                                        dependencyIndex = inc(dependencyIndexes, listSelector);
-                                        dependencyList = info.getDependencies().get(listSelector);
-                                        dependency = dependencyList.get(dependencyIndex);
-                                    }
+                                } else if (path.matches("plugins/plugin")) {
+                                    sawVersion = false;
+                                    DependencyType listSelector = path.match();
+                                    dependencyIndex = inc(dependencyIndexes, listSelector);
+                                    dependencyList = info.getDependencies().get(listSelector);
+                                    dependency = dependencyList.get(dependencyIndex);
                                 } else if (path.matches("extensions/extension")) {
                                     sawVersion = false;
                                     int index = inc(dependencyIndexes, EXTENSIONS);
