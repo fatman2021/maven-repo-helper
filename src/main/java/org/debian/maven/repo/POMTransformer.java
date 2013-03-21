@@ -366,37 +366,31 @@ public class POMTransformer extends POMReader {
                             // such as test dependencies during a clean operation
                             if ("dependency".equals(element) || "plugin".equals(element) || "extension".equals(element)) {
                                 dependency = null;
-                                if ("dependency".equals(element)) {
-                                    if ("dependencies".equals(path.parent(1))) {
-                                        sawVersion = false;
-                                        DependencyType listSelector = null;
-                                        if ("dependencyManagement".equals(path.parent(2))) {
-                                            if ("project".equals(path.parent(3))) {
-                                                listSelector = DEPENDENCY_MANAGEMENT_LIST;
-                                            } else if ("profile".equals(path.parent(3))) {
-                                                listSelector = PROFILE_DEPENDENCY_MANAGEMENT_LIST;
-                                            }
-                                        } else if ("project".equals(path.parent(2))) {
-                                            listSelector = DEPENDENCIES;
-                                        } else if ("profile".equals(path.parent(2))) {
-                                            listSelector = PROFILE_DEPENDENCIES;
-                                        } else if ("plugin".equals(path.parent(2))) {
-                                            if ("project".equals(path.parent(5))) {
-                                                listSelector = PLUGIN_DEPENDENCIES;
-                                            } else if ("build".equals(path.parent(5))) {
-                                                listSelector = PLUGIN_MANAGEMENT_DEPENDENCIES;
-                                            } else if ("profile".equals(path.parent(5))) {
-                                                listSelector = PROFILE_PLUGIN_DEPENDENCIES;
-                                            }
+                                if (path.matches("dependencies/dependency")) {
+                                    sawVersion = false;
+                                    DependencyType listSelector = null;
+                                    if (path.matches("/project/dependencyManagement/dependencies/dependency")) {
+                                        listSelector = DEPENDENCY_MANAGEMENT_LIST;
+                                    } else if (path.matches("profile/dependencyManagement/dependencies/dependency")) {
+                                        listSelector = PROFILE_DEPENDENCY_MANAGEMENT_LIST;
+                                    } else if (path.matches("/project/dependencies/dependency")) {
+                                        listSelector = DEPENDENCIES;
+                                    } else if (path.matches("profile/dependencies/dependency")) {
+                                        listSelector = PROFILE_DEPENDENCIES;
+                                    } else if (path.matches("/project/*/*/plugin/dependencies/dependency")) {
+                                        listSelector = PLUGIN_DEPENDENCIES;
+                                    } else if (path.matches("build/*/*/plugin/dependencies/dependency")) {
+                                        listSelector = PLUGIN_MANAGEMENT_DEPENDENCIES;
+                                    } else if (path.matches("profile/*/*/plugin/dependencies/dependency")) {
+                                        listSelector = PROFILE_PLUGIN_DEPENDENCIES;
+                                    }
+                                    if (listSelector != null) {
+                                        dependencyIndex = inc(dependencyIndexes, listSelector);
+                                        dependencyList = info.getDependencies().get(listSelector);
+                                        if (dependency != null) {
+                                            parentDependency = dependency;
                                         }
-                                        if (listSelector != null) {
-                                            dependencyIndex = inc(dependencyIndexes, listSelector);
-                                            dependencyList = info.getDependencies().get(listSelector);
-                                            if (dependency != null) {
-                                                parentDependency = dependency;
-                                            }
-                                            dependency = dependencyList.get(dependencyIndex);
-                                        }
+                                        dependency = dependencyList.get(dependencyIndex);
                                     }
                                 } else if ("plugin".equals(element)) {
                                     if ("plugins".equals(path.parent(1))) {
@@ -417,12 +411,10 @@ public class POMTransformer extends POMReader {
                                         dependencyList = info.getDependencies().get(listSelector);
                                         dependency = dependencyList.get(dependencyIndex);
                                     }
-                                } else if ("extension".equals(element)) {
-                                    if ("extensions".equals(path.parent(1))) {
-                                        sawVersion = false;
-                                        int index = inc(dependencyIndexes, EXTENSIONS);
-                                        dependency = info.getDependencies().get(EXTENSIONS).get(index);
-                                    }
+                                } else if (path.matches("extensions/extension")) {
+                                    sawVersion = false;
+                                    int index = inc(dependencyIndexes, EXTENSIONS);
+                                    dependency = info.getDependencies().get(EXTENSIONS).get(index);
                                 }
                                 // Skip dependency if we can't find it (== null)
                                 if (dependency == null || !acceptDependency(dependency, info)) {
