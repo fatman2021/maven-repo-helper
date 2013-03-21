@@ -38,6 +38,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.debian.maven.cliargs.ArgumentsMap;
 import org.debian.maven.repo.POMInfo.DependencyType;
+import org.debian.maven.util.XMLWriterWrapper;
 
 import static org.debian.maven.repo.POMInfo.DependencyType.*;
 
@@ -335,6 +336,7 @@ public class POMTransformer extends POMReader {
             XMLStreamReader parser = factory.createXMLStreamReader(new BufferedReader(new FileReader(originalPom)));
             out = new BufferedWriter(new FileWriter(targetPom));
             XMLStreamWriter writer = outFactory.createXMLStreamWriter(out);
+            XMLWriterWrapper writerWrapper = new XMLWriterWrapper(writer);
 
             writer.writeStartDocument("UTF-8", "1.0");
 
@@ -358,7 +360,7 @@ public class POMTransformer extends POMReader {
 
                             inLevel++;
 
-                            indent(writer, inLevel - 1);
+                            writerWrapper.indent(path.size() - 1);
                             writer.writeStartElement(element);
                             copyNsAndAttributes(parser, writer);
 
@@ -454,12 +456,12 @@ public class POMTransformer extends POMReader {
                                 }
                             }
 
-                            indent(writer, inLevel - 1);
+                            writerWrapper.indent(path.size() - 1);
                             writer.writeStartElement(element);
                             copyNsAndAttributes(parser, writer);
 
                             if ("project".equals(element) && inLevel == 1) {
-                                copyAndFillProjectHeader(parser, writer, inLevel, keepPomVersion, info, original, parent, debianPackage);
+                                copyAndFillProjectHeader(parser, writerWrapper, inLevel, keepPomVersion, info, original, parent, debianPackage);
                             } else if (inLevel == 2 && "properties".equals(element)) {
                                 inProperties++;
                             } else if (inProperties > 0) {
@@ -528,7 +530,7 @@ public class POMTransformer extends POMReader {
                                         insertVersion = !"debian".equals(dependency.getVersion());
                                     }
                                     if (insertVersion) {
-                                        indent(writer, inLevel);
+                                        writerWrapper.indent(path.size());
                                         writer.writeStartElement("version");
                                         writer.writeCharacters(dependency.getVersion());
                                         writer.writeEndElement();
@@ -563,11 +565,11 @@ public class POMTransformer extends POMReader {
                                 inProperties--;
                                 if (inProperties == 0) {
                                     createDebianProperties(info, original, debianPackage, inLevel);
-                                    writeMissingProperties(writer, inLevel, info, visitedProperties);
+                                    writeMissingProperties(writerWrapper, inLevel, info, visitedProperties);
                                 }
                             }
                             if (!afterText) {
-                                indent(writer, inLevel);
+                                writerWrapper.indent(path.size());;
                             }
                             writer.writeEndElement();
                             afterText = false;
@@ -613,7 +615,7 @@ public class POMTransformer extends POMReader {
 
                     case XMLStreamConstants.COMMENT: {
                         if (inIgnoredElement == 0) {
-                            indent(writer, inLevel);
+                            writerWrapper.indent(path.size());
                             writer.writeComment(parser.getText());
                         }
                     }
@@ -643,7 +645,8 @@ public class POMTransformer extends POMReader {
 
     protected boolean shouldWriteRelativePath() { return true; }
     
-    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLStreamWriter writer, int inLevel, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
+    private void copyAndFillProjectHeader(XMLStreamReader parser, XMLWriterWrapper writerWrapper, int inLevel, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
+        XMLStreamWriter writer = writerWrapper.getWriter();
         if (parser.getNamespaceCount() == 0) {
             writer.writeNamespace(null, "http://maven.apache.org/POM/4.0.0");
             writer.writeNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -652,19 +655,19 @@ public class POMTransformer extends POMReader {
             writer.writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "schemaLocation",
                     "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd");
         }
-        indent(writer, inLevel);
+        writerWrapper.indent(inLevel);
         writer.writeStartElement("modelVersion");
         writer.writeCharacters("4.0.0");
         writer.writeEndElement();
-        indent(writer, inLevel);
+        writerWrapper.indent(inLevel);
         writer.writeStartElement("groupId");
         writer.writeCharacters(info.getThisPom().getGroupId());
         writer.writeEndElement();
-        indent(writer, inLevel);
+        writerWrapper.indent(inLevel);
         writer.writeStartElement("artifactId");
         writer.writeCharacters(info.getThisPom().getArtifactId());
         writer.writeEndElement();
-        indent(writer, inLevel);
+        writerWrapper.indent(inLevel);
         writer.writeStartElement("version");
         if (keepPomVersion) {
             writer.writeCharacters(info.getOriginalVersion());
@@ -672,42 +675,42 @@ public class POMTransformer extends POMReader {
             writer.writeCharacters(info.getThisPom().getVersion());
         }
         writer.writeEndElement();
-        indent(writer, inLevel);
+        writerWrapper.indent(inLevel);
         writer.writeStartElement("packaging");
         writer.writeCharacters(info.getThisPom().getType());
         writer.writeEndElement();
-        indent(writer, inLevel);
+        writerWrapper.indent(inLevel);
         if (parent != null) {
             writer.writeStartElement("parent");
-            indent(writer, inLevel + 1);
+            writerWrapper.indent(inLevel + 1);
             writer.writeStartElement("groupId");
             writer.writeCharacters(parent.getGroupId());
             writer.writeEndElement();
-            indent(writer, inLevel + 1);
+            writerWrapper.indent(inLevel + 1);
             writer.writeStartElement("artifactId");
             writer.writeCharacters(parent.getArtifactId());
             writer.writeEndElement();
-            indent(writer, inLevel + 1);
+            writerWrapper.indent(inLevel + 1);
             writer.writeStartElement("version");
             writer.writeCharacters(parent.getVersion());
             writer.writeEndElement();
             if (shouldWriteRelativePath() && null != parent.getRelativePath()) {
-                indent(writer, inLevel + 1);
+                writerWrapper.indent(inLevel + 1);
                 writer.writeStartElement("relativePath");
                 writer.writeCharacters(parent.getRelativePath());
                 writer.writeEndElement();
             }
-            indent(writer, inLevel);
+            writerWrapper.indent(inLevel);
             writer.writeEndElement();
-            indent(writer, inLevel);
+            writerWrapper.indent(inLevel);
         }
         if (original.getProperties().isEmpty()) {
             writer.writeStartElement("properties");
             createDebianProperties(info, original, debianPackage, inLevel);
-            writeMissingProperties(writer, inLevel, info, new HashMap<String, String>());
-            indent(writer, inLevel);
+            writeMissingProperties(writerWrapper, inLevel, info, new HashMap<String, String>());
+            writerWrapper.indent(inLevel);
             writer.writeEndElement();
-            indent(writer, inLevel);
+            writerWrapper.indent(inLevel);
         }
     }
 
@@ -740,13 +743,6 @@ public class POMTransformer extends POMReader {
             } else {
                 writer.writeAttribute(attrPrefix, attrNamespace, attrName, value);
             }
-        }
-    }
-
-    protected void indent(XMLStreamWriter writer, int inLevel) throws XMLStreamException {
-        writer.writeCharacters("\n");
-        for (int i = 0; i < inLevel; i++) {
-            writer.writeCharacters("\t");
         }
     }
 
@@ -818,13 +814,14 @@ public class POMTransformer extends POMReader {
         }
     }
 
-    protected void writeMissingProperties(XMLStreamWriter writer, int inLevel, POMInfo info, Map<String, String> visitedProperties) throws XMLStreamException {
+    protected void writeMissingProperties(XMLWriterWrapper writerWrapper, int inLevel, POMInfo info, Map<String, String> visitedProperties) throws XMLStreamException {
+        XMLStreamWriter writer = writerWrapper.getWriter();
         Map<String, String> sortedProperties = new TreeMap<String, String>(info.getProperties());
         for (Map.Entry<String, String> entry: sortedProperties.entrySet()) {
             String property = entry.getKey();
             String value = entry.getValue();
             if (!visitedProperties.containsKey(property)) {
-                indent(writer, inLevel + 1);
+                writerWrapper.indent(inLevel + 1);
                 if (value == null || value.isEmpty() || "true".equals(value)) {
                     writer.writeEmptyElement(property);
                 } else {
