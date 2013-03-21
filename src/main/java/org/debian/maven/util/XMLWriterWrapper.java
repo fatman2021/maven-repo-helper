@@ -38,4 +38,16 @@ public class XMLWriterWrapper {
             writer.writeCharacters("\t");
         }
     }
+
+    public XMLWriterWrapper writeFilledElement(String element, String content) throws XMLStreamException {
+        writer.writeStartElement(element);
+        writer.writeCharacters(content);
+        writer.writeEndElement();
+        return this;
+    }
+
+    public XMLWriterWrapper writeFilledElement(String element, String content, int inLevel) throws XMLStreamException {
+        indent(inLevel);
+        return writeFilledElement(element, content);
+    }
 }

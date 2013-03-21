@@ -655,50 +655,23 @@ public class POMTransformer extends POMReader {
             writer.writeAttribute("xsi", "http://www.w3.org/2001/XMLSchema-instance", "schemaLocation",
                     "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4_0_0.xsd");
         }
-        writerWrapper.indent(inLevel);
-        writer.writeStartElement("modelVersion");
-        writer.writeCharacters("4.0.0");
-        writer.writeEndElement();
-        writerWrapper.indent(inLevel);
-        writer.writeStartElement("groupId");
-        writer.writeCharacters(info.getThisPom().getGroupId());
-        writer.writeEndElement();
-        writerWrapper.indent(inLevel);
-        writer.writeStartElement("artifactId");
-        writer.writeCharacters(info.getThisPom().getArtifactId());
-        writer.writeEndElement();
-        writerWrapper.indent(inLevel);
-        writer.writeStartElement("version");
-        if (keepPomVersion) {
-            writer.writeCharacters(info.getOriginalVersion());
-        } else {
-            writer.writeCharacters(info.getThisPom().getVersion());
-        }
-        writer.writeEndElement();
-        writerWrapper.indent(inLevel);
-        writer.writeStartElement("packaging");
-        writer.writeCharacters(info.getThisPom().getType());
-        writer.writeEndElement();
-        writerWrapper.indent(inLevel);
+        writerWrapper
+            .writeFilledElement("modelVersion", "4.0.0", inLevel)
+            .writeFilledElement("groupId", info.getThisPom().getGroupId(), inLevel)
+            .writeFilledElement("artifactId", info.getThisPom().getArtifactId(), inLevel)
+            .writeFilledElement("version", keepPomVersion ? info.getOriginalVersion() : info.getThisPom().getVersion(), inLevel)
+            .writeFilledElement("packaging", info.getThisPom().getType(), inLevel);
+
         if (parent != null) {
+            writerWrapper.indent(inLevel);
             writer.writeStartElement("parent");
-            writerWrapper.indent(inLevel + 1);
-            writer.writeStartElement("groupId");
-            writer.writeCharacters(parent.getGroupId());
-            writer.writeEndElement();
-            writerWrapper.indent(inLevel + 1);
-            writer.writeStartElement("artifactId");
-            writer.writeCharacters(parent.getArtifactId());
-            writer.writeEndElement();
-            writerWrapper.indent(inLevel + 1);
-            writer.writeStartElement("version");
-            writer.writeCharacters(parent.getVersion());
-            writer.writeEndElement();
+            writerWrapper
+                .writeFilledElement("groupId", parent.getGroupId(), inLevel + 1)
+                .writeFilledElement("artifactId", parent.getArtifactId(), inLevel + 1)
+                .writeFilledElement("version", parent.getVersion(), inLevel + 1);
+
             if (shouldWriteRelativePath() && null != parent.getRelativePath()) {
-                writerWrapper.indent(inLevel + 1);
-                writer.writeStartElement("relativePath");
-                writer.writeCharacters(parent.getRelativePath());
-                writer.writeEndElement();
+                writerWrapper.writeFilledElement("relativePath", parent.getRelativePath(), inLevel + 1);
             }
             writerWrapper.indent(inLevel);
             writer.writeEndElement();
