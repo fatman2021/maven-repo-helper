@@ -38,6 +38,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.debian.maven.cliargs.ArgumentsMap;
 import org.debian.maven.repo.POMInfo.DependencyType;
+import org.debian.maven.util.Strings;
 import org.debian.maven.util.XMLWriterWrapper;
 
 import static org.debian.maven.repo.POMInfo.DependencyType.*;
@@ -696,19 +697,8 @@ public class POMTransformer extends POMReader {
                 }
             }
             if (!publishedRules.isEmpty()) {
-                StringWriter sw = new StringWriter();
-                boolean first = true;
-                for (DependencyRule dependencyRule : publishedRules) {
-                    if (!first) {
-                        sw.append(",\n");
-                        for (int j = 0; j <= inLevel; j++) {
-                            sw.append("\t");
-                        }
-                    }
-                    first = false;
-                    sw.append(dependencyRule.toString());
-                }
-                info.getProperties().put("debian.mavenRules", sw.toString());
+                String glue = ",\n" + Strings.repeat("\t", inLevel + 1);
+                info.getProperties().put("debian.mavenRules", Strings.join(publishedRules, glue));
             }
         }
     }

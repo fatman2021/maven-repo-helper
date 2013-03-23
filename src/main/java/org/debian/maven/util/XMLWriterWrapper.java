@@ -34,9 +34,7 @@ public class XMLWriterWrapper {
 
     public void indent(int inLevel) throws XMLStreamException {
         writer.writeCharacters("\n");
-        for (int i = 0; i < inLevel; i++) {
-            writer.writeCharacters("\t");
-        }
+        writer.writeCharacters(Strings.repeat("\t", inLevel));
     }
 
     public XMLWriterWrapper writeFilledElement(String element, String content) throws XMLStreamException {
