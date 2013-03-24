@@ -30,7 +30,7 @@ public class Rule {
     private final Pattern pattern;
     private final String replace;
     private final String rule;
-    private /*final*/ String description;
+    private final String description;
 
     public Rule(String rule) {
         this(rule, "");
@@ -92,11 +92,6 @@ public class Rule {
 
     public String getDescription() {
         return description;
-    }
-
-    @Deprecated
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public boolean equals(Object obj) {

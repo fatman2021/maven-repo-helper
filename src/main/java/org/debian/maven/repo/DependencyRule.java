@@ -24,7 +24,6 @@ import java.util.StringTokenizer;
  */
 public class DependencyRule implements Comparable<DependencyRule> {
 
-    // TODO Rule is not yet immutable, since the description could change, but the description is irrelevant here.
     private static final Rule STAR_RULE = new Rule("*");
     private static final Rule DEBIAN_RULE = new Rule("s/.*/debian/");
 
