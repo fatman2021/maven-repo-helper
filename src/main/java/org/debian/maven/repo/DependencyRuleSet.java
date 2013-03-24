@@ -26,9 +26,9 @@ import java.util.logging.Logger;
  */
 public class DependencyRuleSet implements Iterable<DependencyRule> {
 
-    public static final DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
-    public static final DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
-    public static final DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * * * *");
+    static final DependencyRule TO_DEBIAN_VERSION_RULE = new DependencyRule("");
+    static final DependencyRule MAVEN_PLUGINS_KEEP_VERSION_RULE = new DependencyRule("* * maven-plugin * * *");
+    static final DependencyRule NO_CHANGE_RULE = new DependencyRule("* * * * * *");
 
     private static final Logger log = Logger.getLogger(DependencyRuleSet.class.getName());
 

@@ -98,6 +98,12 @@ public class DependencyRule implements Comparable<DependencyRule> {
                 dependency.getRelativePath());
     }
 
+    public boolean explicitlyMentions(Dependency dependency) {
+        return !this.equals(DependencyRuleSet.TO_DEBIAN_VERSION_RULE)
+            && !this.equals(DependencyRuleSet.MAVEN_PLUGINS_KEEP_VERSION_RULE)
+            && this.matches(dependency);
+    }
+
     /**
      * Natural sort order: from the most specific rules to the most generic rules,
      * a rule is more generic if a generic match appears on the group rule, then
