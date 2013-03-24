@@ -327,6 +327,20 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
                getVersion();
     }
 
+    public Builder builder() {
+        Builder builder = new Builder();
+        builder.groupId = groupId;
+        builder.artifactId = artifactId;
+        builder.type = type;
+        builder.version = version;
+        builder.optional = optional;
+        builder.scope = scope;
+        builder.classifier = classifier;
+        builder.relativePath = relativePath;
+        builder.superPom = superPom;
+        return builder;
+    }
+
     public static class Builder {
         private String groupId;
         private String artifactId;
