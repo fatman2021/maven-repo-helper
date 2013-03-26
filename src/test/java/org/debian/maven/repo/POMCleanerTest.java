@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.debian.maven.TemporaryPomFolder.basename;
+import static org.debian.maven.repo.DependencyRuleSetFiles.RulesType.*;
 
 public class POMCleanerTest {
 
@@ -47,9 +48,6 @@ public class POMCleanerTest {
     public void setUp() {
         XMLUnit.setIgnoreWhitespace(true);
         instance = new POMCleaner();
-        instance.getRules().setRulesFile(null);
-        instance.getIgnoreRules().setRulesFile(null);
-        instance.getPublishedRules().setRulesFile(null);
     }
 
     @Test
@@ -57,8 +55,8 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("maven.xml");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "maven2");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -75,7 +73,7 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("modello-core.xml");
         boolean noParent = false;
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libmodello-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -103,7 +101,7 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("wagon-http-lightweight.xml");
         boolean noParent = false;
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libwagon-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -120,8 +118,8 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("plexus-container-default.xml");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-container-default-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -138,10 +136,10 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("plexus-active-collections.pom");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha.*/1.0-alpha/"));
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-maven-plugin maven-plugin s/.*/1.3.8/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha.*/1.0-alpha/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-maven-plugin maven-plugin s/.*/1.3.8/"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-active-collections-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -158,7 +156,7 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("plexus-archiver.pom");
         boolean noParent = true;
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-archiver-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -175,7 +173,7 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("slf4j.xml");
         boolean noParent = true;
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libslf4j-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -192,8 +190,8 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("commons-validator.xml");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libcommons-validator-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -210,8 +208,8 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("servlet-api.pom");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("s/org.apache.tomcat/javax.servlet/ servlet-api jar s/.*/2.5/"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libservlet2.5-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -228,9 +226,9 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("hibernate-validator-parent.pom");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon wagon-webdav jar *"));
-        instance.addIgnoreRule(new DependencyRule("org.jboss.maven.plugins maven-jdocbook-plugin maven-plugin *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.wagon wagon-webdav jar *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.jboss.maven.plugins maven-jdocbook-plugin maven-plugin *"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libhibernate-validator-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -247,18 +245,18 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("apache.pom");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.apache apache-jar-resource-bundle * s/1\\..*/1.x/"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-archetype-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins changelog-maven-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-deploy-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-repository-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-scm-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-stage-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-eclipse-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-idea-plugin * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-source-plugin * *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.apache apache-jar-resource-bundle * s/1\\..*/1.x/"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-archetype-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins changelog-maven-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-deploy-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-repository-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-scm-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-stage-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-eclipse-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-idea-plugin * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-source-plugin * *"));
         instance.addElementToKeep("build");
         instance.addElementToKeep("reporting");
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, false, false, false, null, "libmaven-parent-poms");
@@ -277,10 +275,10 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("plexus-utils2.pom");
         boolean noParent = false;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-utils jar s/2\\..*/2.x/ * *"));
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));        
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-utils jar s/2\\..*/2.x/ * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));        
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libplexus-utils2-java");
         assertCleanedXMLEqual();
         Properties pomInfo = new Properties();
@@ -297,17 +295,17 @@ public class POMCleanerTest {
         pomProperties = tmpDir.newFile("pom.properties");
         File pom = tmpDir.usePom("mojo-parent.pom");
         boolean noParent = false;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/ * *"));
-        instance.addRule(new DependencyRule("org.codehaus codehaus-parent pom s/.*/debian/ * *"));
-        instance.addRule(new DependencyRule("org.codehaus.mojo mojo-parent pom s/.*/debian/ * *"));
-        instance.addRule(new DependencyRule("org.apache.maven maven-plugin-api jar s/2\\..*/2.x/ * *"));
-        instance.addRule(new DependencyRule("org.apache.maven.doxia doxia-module-xhtml jar s/1\\..*/1.x/ * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-checkstyle-plugin * * * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-jxr-plugin * * * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-pmd-plugin * * * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon wagon-webdav * * * *"));
-        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo cobertura-maven-plugin * * * *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/3\\..*/3.x/ * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus codehaus-parent pom s/.*/debian/ * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.mojo mojo-parent pom s/.*/debian/ * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.apache.maven maven-plugin-api jar s/2\\..*/2.x/ * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.apache.maven.doxia doxia-module-xhtml jar s/1\\..*/1.x/ * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-checkstyle-plugin * * * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-jxr-plugin * * * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-pmd-plugin * * * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.wagon wagon-webdav * * * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.codehaus.mojo cobertura-maven-plugin * * * *"));
         instance.addElementToKeep("build");
         instance.addElementToKeep("reporting");
         instance.cleanPom(pom, tmpDir.updatedPom(), pomProperties, noParent, true, false, false, null, "libmojo-parent-java");

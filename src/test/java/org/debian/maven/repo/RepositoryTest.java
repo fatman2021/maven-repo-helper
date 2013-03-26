@@ -20,6 +20,7 @@ package org.debian.maven.repo;
 import javax.xml.stream.XMLStreamException;
 
 import org.debian.maven.TemporaryPomFolder;
+import org.debian.maven.repo.DependencyRuleSetFiles.RulesType;
 import org.junit.Test;
 import org.junit.Rule;
 
@@ -119,8 +120,8 @@ public class RepositoryTest {
 
     private POMInfo getAntlrPom(Repository repo, File pomFile) throws XMLStreamException, IOException {
         POMCleaner pomCleaner = new POMCleaner();
-        pomCleaner.addDefaultRules();
-        pomCleaner.addRule(new DependencyRule("org.antlr * * s/3\\..*/3.x/"));
+        pomCleaner.getRulesFiles().addDefaultRules();
+        pomCleaner.getRulesFiles().get(RulesType.RULES).add(new DependencyRule("org.antlr * * s/3\\..*/3.x/"));
         POMInfo pom = pomCleaner.transformPom(pomFile, tmpDir.updatedPom());
         return pom;
     }

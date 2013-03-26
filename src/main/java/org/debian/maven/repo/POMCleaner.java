@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 import javax.xml.stream.XMLStreamException;
 
 import org.debian.maven.repo.POMInfo.DependencyType;
-
+import static org.debian.maven.repo.DependencyRuleSetFiles.RulesType.*;
 /**
  * Cleans up a POM for inclusion in the /usr/share/maven-repo/ repository.
  *
@@ -92,7 +92,7 @@ public class POMCleaner extends POMTransformer {
 
     protected void transformingPom(POMInfo pom) {
         if (pom.getThisPom().getType().equals("maven-plugin")) {
-            addIgnoreRule(new DependencyRule(pom.getThisPom().getGroupId() + " "
+            getRulesFiles().get(IGNORE).add(new DependencyRule(pom.getThisPom().getGroupId() + " "
                     + pom.getThisPom().getArtifactId() + " maven-plugin s/.*/"
                     + pom.getThisPom().getVersion() + "/"));
         }
@@ -345,43 +345,21 @@ public class POMCleaner extends POMTransformer {
         }
 
         if (!noRules) {
-            if (rulesFile != null) {
-                if (!rulesFile.exists()) {
-                    if (verbose) {
-                        System.err.println("Cannot find file: " + rulesFile);
-                    }
-                } else {
-                    cleaner.getRules().setRulesFile(rulesFile);
-                }
-            }
-            cleaner.getRules().addAll(rulesExtra);
+            DependencyRuleSet rules = cleaner.getRulesFiles().get(RULES);
+            rules.addAll(DependencyRuleSet.readRules(rulesFile, "", verbose, true));
+            rules.addAll(rulesExtra);
 
-            if (!ignoreRulesFiles.isEmpty()) {
-                boolean firstIgnoreRule = true;
-                for (Iterator<File> irf = ignoreRulesFiles.iterator(); irf.hasNext(); ) {
-                    File ignoreRulesFile = irf.next();
-                    if (ignoreRulesFile.exists()) {
-                        if (firstIgnoreRule) {
-                            cleaner.getIgnoreRules().setRulesFile(ignoreRulesFile);
-                        } else {
-                            DependencyRuleSet tmpIgnoreRules = new DependencyRuleSet("Additional ignore rules");
-                            tmpIgnoreRules.setRulesFile(ignoreRulesFile);
-                            cleaner.getIgnoreRules().addAll(tmpIgnoreRules);
-                        }
-                        firstIgnoreRule = false;
-                    } else {
-                        System.err.println("Cannot find file: " + ignoreRulesFile);
-                    }
-                }
+            DependencyRuleSet ignoreRules = cleaner.getRulesFiles().get(IGNORE);
+            for(File ignoreRulesFile : ignoreRulesFiles) {
+                ignoreRules.addAll(DependencyRuleSet.readRules(ignoreRulesFile, "", verbose, true));
             }
-            cleaner.getIgnoreRules().addAll(ignoreRulesExtra);
+            ignoreRules.addAll(ignoreRulesExtra);
 
-            if (publishedRulesFile != null && publishedRulesFile.exists()) {
-                cleaner.getPublishedRules().setRulesFile(publishedRulesFile);
-            }
-            cleaner.getPublishedRules().addAll(publishedRulesExtra);
+            DependencyRuleSet publishedRules = cleaner.getRulesFiles().get(PUBLISHED);
+            publishedRules.addAll(DependencyRuleSet.readRules(publishedRulesFile, "", verbose, true));
+            publishedRules.addAll(publishedRulesExtra);
 
-            cleaner.addDefaultRules();
+            cleaner.getRulesFiles().addDefaultRules();
         }
 
         if (mavenRepo != null) {

@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 
 import static org.debian.maven.repo.POMInfo.DependencyType.*;
-
+import static org.debian.maven.repo.DependencyRuleSetFiles.RulesType.*;
 
 public class POMTransformerTest {
 
@@ -47,18 +47,15 @@ public class POMTransformerTest {
     public void setUp() {
         XMLUnit.setIgnoreWhitespace(true);
         instance = new POMTransformer();
-        instance.getRules().setRulesFile(null);
-        instance.getIgnoreRules().setRulesFile(null);
-        instance.getPublishedRules().setRulesFile(null);
     }
 
     @Test
     public void testTransformMavenPom() throws Exception {
         File pom = tmpDir.usePom("maven.xml");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
-        instance.addRule(new DependencyRule("org.apache.maven.plugins maven-assembly-plugin maven-plugin s/.*/2.2/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.apache.maven.plugins maven-assembly-plugin maven-plugin s/.*/2.2/"));
         instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, false, false, null, null);
         assertCleanedXMLEqual();
     }
@@ -67,8 +64,8 @@ public class POMTransformerTest {
     public void testTransformMavenCorePom() throws Exception {
         File pom = tmpDir.usePom("maven-core.xml");
         boolean noParent = false;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, false, false, null, "maven2");
         assertCleanedXMLEqual();
     }
@@ -79,11 +76,11 @@ public class POMTransformerTest {
 
         File pom = tmpDir.usePom("maven-javadoc-plugin.xml");
         boolean noParent = true;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.modello modello-maven-plugin maven-plugin s/.*/1.0.1/"));
-        instance.addRule(new DependencyRule("org.codehaus.mojo clirr-maven-plugin * *"));
-        instance.addRule(new DependencyRule("org.apache.bcel bcel jar s/5\\..*/5.x/"));
-        instance.addRule(new DependencyRule("* maven-plugin-plugin maven-plugin s/.*/2.5/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.modello modello-maven-plugin maven-plugin s/.*/1.0.1/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.mojo clirr-maven-plugin * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.apache.bcel bcel jar s/5\\..*/5.x/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("* maven-plugin-plugin maven-plugin s/.*/2.5/"));
         POMInfo transformedPOM = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, false, false, null, null);
         assertCleanedXMLEqual();
         assertNull(transformedPOM.getParent());
@@ -93,7 +90,7 @@ public class POMTransformerTest {
     public void testTransformModelloPom() throws Exception {
         File pom = tmpDir.usePom("modello-core.xml");
         boolean noParent = false;
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, false, false, null, "libmodello-java");
         assertCleanedXMLEqual();
     }
@@ -101,8 +98,8 @@ public class POMTransformerTest {
     @Test
     public void testTransformPlexusContainerDefaultPom() throws Exception {
         File pom = tmpDir.usePom("plexus-container-default.xml");
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
         instance.transformPom(pom, tmpDir.updatedPom());
         assertCleanedXMLEqual();
     }
@@ -112,7 +109,7 @@ public class POMTransformerTest {
         File pom = tmpDir.usePom("doxia-module-fml.xml");
         boolean noParent = false;
         instance.setRepository(getRepository());
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, false, null, "libdoxia-java");
         assertCleanedXMLEqual();
     }
@@ -122,13 +119,13 @@ public class POMTransformerTest {
         File pom = tmpDir.usePom("antlr3.xml");
         boolean noParent = false;
         instance.setRepository(getRepository());
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.antlr stringtemplate * s/3\\..*/3.x/ *"));
-        instance.addRule(new DependencyRule("antlr antlr jar s/2\\..*/2.x/ *"));
-        instance.addRule(new DependencyRule("junit junit jar s/4\\..*/4.x/ *"));
-        instance.addRule(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
-        instance.addRule(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
-        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr stringtemplate * s/3\\..*/3.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("antlr antlr jar s/2\\..*/2.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/4\\..*/4.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
         POMInfo transformedPOM = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, true, null, "libantlr3-java");
         assertCleanedXMLEqual();
         assertEquals("3.2", transformedPOM.getParent().getVersion());
@@ -144,16 +141,16 @@ public class POMTransformerTest {
     public void testTransformAntlr3ParentPom() throws Exception {
         File pom = tmpDir.usePom("antlr3-parent.xml");
         boolean noParent = false;
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.antlr stringtemplate * s/3\\..*/3.x/ *"));
-        instance.addRule(new DependencyRule("antlr antlr jar s/2\\..*/2.x/ *"));
-        instance.addRule(new DependencyRule("junit junit jar s/4\\..*/4.x/ *"));
-        instance.addRule(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
-        instance.addRule(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
-        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
-        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo buildnumber-maven-plugin maven-plugin *"));
-        instance.addIgnoreRule(new DependencyRule("* maven-assembly-plugin maven-plugin *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon * * *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr stringtemplate * s/3\\..*/3.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("antlr antlr jar s/2\\..*/2.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/4\\..*/4.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.codehaus.mojo buildnumber-maven-plugin maven-plugin *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("* maven-assembly-plugin maven-plugin *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.wagon * * *"));
         instance.addIgnoreModule(pom, "gunit");
         instance.addIgnoreModule(pom, "gunit-maven-plugin");
 
@@ -169,18 +166,18 @@ public class POMTransformerTest {
         boolean noParent = false;
         instance.setRepository(getRepository());
 
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.antlr stringtemplate * s/3\\..*/3.x/ *"));
-        instance.addRule(new DependencyRule("antlr antlr jar s/2\\..*/2.x/ *"));
-        instance.addRule(new DependencyRule("junit junit jar s/4\\..*/4.x/ *"));
-        instance.addRule(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
-        instance.addRule(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr stringtemplate * s/3\\..*/3.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("antlr antlr jar s/2\\..*/2.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/4\\..*/4.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr stringtemplate jar s/3\\..*/3.x/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.antlr antlr3-maven-plugin maven-plugin s/.*/3.2/"));
         instance.usePluginVersionsFromRepository();
-        //instance.addRule(new DependencyRule("org.codehaus.mojo antlr-maven-plugin maven-plugin s/.*/2.1/"));
-        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
-        instance.addIgnoreRule(new DependencyRule("org.codehaus.mojo buildnumber-maven-plugin maven-plugin *"));
-        instance.addIgnoreRule(new DependencyRule("* maven-assembly-plugin maven-plugin *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.wagon * * *"));
+        //instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.mojo antlr-maven-plugin maven-plugin s/.*/2.1/"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.codehaus.mojo findbugs-maven-plugin maven-plugin *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.codehaus.mojo buildnumber-maven-plugin maven-plugin *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("* maven-assembly-plugin maven-plugin *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.wagon * * *"));
         instance.addIgnoreModule(pom, "gunit");
         instance.addIgnoreModule(pom, "gunit-maven-plugin");
 
@@ -194,7 +191,7 @@ public class POMTransformerTest {
         boolean noParent = false;
         instance.setRepository(getRepository());
 
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.usePluginVersionsFromRepository();
 
         instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, true, null, "libhibernate-validator-java");
@@ -207,7 +204,7 @@ public class POMTransformerTest {
         boolean noParent = false;
         instance.setRepository(getRepository());
 
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.usePluginVersionsFromRepository();
 
         instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, true, null, "libhibernate-validator-java");
@@ -219,10 +216,10 @@ public class POMTransformerTest {
         File pom = tmpDir.usePom("plexus-utils2.pom");
         boolean noParent = false;
 
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-utils jar s/2\\../2.x/ * *"));
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));
-        instance.addIgnoreRule(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-utils jar s/2\\../2.x/ * *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus pom s/2\\..*/2.x/ * *"));
+        instance.getRulesFiles().get(IGNORE).add(new DependencyRule("org.apache.maven.plugins maven-release-plugin * *"));
 
         POMInfo transformedPOM = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, false, null, "libplexus-utils2-java");
         assertCleanedXMLEqual();
@@ -235,12 +232,12 @@ public class POMTransformerTest {
         boolean noParent = true;
         instance.setRepository(getRepository());
 
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.usePluginVersionsFromRepository();
-        instance.addRule(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing * s/.*/debian/ *"));
-        instance.addRule(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing-harness * s/.*/debian/ *"));
-        instance.addRule(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing-tools * s/.*/debian/ *"));
-        instance.addRule(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-test-tools * s/.*/debian/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing * s/.*/debian/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing-harness * s/.*/debian/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-plugin-testing-tools * s/.*/debian/ *"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("s/org.apache.maven.shared/org.apache.maven.plugin-testing/ maven-test-tools * s/.*/debian/ *"));
 
         POMInfo transformedPom = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, false, null, "libantlr-maven-plugin-java");
         assertCleanedXMLEqual();
@@ -252,9 +249,9 @@ public class POMTransformerTest {
         File pom = tmpDir.usePom("maven-packager-utils.pom");
         boolean noParent = false;
 
-        instance.addDefaultRules();
-        instance.addRule(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
-        instance.addRule(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("junit junit jar s/3\\..*/3.x/"));
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("org.codehaus.plexus plexus-container-default jar s/1\\.0-alpha-.*/1.0-alpha/"));
 
         POMInfo transformedPOM = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, true, null, "maven-repo-helper");
         assertCleanedXMLEqual();
@@ -267,7 +264,7 @@ public class POMTransformerTest {
 
         instance.setVerbose(true);
         instance.setRepository(getRepository());
-        instance.addDefaultRules();
+        instance.getRulesFiles().addDefaultRules();
         instance.usePluginVersionsFromRepository();
 
         ListOfPOMs listOfPoms = new ListOfPOMs(TemporaryPomFolder.getFileInClasspath("libplexus-components-java.poms"));

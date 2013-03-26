@@ -23,13 +23,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -44,6 +41,7 @@ import org.debian.maven.util.XMLWriterWrapper;
 import static org.debian.maven.repo.POMInfo.DependencyType.*;
 
 import static org.debian.maven.repo.DependencyRuleSet.*;
+import static org.debian.maven.repo.DependencyRuleSetFiles.RulesType.*;
 
 /**
  *
@@ -57,10 +55,7 @@ public class POMTransformer extends POMReader {
     private static final List<String> DEBIAN_DOC_IGNORED_ELEMENTS = Arrays.asList("reports", "reporting", "site");
     private static final List<String> INFO_ELEMENTS = Arrays.asList("groupId",
             "artifactId", "packaging", "version");
-    private DependencyRuleSet rules = new DependencyRuleSet("Rules", new File("debian/maven.rules"));
-    private DependencyRuleSet automaticRules = new DependencyRuleSet("Automatic rules");
-    private DependencyRuleSet publishedRules = new DependencyRuleSet("Published rules", new File("debian/maven.publishedRules"));
-    private DependencyRuleSet ignoreRules = new DependencyRuleSet("Ignore rules", new File("debian/maven.ignoreRules"));
+    private DependencyRuleSetFiles depRules = new DependencyRuleSetFiles();
     private Map<File, Set<String>> ignoredModules = new HashMap<File, Set<String>>();
     private Repository repository;
     private boolean verbose;
@@ -70,8 +65,12 @@ public class POMTransformer extends POMReader {
     private boolean fixVersions = true;
     private ListOfPOMs listOfPOMs;
 
-    public POMTransformer() {
-        publishedRules.setDontDuplicate(rules);
+    public void setRulesFiles(DependencyRuleSetFiles rulesFiles) {
+        this.depRules = rulesFiles;
+    }
+
+    public DependencyRuleSetFiles getRulesFiles() {
+        return depRules;
     }
 
     public Repository getRepository() {
@@ -122,33 +121,17 @@ public class POMTransformer extends POMReader {
         this.fixVersions = fixVersions;
     }
 
-    public DependencyRuleSet getRules() {
-        return rules;
-    }
-
-    public DependencyRuleSet getAutomaticRules() {
-        return automaticRules;
-    }
-
-    public DependencyRuleSet getPublishedRules() {
-        return publishedRules;
-    }
-
-    public DependencyRuleSet getIgnoreRules() {
-        return ignoreRules;
-    }
-
     public void usePluginVersionsFromRepository() {
         repository.scanOnce();
         for (POMInfo pom : repository.getResolvedPoms().values()) {
             if (pom.getThisPom().getType().equals("maven-plugin")) {
                 Set<DependencyRule> pomRules = pom.getPublishedRules();
-                rules.add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
+                depRules.get(RULES).add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
                 boolean found = false;
                 for (DependencyRule rule: pomRules) {
                     if (rule.matches(pom.getThisPom()) && rule.apply(pom.getThisPom()).equals(pom.getThisPom())
                             && !rule.getGroupRule().isGeneric() && !rule.getArtifactRule().isGeneric()) {
-                        automaticRules.add(rule);
+                        depRules.get(AUTOMATIC).add(rule);
                         found = true;
                         break;
                     }
@@ -157,31 +140,14 @@ public class POMTransformer extends POMReader {
                     DependencyRule rule = new DependencyRule(pom.getThisPom().getGroupId() + " "
                             + pom.getThisPom().getArtifactId() + " maven-plugin s/.*/"
                             + pom.getThisPom().getVersion() + "/");
-                    automaticRules.add(rule);
+                    depRules.get(AUTOMATIC).add(rule);
                 }
             }
         }
         // Remove the default rules from the list of automatic rules, as they may be added by the scanning
         // but addDefaultRules() may not have been called
-        automaticRules.getRules().remove(MAVEN_PLUGINS_KEEP_VERSION_RULE);
-        automaticRules.getRules().remove(TO_DEBIAN_VERSION_RULE);
-    }
-
-    public void addDefaultRules() {
-        addRule(TO_DEBIAN_VERSION_RULE);
-        addRule(MAVEN_PLUGINS_KEEP_VERSION_RULE);
-    }
-
-    public void addRule(DependencyRule rule) {
-        rules.add(rule);
-    }
-
-    public void addPublishedRule(DependencyRule rule) {
-        publishedRules.add(rule);
-    }
-
-    public void addIgnoreRule(DependencyRule rule) {
-        ignoreRules.add(rule);
+        depRules.get(AUTOMATIC).getRules().remove(MAVEN_PLUGINS_KEEP_VERSION_RULE);
+        depRules.get(AUTOMATIC).getRules().remove(TO_DEBIAN_VERSION_RULE);
     }
 
     public void addIgnoreModule(File pomFile, String module) {
@@ -221,7 +187,7 @@ public class POMTransformer extends POMReader {
 
     public void keepPomVersion(File pomFile) throws XMLStreamException, FileNotFoundException {
         Dependency pom = readPom(pomFile).getThisPom();
-        addRule(new DependencyRule(pom.getGroupId() + " " + pom.getArtifactId() + " " + pom.getType() + " " + pom.getVersion()));
+        depRules.get(RULES).add(new DependencyRule(pom.getGroupId() + " " + pom.getArtifactId() + " " + pom.getType() + " " + pom.getVersion()));
     }
 
     public boolean keepParentVersion(File pomFile, boolean noParent, boolean keepPomVersion) throws Exception {
@@ -283,12 +249,12 @@ public class POMTransformer extends POMReader {
 
             if (keepParentVersion && original.getParent() != null) {
                 // Add a rule to also keep the parent version
-                automaticRules.add(new DependencyRule(original.getParent().getGroupId() + " "
+                depRules.get(AUTOMATIC).add(new DependencyRule(original.getParent().getGroupId() + " "
                     + original.getParent().getArtifactId() + " * * * *"));
             }
 
-            Set<DependencyRule> allRules = new TreeSet<DependencyRule>(rules.getRules());
-            allRules.addAll(automaticRules.getRules());
+            Set<DependencyRule> allRules = new TreeSet<DependencyRule>(depRules.get(RULES).getRules());
+            allRules.addAll(depRules.get(AUTOMATIC).getRules());
             POMInfo info = original.newPOMFromRules(allRules, repository);
             if (hasPackageVersion) {
                 info.getProperties().put("debian.hasPackageVersion", "true");
@@ -457,8 +423,8 @@ public class POMTransformer extends POMReader {
                                         // Give a chance to customize the version
                                         // In maven.rules, you can write:
                                         // myDependencyGroup myDependencyArtifact * s/.*/myVersion/
-                                        fixedDependency = fixedDependency.applyRules(rules.getRules());
-                                        fixedDependency = fixedDependency.applyRules(automaticRules.getRules());
+                                        fixedDependency = fixedDependency.applyRules(depRules.get(RULES).getRules());
+                                        fixedDependency = fixedDependency.applyRules(depRules.get(AUTOMATIC).getRules());
                                         dependencyList.set(dependencyIndex, fixedDependency);
                                         dependency = fixedDependency;
                                     }
@@ -528,7 +494,7 @@ public class POMTransformer extends POMReader {
                             } else if (inPlugin > 0 && path.matches("configuration/resourceBundles/resourceBundle")) {
                                 Dependency embeddedDependency = Dependency.fromCompactNotation(value);
                                 if(null != embeddedDependency) {
-                                    value = embeddedDependency.applyRules(rules.getRules()).formatCompactNotation();
+                                    value = embeddedDependency.applyRules(depRules.get(RULES).getRules()).formatCompactNotation();
                                 }
                             } else if (inProperties > 1) {
                                 visitedProperties.put(element, value);
@@ -554,7 +520,7 @@ public class POMTransformer extends POMReader {
             writer.flush();
             writer.close();
 
-            info.applyIgnoreRulesOnDependenciesAndPlugins(ignoreRules.getRules());
+            info.applyIgnoreRulesOnDependenciesAndPlugins(depRules.get(IGNORE).getRules());
 
             return info;
 
@@ -670,7 +636,7 @@ public class POMTransformer extends POMReader {
 //    }
 
     protected boolean acceptDependency(Dependency dependency, POMInfo info) {
-        return dependency.findMatchingRule(ignoreRules.getRules()) == null;
+        return dependency.findMatchingRule(depRules.get(IGNORE).getRules()) == null;
     }
 
     private int inc(Map<DependencyType, Integer> dependencyIndexes, DependencyType selector) {
@@ -691,14 +657,14 @@ public class POMTransformer extends POMReader {
         }
         if (!info.getProperties().containsKey("debian.mavenRules")) {
             if (publishUsedRule && info.getOriginalPom() != null) {
-                DependencyRule usedRule = info.getOriginalPom().findMatchingRule(rules.getRules());
+                DependencyRule usedRule = info.getOriginalPom().findMatchingRule(depRules.get(RULES).getRules());
                 if (usedRule != null && !usedRule.equals(TO_DEBIAN_VERSION_RULE) && !usedRule.equals(MAVEN_PLUGINS_KEEP_VERSION_RULE)) {
-                    addPublishedRule(usedRule);
+                    depRules.get(PUBLISHED).add(usedRule);
                 }
             }
-            if (!publishedRules.isEmpty()) {
+            if (!depRules.get(PUBLISHED).isEmpty()) {
                 String glue = ",\n" + Strings.repeat("\t", inLevel + 1);
-                info.getProperties().put("debian.mavenRules", Strings.join(publishedRules, glue));
+                info.getProperties().put("debian.mavenRules", Strings.join(depRules.get(PUBLISHED), glue));
             }
         }
     }
@@ -724,10 +690,6 @@ public class POMTransformer extends POMReader {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-        this.rules.setVerbose(verbose);
-        this.automaticRules.setVerbose(verbose);
-        this.publishedRules.setVerbose(verbose);
-        this.ignoreRules.setVerbose(verbose);
         if (listOfPOMs != null) {
             this.listOfPOMs.setVerbose(verbose);
         }
@@ -806,12 +768,7 @@ public class POMTransformer extends POMReader {
         transformer.setBuildWithoutDoc(argsMap.getBooleanLong("build-no-docs"));
 
         String debianPackage = argsMap.getValue("package", "p", "");
-        File rulesFile = argsMap.getFile("rules", "r", null);
-        List<String> rulesExtra = argsMap.getValueList("extra-rule", "R");
-        File publishedRulesFile = argsMap.getFile("published-rules", null, null);
-        List<String> publishedRulesExtra = argsMap.getValueList("extra-published-rule", "U");
-        File ignoreRulesFile = argsMap.getFile("ignore-rules", "i", null);
-        List<String> ignoreRulesExtra = argsMap.getValueList("extra-ignore-rule", "I");
+
         String setVersion = argsMap.getValue("set-version", "e", null);
         File mavenRepo = argsMap.getFile("maven-repo", "m", null);
 
@@ -833,47 +790,14 @@ public class POMTransformer extends POMReader {
         transformer.setListOfPOMs(listOfPOMs);
 
         if (noRules) {
-            transformer.addRule(NO_CHANGE_RULE);
+            transformer.getRulesFiles().get(RULES).add(NO_CHANGE_RULE);
         } else {
-            if (rulesFile != null) {
-                if (!rulesFile.exists()) {
-                    if (verbose) {
-                        System.err.println("Cannot find file: " + rulesFile);
-                    }
-
-                } else {
-                    transformer.getRules().setRulesFile(rulesFile);
-                }
-
-            } else {
-                System.out.println("No rules file");
-            }
-            transformer.getRules().addAll(rulesExtra);
-
-            if (ignoreRulesFile != null) {
-                if (ignoreRulesFile.exists()) {
-                    transformer.getIgnoreRules().setRulesFile(ignoreRulesFile);
-                } else {
-                    System.err.println("Cannot find file: " + ignoreRulesFile);
-                }
-            }
-            transformer.getIgnoreRules().addAll(ignoreRulesExtra);
-
+            transformer.setRulesFiles(DependencyRuleSetFiles.fromCLIArguments(argsMap, verbose));
             if (keepPomVersion) {
                 transformer.keepPomVersions();
             }
 
-            if (publishedRulesFile != null) {
-                if (publishedRulesFile.exists()) {
-                    transformer.getPublishedRules().setRulesFile(publishedRulesFile);
-                } else {
-                    System.err.println("Cannot find file: " + publishedRulesFile);
-                }
-
-            }
-            transformer.getPublishedRules().addAll(publishedRulesExtra);
-
-            transformer.addDefaultRules();
+            transformer.getRulesFiles().addDefaultRules();
         }
 
         if (mavenRepo != null) {

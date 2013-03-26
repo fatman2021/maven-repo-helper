@@ -32,80 +32,25 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
 
     private static final Logger log = Logger.getLogger(DependencyRuleSet.class.getName());
 
-    private File rulesFile;
-    private Set<DependencyRule> rules;
-    private boolean verbose;
-    private boolean warnRulesFileNotFound = true;
-    private String name;
-    private String description;
-    private DependencyRuleSet dontDuplicate;
-
-    public DependencyRuleSet(String name) {
-        this.name = name;
-    }
-
-    public DependencyRuleSet(String name, File rulesFile) {
-        this(name);
-        this.rulesFile = rulesFile;
-    }
-
-    @Deprecated
-    public File getRulesFile() {
-        return rulesFile;
-    }
-
-    @Deprecated
-    public void setRulesFile(File rulesFile) {
-        this.rulesFile = rulesFile;
-        rules = null;
-        readRules();
-    }
+    private final Set<DependencyRule> rules;
+    private final String description;
 
     public Set<DependencyRule> getRules() {
-        if (rules == null) {
-            readRules();
-        }
         return rules;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    @Deprecated
-    public void setDescription(String description) {
+    public DependencyRuleSet(Set<DependencyRule> rules, String description) {
+        super();
+        this.rules = rules;
         this.description = description;
     }
 
-    public boolean isVerbose() {
-        return verbose;
+    public DependencyRuleSet(String description) {
+        this(new TreeSet<DependencyRule>(), description);
     }
 
-    @Deprecated
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public boolean isWarnRulesFileNotFound() {
-        return warnRulesFileNotFound;
-    }
-
-    @Deprecated
-    public void setWarnRulesFileNotFound(boolean warnRulesFileNotFound) {
-        this.warnRulesFileNotFound = warnRulesFileNotFound;
-    }
-
-    public DependencyRuleSet getDontDuplicate() {
-        return dontDuplicate;
-    }
-
-    @Deprecated
-    public void setDontDuplicate(DependencyRuleSet dontDuplicate) {
-        this.dontDuplicate = dontDuplicate;
+    public DependencyRuleSet() {
+        this("");
     }
 
     public Iterator<DependencyRule> iterator() {
@@ -116,19 +61,16 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return getRules().isEmpty();
     }
 
-    @Deprecated
     public void add(DependencyRule rule) {
         getRules().add(rule);
     }
 
-    @Deprecated
     public void addAll(DependencyRuleSet newRules) {
         for (DependencyRule rule: newRules) {
             add(rule);
         }
     }
 
-    @Deprecated
     public void addAll(Collection<?> newRules) {
         for (Object rule : newRules) {
             if (rule instanceof DependencyRule) {
@@ -154,7 +96,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         return matchingRules;
     }
 
-    public void saveToFile(File rulesFile) {
+    public void saveToFile(File rulesFile, DependencyRuleSet dontDuplicate) {
         try {
             PrintWriter out = new PrintWriter(new FileWriter(rulesFile));
             out.println(description);
@@ -174,14 +116,9 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         }
     }
 
-    @Deprecated // the file name should be managed by the calling code
-    public void save() {
-        saveToFile(rulesFile);
-    }
-
     public void dump() {
         if (rules != null) {
-            System.out.println(name + ":");
+            // System.out.println(name + ":");
             for (DependencyRule rule : rules) {
                 System.out.println("  " + rule);
             }
@@ -189,11 +126,10 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         }
     }
 
-    @Deprecated
-    private void readRules() {
-        rules = new TreeSet<DependencyRule>();
+    public static DependencyRuleSet readRules(File rulesFile, String description, boolean verbose, boolean warnRulesFileNotFound) {
+        DependencyRuleSet rules = new DependencyRuleSet(description);
         if (rulesFile == null) {
-            return;
+            return rules;
         }
         if (!rulesFile.exists()) {
             if (verbose && warnRulesFileNotFound) {
@@ -203,11 +139,11 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
                 }
                 System.out.println(descr + " file does not exist: " + rulesFile.getAbsolutePath());
             }
-            return;
+            return rules;
         }
         try {
             if (verbose) {
-                System.out.println(name + ":");
+                System.out.println(rulesFile.getName() + ":");
             }
             LineNumberReader lnr = new LineNumberReader(new FileReader(rulesFile));
             String line;
@@ -227,5 +163,6 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
         } catch (IOException ex) {
             log.log(Level.SEVERE, null, ex);
         }
+        return rules;
     }
 }
