@@ -291,7 +291,7 @@ public class POMTransformer extends POMReader {
             int dependencyIndex = -1;
             Map<DependencyType, Integer> dependencyIndexes = new HashMap<DependencyType, Integer>();
             int moduleDependencyIndex = 0;
-            Map<String, String> visitedProperties = new HashMap<String, String>();
+            Set<String> visitedProperties = new HashSet<String>();
             Dependency dependency = null;
             Dependency parentDependency = null;
             String element = null;
@@ -380,7 +380,7 @@ public class POMTransformer extends POMReader {
                             } else if (path.matches("/project/properties")) {
                                 inProperties++;
                             } else if (path.matches("/project/properties/*")) {
-                                visitedProperties.put(element, "true");
+                                visitedProperties.add(element);
                                 inProperties++;
                             } else if ("dependency".equals(element)) {
                                 inDependency++;
@@ -497,7 +497,7 @@ public class POMTransformer extends POMReader {
                                     value = embeddedDependency.applyRules(depRules.get(RULES).getRules()).formatCompactNotation();
                                 }
                             } else if (inProperties > 1) {
-                                visitedProperties.put(element, value);
+                                visitedProperties.add(element);
                             }
                             writer.writeCharacters(value);
                             afterText = value != null && value.length() > 0;
@@ -572,7 +572,7 @@ public class POMTransformer extends POMReader {
         if (original.getProperties().isEmpty()) {
             writer.writeStartElement("properties");
             createDebianProperties(info, original, debianPackage, 1);
-            writeMissingProperties(writerWrapper, 1, info.getProperties(), new HashMap<String, String>());
+            writeMissingProperties(writerWrapper, 1, info.getProperties(), new HashSet<String>());
             writerWrapper.indent(1);
             writer.writeEndElement();
             writerWrapper.indent(1);
@@ -669,10 +669,10 @@ public class POMTransformer extends POMReader {
         }
     }
 
-    protected void writeMissingProperties(XMLWriterWrapper writerWrapper, int inLevel, TreeMap<String, String> properties, Map<String, String> visitedProperties) throws XMLStreamException {
+    protected void writeMissingProperties(XMLWriterWrapper writerWrapper, int inLevel, TreeMap<String, String> properties, Set<String> visitedProperties) throws XMLStreamException {
         for (Map.Entry<String, String> entry: properties.entrySet()) {
             String property = entry.getKey();
-            if (!visitedProperties.containsKey(property)) {
+            if (!visitedProperties.contains(property)) {
                 writerWrapper.writeFilledOrEmpty(property, entry.getValue(), inLevel + 1);
             }
         }
