@@ -119,6 +119,14 @@ public class DependencyRule implements Comparable<DependencyRule> {
                 dependency.getRelativePath());
     }
 
+    public boolean matchesAndPreservesGroupArtifactAndType(Dependency dependency) {
+        if(!matches(dependency)) return false;
+        Dependency transformed = apply(dependency);
+        return transformed.getGroupId().equals(dependency.getGroupId())
+                && transformed.getArtifactId().equals(dependency.getArtifactId())
+                && transformed.getType().equals(dependency.getType());
+    }
+
     public boolean explicitlyMentions(Dependency dependency) {
         return !this.equals(DependencyRuleSet.TO_DEBIAN_VERSION_RULE)
             && !this.equals(DependencyRuleSet.MAVEN_PLUGINS_KEEP_VERSION_RULE)
