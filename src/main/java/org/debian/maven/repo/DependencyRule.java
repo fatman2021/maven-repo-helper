@@ -44,6 +44,28 @@ public class DependencyRule implements Comparable<DependencyRule> {
         scopeRule = maybeParseRule(st);
     }
 
+    public DependencyRule(String group, String artifact, String type, String version, String classifier, String scope) {
+        groupRule = new Rule(group);
+        artifactRule = new Rule(artifact);
+        typeRule = new Rule(type);
+        versionRule = new Rule(version);
+        classifierRule = new Rule(classifier);
+        scopeRule = new Rule(scope);
+    }
+
+    public DependencyRule(String group, String artifact, String type, String version) {
+        this(group, artifact, type, version, STAR_RULE.toString(), STAR_RULE.toString());
+    }
+
+    public static DependencyRule newToMatch(Dependency dependency) {
+        return new DependencyRule(
+            dependency.getGroupId(),
+            dependency.getArtifactId(),
+            dependency.getType() == null ? "*" : dependency.getType(),
+            "*"
+            );
+    }
+
     private static Rule maybeParseRule(StringTokenizer st, Rule defaultRule) {
         if(st.hasMoreTokens()) {
             return new Rule(st.nextToken());
