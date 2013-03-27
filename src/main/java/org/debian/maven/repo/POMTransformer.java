@@ -89,32 +89,16 @@ public class POMTransformer extends POMReader {
         this.listOfPOMs = listOfPOMs;
     }
 
-    public boolean isBuildWithoutDoc() {
-        return isBuildWithoutDoc;
-    }
-
     public void setBuildWithoutDoc(boolean isBuildWithoutDoc) {
         this.isBuildWithoutDoc = isBuildWithoutDoc;
-    }
-
-    public boolean isDebianBuild() {
-        return isDebianBuild;
     }
 
     public void setDebianBuild(boolean isDebianBuild) {
         this.isDebianBuild = isDebianBuild;
     }
 
-    public boolean isPublishUsedRule() {
-        return publishUsedRule;
-    }
-
     public void setPublishUsedRule(boolean publishUsedRule) {
         this.publishUsedRule = publishUsedRule;
-    }
-
-    public boolean isFixVersions() {
-        return fixVersions;
     }
 
     public void setFixVersions(boolean fixVersions) {
@@ -536,7 +520,7 @@ public class POMTransformer extends POMReader {
     }
 
     protected boolean shouldWriteRelativePath() { return true; }
-    
+
     private void copyAndFillProjectHeader(XMLStreamReader parser, XMLWriterWrapper writerWrapper, boolean keepPomVersion, POMInfo info, POMInfo original, Dependency parent, String debianPackage) throws XMLStreamException {
         XMLStreamWriter writer = writerWrapper.getWriter();
         if (parser.getNamespaceCount() == 0) {
@@ -621,8 +605,8 @@ public class POMTransformer extends POMReader {
 //        if (WRITE_IGNORED_ELEMENTS.contains(element)) {
 //            System.out.println("Write ignored " + element + " " + printPath(path) + " for " + dependency);
 //        }
-        return path.size() == 1 && (isDebianBuild() && DEBIAN_BUILD_IGNORED_ELEMENTS.contains(element))
-                || (isBuildWithoutDoc() && DEBIAN_DOC_IGNORED_ELEMENTS.contains(element))
+        return path.size() == 1 && (isDebianBuild && DEBIAN_BUILD_IGNORED_ELEMENTS.contains(element))
+                || (isBuildWithoutDoc && DEBIAN_DOC_IGNORED_ELEMENTS.contains(element))
                 || WRITE_IGNORED_ELEMENTS.contains(element);
     }
 
