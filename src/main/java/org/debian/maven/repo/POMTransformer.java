@@ -464,7 +464,7 @@ public class POMTransformer extends POMReader {
                                 inProperties--;
                                 if (inProperties == 0) {
                                     createDebianProperties(info, original, debianPackage, path.size());
-                                    writeMissingProperties(writerWrapper, path.size(), info, visitedProperties);
+                                    writeMissingProperties(writerWrapper, path.size(), info.getProperties(), visitedProperties);
                                 }
                             }
                             if (!afterText) {
@@ -572,7 +572,7 @@ public class POMTransformer extends POMReader {
         if (original.getProperties().isEmpty()) {
             writer.writeStartElement("properties");
             createDebianProperties(info, original, debianPackage, 1);
-            writeMissingProperties(writerWrapper, 1, info, new HashMap<String, String>());
+            writeMissingProperties(writerWrapper, 1, info.getProperties(), new HashMap<String, String>());
             writerWrapper.indent(1);
             writer.writeEndElement();
             writerWrapper.indent(1);
@@ -669,21 +669,11 @@ public class POMTransformer extends POMReader {
         }
     }
 
-    protected void writeMissingProperties(XMLWriterWrapper writerWrapper, int inLevel, POMInfo info, Map<String, String> visitedProperties) throws XMLStreamException {
-        XMLStreamWriter writer = writerWrapper.getWriter();
-        Map<String, String> sortedProperties = new TreeMap<String, String>(info.getProperties());
-        for (Map.Entry<String, String> entry: sortedProperties.entrySet()) {
+    protected void writeMissingProperties(XMLWriterWrapper writerWrapper, int inLevel, TreeMap<String, String> properties, Map<String, String> visitedProperties) throws XMLStreamException {
+        for (Map.Entry<String, String> entry: properties.entrySet()) {
             String property = entry.getKey();
-            String value = entry.getValue();
             if (!visitedProperties.containsKey(property)) {
-                writerWrapper.indent(inLevel + 1);
-                if (value == null || value.isEmpty() || "true".equals(value)) {
-                    writer.writeEmptyElement(property);
-                } else {
-                    writer.writeStartElement(property);
-                    writer.writeCharacters(value);
-                    writer.writeEndElement();
-                }
+                writerWrapper.writeFilledOrEmpty(property, entry.getValue(), inLevel + 1);
             }
         }
     }

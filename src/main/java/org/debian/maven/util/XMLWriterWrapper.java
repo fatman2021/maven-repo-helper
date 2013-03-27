@@ -48,4 +48,15 @@ public class XMLWriterWrapper {
         indent(inLevel);
         return writeFilledElement(element, content);
     }
+
+    public XMLWriterWrapper writeFilledOrEmpty(String element, String content, int inLevel)  throws XMLStreamException {
+        indent(inLevel);
+        indent(inLevel + 1);
+        if (content == null || content.isEmpty() || "true".equals(content)) {
+            writer.writeEmptyElement(element);
+        } else {
+            writeFilledElement(element, content);
+        }
+        return this;
+    }
 }

@@ -34,7 +34,8 @@ public class POMInfo implements Cloneable {
     private Dependency thisPom;
     private List<String> modules;
     private Map<DependencyType, List<Dependency>> dependencies = POMInfo.initDependenciesMultiMap();
-    private Map<String, String> properties;
+    // Use a TreeMap to guarantee ordering of the keys.
+    private TreeMap<String, String> properties;
     private POMInfo parentPOM;
 
     public Dependency getOriginalPom() {
@@ -60,30 +61,18 @@ public class POMInfo implements Cloneable {
         this.originalParentVersion = originalParentVersion;
     }
 
-    /**
-     * @return the parent
-     */
     public Dependency getParent() {
         return parent;
     }
 
-    /**
-     * @param parent the parent to set
-     */
     public void setParent(Dependency parent) {
         this.parent = parent;
     }
 
-    /**
-     * @return the thisPom
-     */
     public Dependency getThisPom() {
         return thisPom;
     }
 
-    /**
-     * @param thisPom the thisPom to set
-     */
     public void setThisPom(Dependency thisPom) {
         this.thisPom = thisPom;
     }
@@ -96,18 +85,12 @@ public class POMInfo implements Cloneable {
         this.modules = modules;
     }
 
-    /**
-     * @return the properties
-     */
-    public Map<String, String> getProperties() {
+    public TreeMap<String, String> getProperties() {
         return properties;
     }
 
-    /**
-     * @param properties the properties to set
-     */
     public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
+        this.properties = new TreeMap<String, String>(properties);
     }
 
     public Set<DependencyRule> getPublishedRules() {
