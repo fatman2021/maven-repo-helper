@@ -42,6 +42,18 @@ public class ArgumentsMap {
         return args;
     }
 
+    /**
+     * Returns the first argument or the given default value.
+     */
+    public String getFirstArgument(String defaultArgument) {
+        if(args.isEmpty()) return defaultArgument;
+        return getFirstArgument();
+    }
+
+    public String getFirstArgument() {
+        return args.get(0);
+    }
+
     public boolean getBoolean(String longName, String shortName) {
         return longMap.containsKey(longName) || shortMap.containsKey(shortName);
     }

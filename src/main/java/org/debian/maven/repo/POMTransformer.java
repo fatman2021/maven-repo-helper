@@ -777,14 +777,12 @@ public class POMTransformer extends POMReader {
         ListOfPOMs listOfPOMs;
 
         if (singlePom) {
-            String pomPath = argsMap.getArguments().get(0);
+            String pomPath = argsMap.getFirstArgument();
             listOfPOMs = new ListOfPOMs();
             ListOfPOMs.POMOptions options = listOfPOMs.addPOM(pomPath);
             options.setNoParent(noParent);
         } else {
-            String pomsFileName = argsMap.getArguments().isEmpty()
-                    ? "debian/" + debianPackage + ".poms"
-                    : argsMap.getArguments().get(0);
+            String pomsFileName = argsMap.getFirstArgument("debian/" + debianPackage + ".poms");
             listOfPOMs = new ListOfPOMs(new File(pomsFileName));
         }
         transformer.setListOfPOMs(listOfPOMs);
