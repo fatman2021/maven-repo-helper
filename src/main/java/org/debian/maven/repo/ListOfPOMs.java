@@ -41,24 +41,12 @@ public class ListOfPOMs {
         this.poms = poms;
     }
 
-    public boolean isVerbose() {
-        return verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public File getBaseDir() {
-        return baseDir;
-    }
-
     public void setBaseDir(File baseDir) {
         this.baseDir = baseDir;
-    }
-
-    public File getListOfPOMsFile() {
-        return poms;
     }
 
     public void setListOfPOMsFile(File poms) {
