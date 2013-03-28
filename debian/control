@@ -2,7 +2,8 @@ Source: maven-repo-helper
 Section: java
 Priority: optional
 Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
-Uploaders: Ludovic Claude <ludovic.claude@laposte.net>, Damien Raude-Morvan <drazzib@debian.org>
+Uploaders: Ludovic Claude <ludovic.claude@laposte.net>, Damien Raude-Morvan <drazzib@debian.org>,
+ Thomas Koch <thomas@koch.ro>
 Build-Depends: debhelper (>= 7), cdbs, default-jdk, ant, help2man, python-docutils
 Build-Depends-Indep: ant-optional, libstax-java, junit4, libxmlunit-java, libcommons-io-java
 Standards-Version: 3.9.3
@@ -15,6 +16,7 @@ Architecture: all
 Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless, libstax-java
 Recommends: debhelper
 Suggests: maven-debian-helper
+Breaks: maven-debian-helper (<= 1.5.1)
 Description: Helper tools for including Maven metadata in Debian packages
  Maven is a software project management and comprehension tool. Based on the
  concept of a project object model (POM), Maven can manage a project's build,

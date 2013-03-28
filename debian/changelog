@@ -1,4 +1,4 @@
-maven-repo-helper (1.7.2) UNRELEASED; urgency=low
+maven-repo-helper (1.8) experimental; urgency=low
 
   [Ludovic Claude]
   * Move repository to Git, thanks to Thomas Koch.
@@ -13,18 +13,9 @@ maven-repo-helper (1.7.2) UNRELEASED; urgency=low
     - use junit4 instead of junit
 
   [Thomas Kock]
-  * code refactorings and cleanups:
-    - Added a minimal cli parsing package
-    - deprecate setters in DependencyRuleSet
-    - make DependencyRule final and ctor shorter
-    - add TODO file
-    - provide Builder for Dependency class, deprecate setters
-    - remove dead code, since we've a VCS
-    - solve two eclipse warnings
-    - remove unused property isPOM in POMCleaner
-    - add complete constructor to Rule
+  * massive code refactorings and cleanups
 
- -- Ludovic Claude <ludovic.claude@laposte.net>  Mon, 07 May 2012 22:18:21 +0200
+ -- Thomas Koch <thomas@koch.ro>  Thu, 28 March 2013 11:45:21 +0200
 
 maven-repo-helper (1.7.1) unstable; urgency=low
 
