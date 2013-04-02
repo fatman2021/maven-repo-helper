@@ -452,7 +452,7 @@ public class POMTransformer extends POMReader {
                                 }
                             }
                             if (!afterText) {
-                                writerWrapper.indent(path.size());;
+                                writerWrapper.indent(path.size());
                             }
                             writer.writeEndElement();
                             afterText = false;

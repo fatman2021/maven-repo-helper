@@ -26,9 +26,6 @@ public class RepositoryReportTextWriter implements RepositoryReportWriter {
      */
     private int itemLevel = 1;
 
-    /**
-     * {@inheritDoc}
-     */
     public void printSectionStart(String string) {
         String display = string + ":";
 
@@ -37,16 +34,10 @@ public class RepositoryReportTextWriter implements RepositoryReportWriter {
         System.out.println(display.replaceAll(".", "="));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printSectionEnd() {
         System.out.println();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printItem(String string) {
         System.out.print("\t");
         if (itemLevel > 1) {
@@ -56,23 +47,14 @@ public class RepositoryReportTextWriter implements RepositoryReportWriter {
         itemLevel++;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void endItem() {
         itemLevel--;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printStart() {
         System.out.println("Scanning repository...");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printEnd() {
         System.out.println("Done.");
     }

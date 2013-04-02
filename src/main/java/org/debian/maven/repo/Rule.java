@@ -61,7 +61,7 @@ public class Rule {
     public String apply(String s) {
         if (s == null) {
             if (matchesNull()) {
-                if (replace.indexOf("$1") < 0) {
+                if (!replace.contains("$1")) {
                     return replace;
                 }
             }

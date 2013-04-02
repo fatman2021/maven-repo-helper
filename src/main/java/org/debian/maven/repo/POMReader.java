@@ -274,18 +274,21 @@ public class POMReader {
         }
 
         private boolean matches(String patternString, boolean anchored) {
-            String[] pattern = patternString.split("/");
+            String[] patterns = patternString.split("/");
 
-            if(anchored && pattern.length != path.size()) return false;
+            if(anchored && patterns.length != path.size()) return false;
 
-            int pathIndex = path.size() - pattern.length - 1;
+            int pathIndex = path.size() - patterns.length - 1;
             if(pathIndex < -1) return false;
 
-            for(int i=0; i<pattern.length; ++i) {
+            for (String pattern : patterns) {
                 ++pathIndex;
-                String patternElement = pattern[i];
-                if("*".equals(patternElement)) continue;
-                if(!patternElement.equals(path.get(pathIndex)) ) return false;
+                if ("*".equals(pattern)) {
+                    continue;
+                }
+                if (!pattern.equals(path.get(pathIndex))) {
+                    return false;
+                }
             }
             return true;
         }

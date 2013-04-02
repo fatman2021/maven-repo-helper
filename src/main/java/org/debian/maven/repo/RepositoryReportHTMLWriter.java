@@ -26,9 +26,6 @@ public class RepositoryReportHTMLWriter implements RepositoryReportWriter {
      */
     private int itemLevel = 1;
 
-    /**
-     * {@inheritDoc}
-     */
     public void printSectionStart(String string) {
         String display = string + ":";
 
@@ -38,16 +35,10 @@ public class RepositoryReportHTMLWriter implements RepositoryReportWriter {
         System.out.println("<ul>");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printSectionEnd() {
         System.out.println("</ul>");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printItem(String string) {
         if (itemLevel > 1) {
             System.out.print("<ul>");
@@ -57,9 +48,6 @@ public class RepositoryReportHTMLWriter implements RepositoryReportWriter {
         itemLevel++;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void endItem() {
         itemLevel--;
         System.out.println("</li>");
@@ -68,9 +56,6 @@ public class RepositoryReportHTMLWriter implements RepositoryReportWriter {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printStart() {
         System.out.println("<html>");
         System.out.println("<header>");
@@ -81,9 +66,6 @@ public class RepositoryReportHTMLWriter implements RepositoryReportWriter {
         System.out.println("<h1>Debian Maven repository QA</h1>");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public void printEnd() {
         System.out.println("</body>");
         System.out.println("</html>");

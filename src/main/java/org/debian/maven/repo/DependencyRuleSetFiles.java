@@ -1,19 +1,13 @@
 package org.debian.maven.repo;
 
-import static org.debian.maven.repo.DependencyRuleSet.MAVEN_PLUGINS_KEEP_VERSION_RULE;
-import static org.debian.maven.repo.DependencyRuleSet.TO_DEBIAN_VERSION_RULE;
-
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.debian.maven.cliargs.ArgumentsMap;
+
+import static org.debian.maven.repo.DependencyRuleSet.*;
 
 public class DependencyRuleSetFiles {
 
