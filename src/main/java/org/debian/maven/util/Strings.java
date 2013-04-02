@@ -7,11 +7,13 @@ public class Strings {
      *
      * The toString() method is used on the items.
      */
-    public static String join(Iterable<? extends Object> items, String glue) {
-        StringBuffer sb = new StringBuffer();
+    public static String join(Iterable<?> items, String glue) {
+        StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (Object item : items) {
-            if(!first) sb.append(glue);
+            if (!first) {
+                sb.append(glue);
+            }
             first = false;
             sb.append(item);
         }
@@ -22,8 +24,8 @@ public class Strings {
      * Return a string repeating the item the given number of times.
      */
     public static String repeat(String item, int times) {
-        StringBuffer sb = new StringBuffer();
-        for (int i=0; i < times; ++i) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < times; ++i) {
             sb.append(item);
         }
         return sb.toString();
@@ -35,7 +37,7 @@ public class Strings {
      * e.g.: mypropertyname=mypropertyvalue\n
      */
     public static String propertyLine(String name, String value) {
-        StringBuffer sb = new StringBuffer(name.length() + value.length() + 2);
+        StringBuilder sb = new StringBuilder(name.length() + value.length() + 2);
         sb.append(name);
         sb.append("=");
         sb.append(value);
