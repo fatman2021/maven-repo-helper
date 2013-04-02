@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.debian.maven.repo;
 
 /*
@@ -45,7 +41,6 @@ import org.debian.maven.repo.POMInfo.DependencyType;
 import static org.debian.maven.repo.DependencyRuleSet.*;
 
 /**
- *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class Repository {
@@ -130,12 +125,12 @@ public class Repository {
 
         // Map<DependencyRule,POMInfo>
         Map<DependencyRule, POMInfo> potentialMatches = new TreeMap<DependencyRule, POMInfo>();
-        for (POMInfo testPom: getAllPoms()) {
+        for (POMInfo testPom : getAllPoms()) {
             Set<DependencyRule> rules = testPom.getPublishedRules();
             rules.add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
             rules.add(TO_DEBIAN_VERSION_RULE);
             
-            for (DependencyRule rule: rules) {
+            for (DependencyRule rule : rules) {
                 if (rule.matches(dependency) && rule.apply(dependency).equals(testPom.getThisPom())) {
                     potentialMatches.put(rule, testPom);
                 }
@@ -198,32 +193,32 @@ public class Repository {
 
     public void report(RepositoryReportWriter writer) {
 
-    	writer.printStart();
-    	
+        writer.printStart();
+        
         if (pomsWithMissingParent.size() > 0) {
-        	writer.printSectionStart("POMs with missing parents");
-            for (File pom: pomsWithMissingParent.keySet()) {
+            writer.printSectionStart("POMs with missing parents");
+            for (File pom : pomsWithMissingParent.keySet()) {
                 writer.printItem(pom.getAbsolutePath());
                 writer.endItem();
             }
             writer.printSectionEnd();
         }
         if (pomsWithMissingVersions.size() > 0) {
-        	writer.printSectionStart("POMs with missing versions");
-            for (Entry<File, POMInfo> entry: pomsWithMissingVersions.entrySet()) {
+            writer.printSectionStart("POMs with missing versions");
+            for (Entry<File, POMInfo> entry : pomsWithMissingVersions.entrySet()) {
                 File pom = entry.getKey();
                 POMInfo pomInfo = entry.getValue();
                 writer.printItem(pom.getAbsolutePath());
-                for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
+                for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
-                    	writer.printItem(dependency.toString());
-                    	writer.endItem();
+                        writer.printItem(dependency.toString());
+                        writer.endItem();
                     }
                 }
-                for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
+                for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
                     if (dependency.getVersion() == null || dependency.getVersion().contains("$")) {
-                    	writer.printItem(dependency.toString());
-                    	writer.endItem();
+                        writer.printItem(dependency.toString());
+                        writer.endItem();
                     }
                 }
                 writer.endItem();
@@ -233,7 +228,7 @@ public class Repository {
 
         Set<String> issues = new TreeSet<String>();
         Map<File, List<Dependency>> pomsWithIssues = new HashMap<File, List<Dependency>>();
-        for (Entry<File, POMInfo> entry: resolvedPoms.entrySet()) {
+        for (Entry<File, POMInfo> entry : resolvedPoms.entrySet()) {
             File pom = entry.getKey();
             POMInfo pomInfo = entry.getValue();
             if (pomInfo.getThisPom().getVersion() == null) {
@@ -242,7 +237,7 @@ public class Repository {
             if (pomInfo.getThisPom().getVersion().endsWith("-SNAPSHOT")) {
                 issues.add("Snapshot version in " + pom);
             }
-            for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
+            for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
                 if (!dep2info.containsKey(dependency)) {
                     issues.add("Unpackaged dependency: " + dependency + " in " + pom);
                     List<Dependency> pomIssues = pomsWithIssues.get(pom);
@@ -253,7 +248,7 @@ public class Repository {
                     pomIssues.add(dependency);
                 }
             }
-            for (Dependency dependency: pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
+            for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.PLUGINS)) {
                 if (!dep2info.containsKey(dependency)) {
                     issues.add("Unpackaged plugin: " + dependency + " in " + pom);
                     List<Dependency> pomIssues = pomsWithIssues.get(pom);
@@ -287,9 +282,9 @@ public class Repository {
             orderedPoms.add(pom);
         }
         if (!pomsWithNumberOfIssues.isEmpty()) {
-        	writer.printSectionStart("Top 10 POM files with issues");
+            writer.printSectionStart("Top 10 POM files with issues");
             int count = 0;
-            for (Iterator<List<File>> i = pomsWithNumberOfIssues.values().iterator(); i.hasNext() && count < 10;) {
+            for (Iterator<List<File>> i = pomsWithNumberOfIssues.values().iterator(); i.hasNext() && count < 10; ) {
                 List<File> orderedPoms = i.next();
                 for (Iterator<File> j = orderedPoms.iterator(); j.hasNext() && count < 10; count++) {
                     File pom = j.next();
@@ -326,8 +321,8 @@ public class Repository {
                 return count2.compareTo(count1);
             }
         });
-        if (! missingDependenciesCountList.isEmpty()) {
-        	writer.printSectionStart("Top 10 missing dependencies");
+        if (!missingDependenciesCountList.isEmpty()) {
+            writer.printSectionStart("Top 10 missing dependencies");
             int count = 0;
             for (Iterator<Map.Entry<Dependency, Integer>> i = missingDependenciesCountList.iterator(); i.hasNext() && count < 10; count++) {
                 Map.Entry<Dependency, Integer> entry = i.next();
@@ -338,7 +333,7 @@ public class Repository {
             }
             writer.printSectionEnd();
         }
-        
+
         writer.printEnd();
     }
 

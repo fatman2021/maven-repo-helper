@@ -1,4 +1,5 @@
 package org.debian.maven.repo;
+
 /*
  * Copyright 2011 Damien Raude-Morvan.
  *
@@ -22,38 +23,38 @@ package org.debian.maven.repo;
  */
 public interface RepositoryReportWriter {
 
-        /**
-         * Print start part of any Item
-         *
-         * @param string content of message to print
-         */
-	void printItem(String string);
+    /**
+     * Print start part of any Item
+     *
+     * @param string content of message to print
+     */
+    void printItem(String string);
 
-        /**
-         * Print end part of any Item
-         */
-	void endItem();
+    /**
+     * Print end part of any Item
+     */
+    void endItem();
 
-        /**
-         * Print start of a report section
-         *
-         * @param string content of message to print
-         */
-	void printSectionStart(String string);
+    /**
+     * Print start of a report section
+     *
+     * @param string content of message to print
+     */
+    void printSectionStart(String string);
 
-        /**
-         * Print end of a report section
-         */
-	void printSectionEnd();
+    /**
+     * Print end of a report section
+     */
+    void printSectionEnd();
 
-        /**
-         * Print end footer of the report
-         */
-	void printEnd();
+    /**
+     * Print end footer of the report
+     */
+    void printEnd();
 
-        /**
-         * Print start header of the report
-         */
-	void printStart();
+    /**
+     * Print start header of the report
+     */
+    void printStart();
 
 }

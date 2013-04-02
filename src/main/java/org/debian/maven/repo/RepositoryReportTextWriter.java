@@ -17,63 +17,64 @@ package org.debian.maven.repo;
  */
 
 /**
- * 
  * @author Damien Raude-Morvan <drazzib@debian.org>
  */
 public class RepositoryReportTextWriter implements RepositoryReportWriter {
 
-        /** Current level of item */
-	private int itemLevel = 1;
+    /**
+     * Current level of item
+     */
+    private int itemLevel = 1;
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printSectionStart(String string) {
-		String display = string + ":";
+    /**
+     * {@inheritDoc}
+     */
+    public void printSectionStart(String string) {
+        String display = string + ":";
 
-		System.out.println(display.replaceAll(".", "="));
-		System.out.println(display);
-		System.out.println(display.replaceAll(".", "="));
-	}
+        System.out.println(display.replaceAll(".", "="));
+        System.out.println(display);
+        System.out.println(display.replaceAll(".", "="));
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printSectionEnd() {
-		System.out.println();
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printSectionEnd() {
+        System.out.println();
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printItem(String string) {
-		System.out.print("\t");
-		if (itemLevel > 1) {
-			System.out.print("\t");
-		}
-		System.out.println(string);
-		itemLevel++;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printItem(String string) {
+        System.out.print("\t");
+        if (itemLevel > 1) {
+            System.out.print("\t");
+        }
+        System.out.println(string);
+        itemLevel++;
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void endItem() {
-		itemLevel--;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void endItem() {
+        itemLevel--;
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printStart() {
-		System.out.println("Scanning repository...");
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printStart() {
+        System.out.println("Scanning repository...");
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printEnd() {
-		System.out.println("Done.");
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printEnd() {
+        System.out.println("Done.");
+    }
 
 }

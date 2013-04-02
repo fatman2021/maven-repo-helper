@@ -17,77 +17,77 @@ package org.debian.maven.repo;
  */
 
 /**
- * 
  * @author Damien Raude-Morvan <drazzib@debian.org>
  */
 public class RepositoryReportHTMLWriter implements RepositoryReportWriter {
 
-        /** Current level of item */
-	private int itemLevel = 1;
+    /**
+     * Current level of item
+     */
+    private int itemLevel = 1;
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printSectionStart(String string) {
-		String display = string + ":";
+    /**
+     * {@inheritDoc}
+     */
+    public void printSectionStart(String string) {
+        String display = string + ":";
 
-		System.out.println("<h2>");
-		System.out.println(display);
-		System.out.println("</h2>");
-		System.out.println("<ul>");
-	}
+        System.out.println("<h2>");
+        System.out.println(display);
+        System.out.println("</h2>");
+        System.out.println("<ul>");
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printSectionEnd() {
-		System.out.println("</ul>");
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printSectionEnd() {
+        System.out.println("</ul>");
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printItem(String string) {
-		if (itemLevel > 1) {
-			System.out.print("<ul>");
-		}
-		System.out.print("<li>");
-		System.out.print(string);
-		itemLevel++;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printItem(String string) {
+        if (itemLevel > 1) {
+            System.out.print("<ul>");
+        }
+        System.out.print("<li>");
+        System.out.print(string);
+        itemLevel++;
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void endItem() {
-		itemLevel--;
-		System.out.println("</li>");
-		if (itemLevel > 1) {
-			System.out.print("</ul>");
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void endItem() {
+        itemLevel--;
+        System.out.println("</li>");
+        if (itemLevel > 1) {
+            System.out.print("</ul>");
+        }
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printStart() {
-		System.out.println("<html>");
-		System.out.println("<header>");
-		System.out.println("<title>Debian Maven repository QA</title>");
-		System.out
-				.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
-		System.out.println("</header>");
-		System.out.println("<body>");
-		System.out.println("<h1>Debian Maven repository QA</h1>");
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public void printStart() {
+        System.out.println("<html>");
+        System.out.println("<header>");
+        System.out.println("<title>Debian Maven repository QA</title>");
+        System.out.println("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"/>");
+        System.out.println("</header>");
+        System.out.println("<body>");
+        System.out.println("<h1>Debian Maven repository QA</h1>");
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-	public void printEnd() {
-		System.out.println("</body>");
-		System.out.println("</html>");
+    /**
+     * {@inheritDoc}
+     */
+    public void printEnd() {
+        System.out.println("</body>");
+        System.out.println("</html>");
 
-	}
+    }
 
 }
