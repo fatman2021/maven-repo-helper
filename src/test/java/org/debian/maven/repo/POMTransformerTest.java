@@ -241,7 +241,7 @@ public class POMTransformerTest {
 
         POMInfo transformedPom = instance.transformPom(pom, tmpDir.updatedPom(), noParent, true, true, false, null, "libantlr-maven-plugin-java");
         assertCleanedXMLEqual();
-        assertEquals("2.3", ((Dependency) transformedPom.getDependencies().get(PLUGIN_MANAGEMENT).get(2)).getVersion());
+        assertEquals("2.3", transformedPom.getDependencies().get(PLUGIN_MANAGEMENT).get(2).getVersion());
     }
 
     @Test

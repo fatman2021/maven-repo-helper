@@ -98,7 +98,7 @@ public class POMInfo implements Cloneable {
         if (getProperties() == null) {
             return rules;
         }
-        String mavenRules = (String) getProperties().get("debian.mavenRules");
+        String mavenRules = getProperties().get("debian.mavenRules");
         if (mavenRules != null) {
             for(String ruleString : mavenRules.split(",")) {
                 rules.add(new DependencyRule(ruleString.trim()));
