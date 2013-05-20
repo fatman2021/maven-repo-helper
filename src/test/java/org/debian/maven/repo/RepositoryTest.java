@@ -41,7 +41,7 @@ public class RepositoryTest {
         Repository repo = getRepository();
         repo.scan();
 
-        assertEquals(24, repo.getResolvedPoms().size());
+        assertEquals(25, repo.getResolvedPoms().size());
         assertEquals(0, repo.getUnresolvedPoms().size());
         assertEquals(0, repo.getPomsWithMissingParent().size());
         assertEquals(2, repo.getPomsWithMissingVersions().size());
@@ -65,7 +65,7 @@ public class RepositoryTest {
             repo.registerPom(pomFile, pom);
         } catch (DependencyNotFoundException ignore) {}
 
-        assertEquals(24, repo.getResolvedPoms().size());
+        assertEquals(25, repo.getResolvedPoms().size());
         assertEquals(1, repo.getUnresolvedPoms().size());
         assertEquals(1, repo.getPomsWithMissingParent().size());
         assertEquals(3, repo.getPomsWithMissingVersions().size());

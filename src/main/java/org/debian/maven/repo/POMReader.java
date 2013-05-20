@@ -75,11 +75,14 @@ public class POMReader {
         Dependency currentDependency = null;
         int inIgnoredElement = 0;
         String element = null;
+        
+        StringBuilder buffer = null;
 
         // First pass - collect version and parent information
         for (int event = parser.next(); event != XMLStreamConstants.END_DOCUMENT; event = parser.next()) {
             switch (event) {
                 case XMLStreamConstants.START_ELEMENT: {
+                    buffer = null;
                     element = parser.getLocalName();
                     path.add(element);
                     if (isReadIgnoredElement(element) ||
@@ -95,24 +98,12 @@ public class POMReader {
                         }
                     } else if (path.size() == 2 && "parent".equals(element)) {
                         parent = new Dependency(null, null, "pom", null);
-                    } else if (path.size() == 3 && "properties".equals(path.parent(1))) {
-                        // in case the property does not contain any text, might be overwritten be the nested characters
-                        properties.put(element, "true");
                     }
                     break;
                 }
 
                 case XMLStreamConstants.END_ELEMENT: {
-                    path.remove();
-                    if (inIgnoredElement > 0) {
-                        inIgnoredElement--;
-                    }
-                    element = null;
-                    break;
-                }
-
-                case XMLStreamConstants.CHARACTERS: {
-                    String value = parser.getText().trim();
+                    String value = buffer != null ? buffer.toString() : null;
                     if (inIgnoredElement > 0 || path.contains("exclusions")) {
                         // ignore
                     } else if (path.contains("dependency") || path.contains("plugin") || path.contains("extension")) {
@@ -145,7 +136,7 @@ public class POMReader {
                             parent.setRelativePath(value);
                         }
                     } else if (path.size() == 3 && "properties".equals(path.parent(1))) {
-                        properties.put(element, value);
+                        properties.put(element, value != null ? value : "true");
                     } else if (path.size() == 2 && inIgnoredElement == 0) {
                         if ("groupId".equals(element)) {
                             thisPom.setGroupId(value);
@@ -157,14 +148,24 @@ public class POMReader {
                             thisPom.setVersion(value);
                         }
                     }
+                    
+                    path.remove();
+                    if (inIgnoredElement > 0) {
+                        inIgnoredElement--;
+                    }
+                    element = null;
+                    buffer = null;
                     break;
                 }
 
-                case XMLStreamConstants.CDATA: {
-                    String value = parser.getText().trim();
-                    if (path.size() == 3 && "properties".equals(path.parent(1))) {
-                        properties.put(element, value);
+                case XMLStreamConstants.CDATA:
+                case XMLStreamConstants.CHARACTERS: {
+                    if (buffer == null) {
+                        buffer = new StringBuilder();
                     }
+                    
+                    buffer.append(parser.getText());
+                    
                     break;
                 }
 
