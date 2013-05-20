@@ -10,7 +10,6 @@ import java.io.Reader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,7 +46,7 @@ public class TemporaryPomFolder extends TemporaryFolder {
     }
 
     public File updatedPom() throws IOException {
-        if(!(updatedPom instanceof File)) {
+        if (updatedPom == null) {
             updatedPom = newFile("updated.pom");
         }
         return updatedPom;
@@ -61,8 +60,7 @@ public class TemporaryPomFolder extends TemporaryFolder {
 
     @Override
     protected void after() {
-        for (Iterator<Reader> i = openedReaders.iterator(); i.hasNext();) {
-            Reader reader = i.next();
+        for (Reader reader : openedReaders) {
             try {
                 reader.close();
             } catch (IOException ex) {
