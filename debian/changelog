@@ -1,3 +1,15 @@
+maven-repo-helper (1.8.2) unstable; urgency=low
+
+  * Fixed the POM reader to handle properly character chunks
+    (Closes: #693234, #688085)
+  * Enabled more tests by adding the missing @Test annotations
+  * Updated Standards-Version to 3.9.4 (no changes)
+  * Added junit4 to the classpath
+  * debian/copyright: Updated the Format URI to 1.0
+  * Upload to unstable
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Tue, 21 May 2013 00:30:12 +0200
+
 maven-repo-helper (1.8.1) experimental; urgency=low
 
   [ Emmanuel Bourg ]
