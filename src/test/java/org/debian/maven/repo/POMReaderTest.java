@@ -1,7 +1,5 @@
 package org.debian.maven.repo;
 
-import java.io.File;
-
 import org.debian.maven.repo.POMReader.TreePath;
 import static org.debian.maven.repo.POMInfo.DependencyType.*;
 
@@ -364,7 +362,7 @@ public class POMReaderTest {
     @Test
     public void testReadClojurePom() throws Exception {
         POMReader instance = new POMReader();
-        POMInfo info = instance.readPom(new File("target/test-classes/repository/org/clojure/clojure/1.2.1/clojure-1.2.1.pom"));
+        POMInfo info = instance.readPom(tmpDir.usePom("repository/org/clojure/clojure/1.2.1/clojure-1.2.1.pom"));
         assertNotNull("null pom", info.getThisPom());
         assertEquals("groupId", "org.clojure", info.getThisPom().getGroupId());
         assertEquals("artifactId", "clojure", info.getThisPom().getArtifactId());
