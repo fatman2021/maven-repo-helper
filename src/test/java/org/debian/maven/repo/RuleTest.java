@@ -16,6 +16,8 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +27,7 @@ public class RuleTest {
     /**
      * Test of match method, of class Rule.
      */
+    @Test
     public void testMatch() {
         Rule simple = new Rule("test");
         assertFalse(simple.match("xxx"));
@@ -61,6 +64,7 @@ public class RuleTest {
     /**
      * Test of apply method, of class Rule.
      */
+    @Test
     public void testApply() {
         Rule simple = new Rule("test");
         assertEquals("test", simple.apply("test"));
@@ -91,6 +95,7 @@ public class RuleTest {
     /**
      * Test of apply method, of class Rule.
      */
+    @Test
     public void testIsGeneric() {
         Rule simple = new Rule("test");
         assertFalse(simple.isGeneric());

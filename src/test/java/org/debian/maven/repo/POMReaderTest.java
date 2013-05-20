@@ -359,6 +359,7 @@ public class POMReaderTest {
         assertEquals(0, info.getModules().size());
     }
 
+    @Test
     public void testTreePathMatches() {
         TreePath<String> path = new TreePath<String>();
         path.add("a");
