@@ -1,3 +1,10 @@
+maven-repo-helper (1.8.3) unstable; urgency=low
+
+  * Fixed the usage of the debhelper functions in jh_maven_repo_helper.pm.
+    Thanks to Wolodja Wentland for the fix (Closes: #709446)
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Thu, 23 May 2013 15:28:46 +0200
+
 maven-repo-helper (1.8.2) unstable; urgency=low
 
   * Fixed the POM reader to handle properly character chunks
