@@ -16,7 +16,12 @@
 
 package org.debian.maven.repo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +34,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
 
     public static final Dependency PROTO_JAR = new Dependency(null, null, "jar", null);
     public static final Dependency PROTO_PLUGIN = new Dependency("org.apache.maven.plugins", null, "maven-plugin", null);
-    private static final Pattern compactDependencyNotationMatcher =
+    private static final Pattern COMPACT_DEPENDENCY_NOTATION_MATCHER =
             Pattern.compile("(\\w[a-zA-Z0-9\\-_\\.]*):(\\w[a-zA-Z0-9\\-_]*):(\\d[a-zA-Z0-9\\-_\\.]*)");
 
     private String groupId;
@@ -313,7 +318,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
     }
 
     public static Dependency fromCompactNotation(String depNotation) {
-        Matcher dependencyMatcher = compactDependencyNotationMatcher.matcher(depNotation);
+        Matcher dependencyMatcher = COMPACT_DEPENDENCY_NOTATION_MATCHER.matcher(depNotation);
         if (dependencyMatcher.matches()) {
             return new Dependency(dependencyMatcher.group(1),
                     dependencyMatcher.group(2), "jar", dependencyMatcher.group(3));
@@ -322,9 +327,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
     }
 
     public String formatCompactNotation() {
-        return getGroupId() + ":" +
-               getArtifactId() + ":" +
-               getVersion();
+        return getGroupId() + ":" + getArtifactId() + ":" + getVersion();
     }
 
     public Builder builder() {
@@ -382,8 +385,14 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
     }
 
     public enum Field {
-        GROUPID("groupId"), ARTIFACTID("artifactId"), TYPE("type"), VERSION("version"),
-        OPTIONAL("optional"), SCOPE("scope"), CLASSIFIER("classifier"), RELATIVEPATH("relativePath");
+        GROUPID("groupId"),
+        ARTIFACTID("artifactId"),
+        TYPE("type"),
+        VERSION("version"),
+        OPTIONAL("optional"),
+        SCOPE("scope"),
+        CLASSIFIER("classifier"),
+        RELATIVEPATH("relativePath");
 
         public final static Map<String, Field> map;
         static {

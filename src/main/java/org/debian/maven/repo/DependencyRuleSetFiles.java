@@ -26,7 +26,7 @@ public class DependencyRuleSetFiles {
 
     public DependencyRuleSetFiles() {
         this(new EnumMap<RulesType, DependencyRuleSet>(RulesType.class));
-        for(RulesType type : RulesType.values()) {
+        for (RulesType type : RulesType.values()) {
             files.put(type, new DependencyRuleSet());
         }
     }
@@ -37,9 +37,11 @@ public class DependencyRuleSetFiles {
 
     public static DependencyRuleSetFiles fromCLIArguments(ArgumentsMap argsMap, boolean verbose) {
         DependencyRuleSetFiles depFiles = new DependencyRuleSetFiles();
-        for(RulesType type : RulesType.values()) {
+        for (RulesType type : RulesType.values()) {
             CLIArgs args = type.cliArgs;
-            if(args == null) continue;
+            if (args == null) {
+                continue;
+            }
             File rulesFile = argsMap.getFile(args.fileLong, args.fileShort, null);
             List<String> rulesExtra = argsMap.getValueList(args.extraLong, args.extraShort);
 
@@ -52,7 +54,7 @@ public class DependencyRuleSetFiles {
     }
 
     public void save(File outputDirectory) {
-        for(RulesType type : RulesType.values()) {
+        for (RulesType type : RulesType.values()) {
             save(outputDirectory, type);
         }
     }

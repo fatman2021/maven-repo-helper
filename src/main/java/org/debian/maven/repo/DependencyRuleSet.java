@@ -40,7 +40,6 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
     }
 
     public DependencyRuleSet(Set<DependencyRule> rules, String description) {
-        super();
         this.rules = rules;
         this.description = description;
     }

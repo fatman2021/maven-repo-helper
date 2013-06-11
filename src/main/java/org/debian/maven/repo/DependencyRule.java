@@ -67,7 +67,7 @@ public class DependencyRule implements Comparable<DependencyRule> {
     }
 
     private static Rule maybeParseRule(StringTokenizer st, Rule defaultRule) {
-        if(st.hasMoreTokens()) {
+        if (st.hasMoreTokens()) {
             return new Rule(st.nextToken());
         } else {
             return defaultRule;
@@ -103,8 +103,11 @@ public class DependencyRule implements Comparable<DependencyRule> {
     }
 
     public boolean matches(Dependency dependency) {
-        return groupRule.match(dependency.getGroupId()) && artifactRule.match(dependency.getArtifactId()) && typeRule.match(dependency.getType()) 
-                && versionRule.match(dependency.getVersion()) && scopeRule.match(dependency.getScope())
+        return groupRule.match(dependency.getGroupId())
+                && artifactRule.match(dependency.getArtifactId())
+                && typeRule.match(dependency.getType()) 
+                && versionRule.match(dependency.getVersion())
+                && scopeRule.match(dependency.getScope())
                 && classifierRule.match(dependency.getClassifier());
     }
 
@@ -120,7 +123,9 @@ public class DependencyRule implements Comparable<DependencyRule> {
     }
 
     public boolean matchesAndPreservesGroupArtifactAndType(Dependency dependency) {
-        if(!matches(dependency)) return false;
+        if (!matches(dependency)) {
+            return false;
+        }
         Dependency transformed = apply(dependency);
         return transformed.getGroupId().equals(dependency.getGroupId())
                 && transformed.getArtifactId().equals(dependency.getArtifactId())

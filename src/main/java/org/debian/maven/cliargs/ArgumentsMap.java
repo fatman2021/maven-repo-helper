@@ -16,23 +16,23 @@ public class ArgumentsMap {
     private final List<String> args = new ArrayList<String>();
 
     public ArgumentsMap(final ArgumentsIterable it) {
-        for(Argument argument : it) {
-            switch(argument.type) {
-            case LONG:
-                addToMap(longMap, argument.name, argument.value);
-            break;
-            case SHORT:
-                addToMap(shortMap, argument.name, argument.value);
-            break;
-            case ARG:
-                args.add(argument.value);
-            break;
+        for (Argument argument : it) {
+            switch (argument.type) {
+                case LONG:
+                    addToMap(longMap, argument.name, argument.value);
+                    break;
+                case SHORT:
+                    addToMap(shortMap, argument.name, argument.value);
+                    break;
+                case ARG:
+                    args.add(argument.value);
+                    break;
             }
         }
     }
 
-    private void addToMap(Map<String, List<String>> map, String name, String value ) {
-        if(!map.containsKey(name)) {
+    private void addToMap(Map<String, List<String>> map, String name, String value) {
+        if (!map.containsKey(name)) {
             map.put(name, new ArrayList<String>());
         }
         map.get(name).add(value);
@@ -46,7 +46,9 @@ public class ArgumentsMap {
      * Returns the first argument or the given default value.
      */
     public String getFirstArgument(String defaultArgument) {
-        if(args.isEmpty()) return defaultArgument;
+        if (args.isEmpty()) {
+            return defaultArgument;
+        }
         return getFirstArgument();
     }
 
@@ -63,14 +65,20 @@ public class ArgumentsMap {
     }
 
     public String getValue(String longName, String shortName, String defaultValue) {
-        if(longMap.containsKey(longName)) return getLastOfList(longMap, longName);
-        if(shortMap.containsKey(shortName)) return getLastOfList(shortMap, shortName);
+        if (longMap.containsKey(longName)) {
+            return getLastOfList(longMap, longName);
+        }
+        if (shortMap.containsKey(shortName)) {
+            return getLastOfList(shortMap, shortName);
+        }
         return defaultValue;
     }
 
     public File getFile(String longName, String shortName, File defaultFile) {
         String fileName = getValue(longName, shortName, null);
-        if(fileName == null) return defaultFile;
+        if (fileName == null) {
+            return defaultFile;
+        }
         return new File(fileName);
     }
 
@@ -81,7 +89,7 @@ public class ArgumentsMap {
         return result;
     }
 
-    private Collection<String> getAllValues( Map<String, List<String>> map, String name) {
+    private Collection<String> getAllValues(Map<String, List<String>> map, String name) {
         return map.containsKey(name) ? map.get(name) : EMPTY_LIST;
     }
 

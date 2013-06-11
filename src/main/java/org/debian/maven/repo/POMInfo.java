@@ -24,9 +24,6 @@ import static org.debian.maven.repo.POMInfo.DependencyType.*;
  */
 public class POMInfo implements Cloneable {
 
-    public static final String MODULES = "Modules";
-    public static final String PARENT = "Parent";
-
     private String originalParentVersion;
     private Dependency originalPom;
     private Dependency parent;
@@ -263,13 +260,13 @@ public class POMInfo implements Cloneable {
 
     public static Map<DependencyType, List<Dependency>> initDependenciesMultiMap() {
         Map<DependencyType, List<Dependency>> dependencies = new EnumMap<DependencyType, List<Dependency>>(DependencyType.class);
-        for(DependencyType depType : DependencyType.values()) {
+        for (DependencyType depType : DependencyType.values()) {
             dependencies.put(depType, new ArrayList<Dependency>());
         }
         return dependencies;
     }
 
-    public enum DependencyType{
+    public enum DependencyType {
         // The order of the patterns is important! More specific patterns first!
         DEPENDENCY_MANAGEMENT_LIST("/project/dependencyManagement/dependencies/dependency"),
         PROFILE_DEPENDENCY_MANAGEMENT_LIST("profile/dependencyManagement/dependencies/dependency"),
@@ -301,13 +298,14 @@ public class POMInfo implements Cloneable {
         }
 
         Dependency dependencyPrototype() {
-            if(pattern.endsWith("plugin"))
+            if (pattern.endsWith("plugin")) {
                 return new Dependency(Dependency.PROTO_PLUGIN);
-            else
+            } else {
                 return new Dependency(Dependency.PROTO_JAR);
+            }
         }
 
-        public DependencyType byPatter(String pattern) {
+        public DependencyType byPattern(String pattern) {
             return byPatternMap.get(pattern);
         }
     }

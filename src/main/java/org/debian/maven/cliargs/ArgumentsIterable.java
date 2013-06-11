@@ -9,7 +9,8 @@ public class ArgumentsIterable implements Iterable<Argument> {
         this.args = args;
     }
 
-    @Override public Iterator<Argument> iterator() {
+    @Override
+    public Iterator<Argument> iterator() {
         return new ArgumentsIterator();
     }
 
@@ -17,21 +18,25 @@ public class ArgumentsIterable implements Iterable<Argument> {
         private int pointer = -1;
         private int next = -1;
 
-        @Override public boolean hasNext() {
-            if(pointer == next) {
+        @Override
+        public boolean hasNext() {
+            if (pointer == next) {
                 do {
                     pointer++;
-                } while ( pointer < args.length && args[pointer].isEmpty() );
+                } while (pointer < args.length && args[pointer].isEmpty());
             }
             return pointer < args.length;
         }
 
-        @Override public Argument next() {
+        @Override
+        public Argument next() {
             hasNext();
             next = pointer;
             return new Argument(args[next].trim());
         }
 
-        @Override public void remove() {}
+        @Override
+        public void remove() {
+        }
     }
 }
