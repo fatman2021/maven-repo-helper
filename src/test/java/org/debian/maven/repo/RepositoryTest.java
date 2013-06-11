@@ -1,5 +1,3 @@
-package org.debian.maven.repo;
-
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -16,6 +14,7 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
+package org.debian.maven.repo;
 
 import javax.xml.stream.XMLStreamException;
 

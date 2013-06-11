@@ -1,5 +1,3 @@
-package org.debian.maven.repo;
-
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -15,6 +13,8 @@ package org.debian.maven.repo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.debian.maven.repo;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -44,7 +44,6 @@ import static org.debian.maven.repo.DependencyRuleSet.*;
 import static org.debian.maven.repo.DependencyRuleSetFiles.RulesType.*;
 
 /**
- *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class POMTransformer extends POMReader {
@@ -53,8 +52,7 @@ public class POMTransformer extends POMReader {
     private static final List<String> WRITE_IGNORED_ELEMENTS = Arrays.asList("modelVersion", "parent");
     private static final List<String> DEBIAN_BUILD_IGNORED_ELEMENTS = Arrays.asList("distributionManagement", "repositories", "pluginRepositories");
     private static final List<String> DEBIAN_DOC_IGNORED_ELEMENTS = Arrays.asList("reports", "reporting", "site");
-    private static final List<String> INFO_ELEMENTS = Arrays.asList("groupId",
-            "artifactId", "packaging", "version");
+    private static final List<String> INFO_ELEMENTS = Arrays.asList("groupId", "artifactId", "packaging", "version");
     private DependencyRuleSetFiles depRules = new DependencyRuleSetFiles();
     private Map<File, Set<String>> ignoredModules = new HashMap<File, Set<String>>();
     private Repository repository;

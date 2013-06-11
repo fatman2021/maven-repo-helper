@@ -1,5 +1,3 @@
-package org.debian.maven.repo;
-
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -16,6 +14,8 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
+package org.debian.maven.repo;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.debian.maven.repo.POMInfo.DependencyType;
 import static org.debian.maven.repo.DependencyRuleSetFiles.RulesType.*;
+
 /**
  * Cleans up a POM for inclusion in the /usr/share/maven-repo/ repository.
  *

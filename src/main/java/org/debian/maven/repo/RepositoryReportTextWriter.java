@@ -1,5 +1,3 @@
-package org.debian.maven.repo;
-
 /*
  * Copyright 2011 Damien Raude-Morvan.
  *
@@ -15,6 +13,8 @@ package org.debian.maven.repo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.debian.maven.repo;
 
 /**
  * @author Damien Raude-Morvan <drazzib@debian.org>

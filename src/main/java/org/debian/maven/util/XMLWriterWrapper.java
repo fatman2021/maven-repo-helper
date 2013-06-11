@@ -1,5 +1,3 @@
-package org.debian.maven.util;
-
 /*
  * Copyright 2013 Thomas Koch <thomas@koch.ro>
  * Copyright 2009 Ludovic Claude.
@@ -16,6 +14,8 @@ package org.debian.maven.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package org.debian.maven.util;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;

@@ -1,5 +1,3 @@
-package org.debian.maven.repo;
-
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -16,12 +14,13 @@ package org.debian.maven.repo;
  * limitations under the License.
  */
 
+package org.debian.maven.repo;
+
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class Rule {

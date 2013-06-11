@@ -1,8 +1,3 @@
-package org.debian.maven.repo;
-
-import org.debian.maven.repo.POMReader.TreePath;
-import static org.debian.maven.repo.POMInfo.DependencyType.*;
-
 /*
  * Copyright 2009 Ludovic Claude.
  *
@@ -19,14 +14,15 @@ import static org.debian.maven.repo.POMInfo.DependencyType.*;
  * limitations under the License.
  */
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
+package org.debian.maven.repo;
 
 import org.debian.maven.TemporaryPomFolder;
+import org.debian.maven.repo.POMReader.TreePath;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.debian.maven.repo.POMInfo.DependencyType.*;
+import static org.junit.Assert.*;
 
 public class POMReaderTest {
 
