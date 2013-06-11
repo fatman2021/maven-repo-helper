@@ -17,7 +17,6 @@
 package org.debian.maven.repo;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -160,10 +159,9 @@ public class Repository {
     }
 
     public void scanOnce() {
-        if (scanned) {
-            return;
+        if (!scanned) {
+            scan();
         }
-        scan();
     }
 
     public void scan() {
@@ -358,14 +356,13 @@ public class Repository {
                 scan(file.listFiles());
             } else if (file.getName().endsWith(".pom")) {
                 try {
-                    POMInfo pom = pomReader.readPom(file);
-                    registerPom(file, pom);
-                } catch (XMLStreamException ex) {
-                    ex.printStackTrace();
-                } catch (FileNotFoundException ex) {
-                    ex.printStackTrace();
-                } catch (DependencyNotFoundException ex) {
+                    registerPom(file, pomReader.readPom(file));
+                } catch (DependencyNotFoundException e) {
                     // Ignore
+                } catch (Exception e) {
+                    System.out.println("Failed to parse " + file);
+                    e.printStackTrace();
+                    System.out.println();
                 }
             }
         }
