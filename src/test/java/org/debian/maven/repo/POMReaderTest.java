@@ -368,6 +368,16 @@ public class POMReaderTest {
     }
 
     @Test
+    public void testReadBndPom() throws Exception {
+        POMReader instance = new POMReader();
+        POMInfo info = instance.readPom(tmpDir.usePom("bndlib.pom"));
+        assertNotNull("null pom", info.getThisPom());
+        assertEquals("groupId", "biz.aQute", info.getThisPom().getGroupId());
+        assertEquals("artifactId", "bndlib", info.getThisPom().getArtifactId());
+        assertEquals("version", "1.43.0", info.getThisPom().getVersion());
+    }
+
+    @Test
     public void testTreePathMatches() {
         TreePath<String> path = new TreePath<String>();
         path.add("a");

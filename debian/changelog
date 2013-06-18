@@ -1,3 +1,10 @@
+maven-repo-helper (1.8.4) UNRELEASED; urgency=low
+
+  * Fixed a regression in the pom parser (Closes: #712658)
+  * The name of the pom is now displayed when a parsing error occurs
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Tue, 18 Jun 2013 13:52:45 +0200
+
 maven-repo-helper (1.8.3) unstable; urgency=low
 
   * Fixed the usage of the debhelper functions in jh_maven_repo_helper.pm.

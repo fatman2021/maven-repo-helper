@@ -103,7 +103,7 @@ public class POMReader {
                 }
 
                 case XMLStreamConstants.END_ELEMENT: {
-                    String value = buffer != null ? buffer.toString() : null;
+                    String value = buffer != null ? buffer.toString().trim() : null;
                     if (inIgnoredElement > 0 || path.contains("exclusions")) {
                         // ignore
                     } else if (path.contains("dependency") || path.contains("plugin") || path.contains("extension")) {
