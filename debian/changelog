@@ -1,3 +1,10 @@
+maven-repo-helper (1.8.5) unstable; urgency=low
+
+ * Added several methods to org.debian.maven.repo.Dependency to check
+   the type of the artifact
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Wed, 30 Aug 2013 12:19:05 +0200
+
 maven-repo-helper (1.8.4) unstable; urgency=low
 
   * Fixed a regression in the pom parser (Closes: #712658)

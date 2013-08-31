@@ -176,6 +176,34 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         return superPom;
     }
 
+    /**
+     * Tells if this artifact is a pom.
+     */
+    public boolean isPom() {
+        return "pom".equals(type);
+    }
+
+    /**
+     * Tells if this artifact is a jar.
+     */
+    public boolean isJar() {
+        return "jar".equals(type);
+    }
+
+    /**
+     * Tells if this artifact is a Maven plugin.
+     */
+    public boolean isPlugin() {
+        return "maven-plugin".equals(type);
+    }
+
+    /**
+     * Tells if this artifact is an OSGi bundle.
+     */
+    public boolean isBundle() {
+        return "bundle".equals(type);
+    }
+
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;

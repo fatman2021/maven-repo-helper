@@ -106,7 +106,7 @@ public class POMTransformer extends POMReader {
     public void usePluginVersionsFromRepository() {
         repository.scanOnce();
         for (POMInfo pom : repository.getResolvedPoms().values()) {
-            if (pom.getThisPom().getType().equals("maven-plugin")) {
+            if (pom.getThisPom().isPlugin()) {
                 Set<DependencyRule> pomRules = pom.getPublishedRules();
                 depRules.get(RULES).add(MAVEN_PLUGINS_KEEP_VERSION_RULE);
                 boolean found = false;
@@ -176,7 +176,7 @@ public class POMTransformer extends POMReader {
         boolean keepParentVersion = !noParent && keepPomVersion;
         if (keepParentVersion && repository != null) {
             POMInfo pom = readPom(pomFile);
-            if (pom.getThisPom().getType().equals("pom") && pom.getParent() != null) {
+            if (pom.getThisPom().isPom() && pom.getParent() != null) {
                 keepParentVersion = listOfPOMs.contains(pomFile) ||
                         repository.searchMatchingPOM(pom.getParent()) == null;
             }

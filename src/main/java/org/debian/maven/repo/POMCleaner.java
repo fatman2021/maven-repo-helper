@@ -92,7 +92,7 @@ public class POMCleaner extends POMTransformer {
     }
 
     protected void transformingPom(POMInfo pom) {
-        if (pom.getThisPom().getType().equals("maven-plugin")) {
+        if (pom.getThisPom().isPlugin()) {
             getRulesFiles().get(IGNORE).add(new DependencyRule(pom.getThisPom().getGroupId() + " "
                     + pom.getThisPom().getArtifactId() + " maven-plugin s/.*/"
                     + pom.getThisPom().getVersion() + "/"));
@@ -130,7 +130,7 @@ public class POMCleaner extends POMTransformer {
 
     protected boolean acceptDependency(Dependency dependency, POMInfo info) {
         return super.acceptDependency(dependency, info) &&
-                ("pom".equals(info.getThisPom().getType()) || !"test".equals(dependency.getScope()));
+                (info.getThisPom().isPom() || !"test".equals(dependency.getScope()));
     }
 
     protected void createDebianProperties(POMInfo info, POMInfo original, String debianPackage, int inLevel) throws XMLStreamException {
