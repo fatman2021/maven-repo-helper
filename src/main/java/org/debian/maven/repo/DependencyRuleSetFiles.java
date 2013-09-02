@@ -99,7 +99,6 @@ public class DependencyRuleSetFiles {
         public final String extraShort;
 
         public CLIArgs(String fileLong, String fileShort, String extraLong, String extraShort) {
-            super();
             this.fileLong = fileLong;
             this.fileShort = fileShort;
             this.extraLong = extraLong;

@@ -24,7 +24,6 @@ public class XMLWriterWrapper {
     private final XMLStreamWriter writer;
 
     public XMLWriterWrapper(XMLStreamWriter writer) {
-        super();
         this.writer = writer;
     }
 
