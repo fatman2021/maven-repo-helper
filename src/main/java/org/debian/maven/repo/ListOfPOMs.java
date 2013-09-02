@@ -155,7 +155,7 @@ public class ListOfPOMs {
             if (verbose) {
                 System.out.println("Read list of poms from " + poms.getAbsolutePath());
             }
-            LineNumberReader reader = new LineNumberReader(new FileReader(poms));
+            BufferedReader reader = new BufferedReader(new FileReader(poms));
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();

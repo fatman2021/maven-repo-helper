@@ -144,7 +144,7 @@ public class DependencyRuleSet implements Iterable<DependencyRule> {
             if (verbose) {
                 System.out.println(rulesFile.getName() + ":");
             }
-            LineNumberReader lnr = new LineNumberReader(new FileReader(rulesFile));
+            BufferedReader lnr = new BufferedReader(new FileReader(rulesFile));
             String line;
             while ((line = lnr.readLine()) != null) {
                 line = line.trim();
