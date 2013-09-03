@@ -1,7 +1,9 @@
 maven-repo-helper (1.8.5) unstable; urgency=low
 
- * Added several methods to org.debian.maven.repo.Dependency to check
-   the type of the artifact
+  * Added several methods to org.debian.maven.repo.Dependency to check
+    the type of the artifact
+  * Removed the no longer used Preconditions class
+  * The API changes break the compatibility with maven-debian-helper (<= 1.6.5)
 
  -- Emmanuel Bourg <ebourg@apache.org>  Wed, 30 Aug 2013 12:19:05 +0200
 
