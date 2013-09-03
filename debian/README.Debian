@@ -1,8 +1,8 @@
 
-This package contains some essential tools for building Debian packages where upstream uses Maven as its build tool,
-or where upstream uses another build tool (Ant...) but you want to deploy the jars into the Debian Maven repository
-at /usr/share/maven-repo with the necessary metadata - in Maven terms, POM files - and make them available to other
-projects.
+This package contains some essential tools for building Debian packages where
+upstream uses Maven as its build tool, or where upstream uses another build
+tool (Ant...) but you want to deploy the jars into the Debian Maven repository
+at /usr/share/maven-repo with the necessary metadata - in Maven terms, POM
+files - and make them available to other projects.
 
-A tutorial is available at /usr/share/doc/maven-repo/tutorial.html
-
+A tutorial is available at /usr/share/doc/maven-repo-helper/tutorial.html
