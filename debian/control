@@ -18,21 +18,6 @@ Recommends: debhelper
 Suggests: maven-debian-helper
 Breaks: maven-debian-helper (<= 1.6.5)
 Description: Helper tools for including Maven metadata in Debian packages
- Maven is a software project management and comprehension tool. Based on the
- concept of a project object model (POM), Maven can manage a project's build,
- reporting and documentation from a central piece of information.
- .
- Maven's primary goal is to allow a developer to comprehend the complete
- state of a development effort in the shortest period of time. In order to
- attain this goal there are several areas of concern that Maven attempts
- to deal with:
- .
-    * Making the build process easy
-    * Providing a uniform build system
-    * Providing quality project information
-    * Providing guidelines for best practices development
-    * Allowing transparent migration to new features
- .
  This package enables Debian packages which are not using Maven in their
  build process to provide and install Maven POMs and libraries in the
  repository located in /usr/share/maven-repo.
@@ -41,3 +26,5 @@ Description: Helper tools for including Maven metadata in Debian packages
  many of their dependencies are already packaged in Debian but they are
  missing the necessary metadata (Maven POM) which is required by Maven
  when it is using dependencies.
+ .
+ A tutorial is available at /usr/share/doc/maven-repo-helper/tutorial.html

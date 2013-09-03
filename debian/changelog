@@ -1,5 +1,7 @@
 maven-repo-helper (1.8.5) unstable; urgency=low
 
+  * Removed the Maven presentation from the package description
+    (Closes: #704092)
   * Added several methods to org.debian.maven.repo.Dependency to check
     the type of the artifact
   * Removed the no longer used Preconditions class
