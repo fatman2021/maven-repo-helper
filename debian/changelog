@@ -1,5 +1,6 @@
 maven-repo-helper (1.8.5) unstable; urgency=low
 
+  * Build depend on debhelper 9
   * Removed the Maven presentation from the package description
     (Closes: #704092)
   * Added several methods to org.debian.maven.repo.Dependency to check
