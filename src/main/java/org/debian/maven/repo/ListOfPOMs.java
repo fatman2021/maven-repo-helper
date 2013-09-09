@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * List of POM files used in the package.
+ * 
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class ListOfPOMs {
@@ -29,9 +31,17 @@ public class ListOfPOMs {
     private static final Logger log = Logger.getLogger(ListOfPOMs.class.getName());
 
     private boolean verbose;
+
+    /** The base directory */
     private File baseDir = new File(".");
+
+    /** The <tt>debian/&lt;package>.poms</tt> file listing the pom files used in the package and their options */
     private File poms;
+
+    /** The paths to the pom files, relatively to the base directory */
     private List<String> pomPaths;
+
+    /** The options associated with each pom file. The pom file is specified as a path relative to the base directory */
     private Map<String, POMOptions> pomOptions;
 
     public ListOfPOMs() {
@@ -53,6 +63,11 @@ public class ListOfPOMs {
         this.poms = poms;
     }
 
+    /**
+     * Returns the path of the first pom file defined.
+     * 
+     * @return the path of the first pom, or null if not found
+     */
     public String getFirstPOM() {
         if (pomPaths == null) {
             readPomsFile();
@@ -63,50 +78,76 @@ public class ListOfPOMs {
         return null;
     }
 
+    /**
+     * Process the pom files with the specified handler.
+     */
     public void foreachPoms(POMHandler handler) {
         if (pomPaths == null) {
             readPomsFile();
         }
+        
+        // process the ignored pom files
         for (String pomPath: pomPaths) {
             POMOptions options = getPOMOptions(pomPath);
             if (options.isIgnore()) {
+                File pom = new File(baseDir, pomPath);
                 try {
-                    handler.ignorePOM(new File(baseDir, pomPath));
+                    handler.ignorePOM(pom);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, null, e);
+                    log.log(Level.SEVERE, "An error occured when processing the ignored pom file " + pom, e);
                 }
             }
         }
+        
+        // process the included pom files
         for (String pomPath: pomPaths) {
             POMOptions options = getPOMOptions(pomPath);
             if (!options.isIgnore()) {
+                File pom = new File(baseDir, pomPath);
                 try {
-                    handler.handlePOM(new File(baseDir, pomPath), options.isNoParent(), options.getHasPackageVersion());
+                    handler.handlePOM(pom, options.isNoParent(), options.getHasPackageVersion());
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, null, e);
+                    log.log(Level.SEVERE, "An error occured when processing the pom file " + pom, e);
                 }
             }
         }
     }
 
+    /**
+     * Returns the options associated to the specified pom file, or null if none exist.
+     */
     public POMOptions getPOMOptions(File pom) {
         String pomRelPath = relativePath(pom);
         return getPOMOptions(pomRelPath);
     }
 
+    /**
+     * Returns the path of the specified file relatively to the base directory.
+     */
     private String relativePath(File pom) {
         return pom.getAbsolutePath().substring(baseDir.getAbsolutePath().length() + 1);
     }
 
+    /**
+     * Returns the options associated to the specified pom file, or null if none exist.
+     */
     public POMOptions getPOMOptions(String pomPath) {
         return getPomOptions().get(pomPath);
     }
 
+    /**
+     * Returns the options associated to the specified pom file.
+     * The file is added to the list if not already present.
+     */
     public POMOptions getOrCreatePOMOptions(File pom) {
         String pomRelPath = relativePath(pom);
         return getOrCreatePOMOptions(pomRelPath);
     }
 
+    /**
+     * Returns the options associated to the specified pom file.
+     * The file is added to the list if not already present.
+     */
     public POMOptions getOrCreatePOMOptions(String pomPath) {
         POMOptions options = getPOMOptions(pomPath);
         if (options == null) {
@@ -122,11 +163,23 @@ public class ListOfPOMs {
         return pomOptions;
     }
 
+    /**
+     * Add a pom file to the list.
+     * 
+     * @param pom the pom file to add
+     * @return the default options associated to the pom
+     */
     public POMOptions addPOM(File pom) {
         String pomRelPath = relativePath(pom);
         return addPOM(pomRelPath);
     }
 
+    /**
+     * Add a pom file to the list.
+     * 
+     * @param pomPath the path of the pom to add
+     * @return the default options associated to the pom
+     */
     public POMOptions addPOM(String pomPath) {
         if (pomPaths == null) {
             readPomsFile();
@@ -137,10 +190,16 @@ public class ListOfPOMs {
         return options;
     }
 
+    /**
+     * Tells if this list of poms contains the specified pom file.
+     */
     public boolean contains(File pomFile) {
         return pomFile.getAbsolutePath().startsWith(baseDir.getAbsolutePath()) && getPOMOptions(pomFile) != null;
     }
 
+    /**
+     * Parses the file containing the list of pom files.
+     */
     private void readPomsFile() {
         if (pomPaths == null) {
             pomPaths = new ArrayList<String>();
@@ -163,8 +222,11 @@ public class ListOfPOMs {
                 if (!st.hasMoreTokens() || line.startsWith("#")) {
                     continue;
                 }
-                String pom = st.nextToken();
-                POMOptions options = addPOM(pom);
+                
+                String pomPath = st.nextToken();
+                POMOptions options = addPOM(pomPath);
+                
+                // parse the options
                 while (st.hasMoreTokens()) {
                     String option = st.nextToken().trim();
                     if ("--ignore".equals(option)) {
@@ -198,16 +260,20 @@ public class ListOfPOMs {
                         options.setIgnorePOM(true);
                     }
                 }
+                
                 if (verbose) {
-                    System.out.println(pom + options);
+                    System.out.println(pomPath + options);
                 }
             }
             reader.close();
         } catch (IOException e) {
-            log.log(Level.SEVERE, null, e);
+            log.log(Level.SEVERE, "Unable to read the list of poms from " + poms, e);
         }
     }
 
+    /**
+     * Writes the file containing the list of pom files.
+     */
     public void save() {
         if (poms != null) {
             try {
@@ -247,12 +313,15 @@ public class ListOfPOMs {
                 }
                 out.flush();
                 out.close();
-            } catch (Exception ex) {
-                log.log(Level.SEVERE, null, ex);
+            } catch (Exception e) {
+                log.log(Level.SEVERE, "Unable to write the list of poms " + poms, e);
             }
         }
     }
 
+    /**
+     * The options associated to a pom file.
+     */
     public static class POMOptions {
         private boolean ignore;
         private boolean ignorePOM;
