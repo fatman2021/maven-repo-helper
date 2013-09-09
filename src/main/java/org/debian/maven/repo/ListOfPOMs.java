@@ -38,9 +38,6 @@ public class ListOfPOMs {
     /** The <tt>debian/&lt;package>.poms</tt> file listing the pom files used in the package and their options */
     private File poms;
 
-    /** The paths to the pom files, relatively to the base directory */
-    private List<String> pomPaths;
-
     /** The options associated with each pom file. The pom file is specified as a path relative to the base directory */
     private Map<String, POMOptions> pomOptions;
 
@@ -69,11 +66,11 @@ public class ListOfPOMs {
      * @return the path of the first pom, or null if not found
      */
     public String getFirstPOM() {
-        if (pomPaths == null) {
+        if (pomOptions == null) {
             readPomsFile();
         }
-        if (!pomPaths.isEmpty()) {
-            return pomPaths.get(0);
+        if (!pomOptions.isEmpty()) {
+            return pomOptions.keySet().iterator().next();
         }
         return null;
     }
@@ -82,12 +79,12 @@ public class ListOfPOMs {
      * Process the pom files with the specified handler.
      */
     public void foreachPoms(POMHandler handler) {
-        if (pomPaths == null) {
+        if (pomOptions == null) {
             readPomsFile();
         }
         
         // process the ignored pom files
-        for (String pomPath: pomPaths) {
+        for (String pomPath: pomOptions.keySet()) {
             POMOptions options = getPOMOptions(pomPath);
             if (options.isIgnore()) {
                 File pom = new File(baseDir, pomPath);
@@ -100,7 +97,7 @@ public class ListOfPOMs {
         }
         
         // process the included pom files
-        for (String pomPath: pomPaths) {
+        for (String pomPath: pomOptions.keySet()) {
             POMOptions options = getPOMOptions(pomPath);
             if (!options.isIgnore()) {
                 File pom = new File(baseDir, pomPath);
@@ -181,10 +178,10 @@ public class ListOfPOMs {
      * @return the default options associated to the pom
      */
     public POMOptions addPOM(String pomPath) {
-        if (pomPaths == null) {
+        if (pomOptions == null) {
             readPomsFile();
         }
-        pomPaths.add(pomPath);
+        
         POMOptions options = new POMOptions();
         pomOptions.put(pomPath, options);
         return options;
@@ -201,9 +198,8 @@ public class ListOfPOMs {
      * Parses the file containing the list of pom files.
      */
     private void readPomsFile() {
-        if (pomPaths == null) {
-            pomPaths = new ArrayList<String>();
-            pomOptions = new HashMap<String, POMOptions>();
+        if (pomOptions == null) {
+            pomOptions = new LinkedHashMap<String, POMOptions>();
         }
 
         if (poms == null || !poms.exists()) {
@@ -277,7 +273,7 @@ public class ListOfPOMs {
     public void save() {
         if (poms != null) {
             try {
-                if (pomPaths == null) {
+                if (pomOptions == null) {
                     readPomsFile();
                 }
                 PrintWriter out = new PrintWriter(new FileWriter(poms));
@@ -308,7 +304,7 @@ public class ListOfPOMs {
                 out.println("#   --site-xml=<location>: Optional, the location for site.xml if it needs to be installed.");
                 out.println("#     Empty by default. [mh_install]");
                 out.println("#");
-                for (String pomPath: pomPaths) {
+                for (String pomPath: pomOptions.keySet()) {
                     out.println(pomPath + getPOMOptions(pomPath));
                 }
                 out.flush();
