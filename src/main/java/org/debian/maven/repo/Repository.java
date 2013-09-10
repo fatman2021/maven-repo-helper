@@ -40,23 +40,44 @@ import org.debian.maven.repo.POMInfo.DependencyType;
 import static org.debian.maven.repo.DependencyRuleSet.*;
 
 /**
+ * View of a Maven repository.
+ * 
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class Repository {
 
     private static final Logger log = Logger.getLogger(Repository.class.getName());
+
+    /** The base directory of the repository typically (/usr/share/maven-repo) */
     private File baseDir;
+
     private Map<File, POMInfo> unresolvedPoms = new HashMap<File, POMInfo>();
+
+    /** The dependency (groupId+artifactId+version+type) to pom mapping */
     private Map<Dependency, POMInfo> dep2info = new HashMap<Dependency, POMInfo>();
+
+    /** The pom files specifying a parent pom not found in the repository */
     private Map<File, POMInfo> pomsWithMissingParent = new HashMap<File, POMInfo>();
+
+    /** The pom files specifying a plugin or a dependency without version */
     private Map<File, POMInfo> pomsWithMissingVersions = new HashMap<File, POMInfo>();
+    
+    /** The resolved poms, that is the poms with a resolved parent */
     private Map<File, POMInfo> resolvedPoms = new HashMap<File, POMInfo>();
+
+    /** The Maven super pom defining the default plugins */
     private POMInfo superPom;
+
+    /** The parser used to read the pom files */
     private POMReader pomReader = new POMReader();
+    
+    /** Tells if the directory of the repository has already been scanned */
     private boolean scanned = false;
 
     public Repository(File baseDir) {
         this.baseDir = baseDir;
+        
+        // load the Maven super pom
         try {
             InputStream superPomSource = getClass().getResourceAsStream("/org/apache/maven/project/pom-4.0.0.xml");
             // The maven2 jars may not always be present in the classpath
@@ -67,19 +88,30 @@ public class Repository {
                 superPom.getThisPom().setType("pom");
                 superPom.getThisPom().setSuperPom(true);
             }
-        } catch (XMLStreamException ex) {
-            log.log(Level.SEVERE, null, ex);
+        } catch (XMLStreamException e) {
+            log.log(Level.SEVERE, "Unable to load the Maven super pom", e);
         }
     }
 
+    /**
+     * Returns the base directory of the Maven repository.
+     */
     public File getBaseDir() {
         return baseDir;
     }
 
+    /**
+     * Returns the Maven super pom defining the default plugins.
+     */
     public POMInfo getSuperPOM() {
         return superPom;
     }
 
+    /**
+     * Returns the pom matching exactly the specified dependency.
+     * 
+     * @param dependency
+     */
     public POMInfo getPOM(Dependency dependency) {
         return dep2info.get(dependency);
     }
@@ -107,10 +139,9 @@ public class Repository {
     }
 
     /**
-     * Search the best match for a dependency
+     * Search the best match for a dependency.
      *
      * @param dependency
-     * @return
      */
     public POMInfo searchMatchingPOM(Dependency dependency) {
         if (dependency == null) {
@@ -122,7 +153,6 @@ public class Repository {
             return pom;
         }
 
-        // Map<DependencyRule,POMInfo>
         Map<DependencyRule, POMInfo> potentialMatches = new TreeMap<DependencyRule, POMInfo>();
         for (POMInfo testPom : getAllPoms()) {
             Set<DependencyRule> rules = testPom.getPublishedRules();
@@ -165,9 +195,11 @@ public class Repository {
     }
 
     public void scan() {
-        File[] files = baseDir.listFiles();
-        scan(files);
+        scan(baseDir.listFiles());
+         
         resolveAll(unresolvedPoms);
+        
+        // resolve the missing parents
         int unresolved = pomsWithMissingParent.size();
         while (unresolved > 0) {
             resolveAll(pomsWithMissingParent);
@@ -177,6 +209,8 @@ public class Repository {
             }
             unresolved = pomsWithMissingParent.size();
         }
+        
+        // update the resolved poms once all the available parents are known
         unresolved = unresolvedPoms.size();
         while (unresolved > 0) {
             resolveAll(unresolvedPoms);
@@ -186,6 +220,7 @@ public class Repository {
             }
             unresolved = unresolvedPoms.size();
         }
+        
         scanned = true;
     }
 
@@ -394,6 +429,7 @@ public class Repository {
             // the versions from the super POM.
             pomInfo.setParentPOM(parentPOM);
 
+            // check if the pom specifies plugins or dependencies without an explicit version
             pomsWithMissingVersions.remove(file);
             for (Dependency dependency : pomInfo.getDependencies().get(DependencyType.DEPENDENCIES)) {
                 if (dependency.getVersion() == null) {
@@ -407,6 +443,7 @@ public class Repository {
             }
         }
 
+        // mark the pom as resolved
         resolvedPoms.put(file, pomInfo);
         unresolvedPoms.remove(file);
     }
