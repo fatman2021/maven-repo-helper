@@ -1,5 +1,8 @@
 maven-repo-helper (1.8.5) unstable; urgency=low
 
+  * Team upload.
+
+  [ Emmanuel Bourg ]
   * Build depend on debhelper 9
   * Removed the Maven presentation from the package description
     (Closes: #704092)
@@ -10,7 +13,10 @@ maven-repo-helper (1.8.5) unstable; urgency=low
   * debian/rules: Added ant-junit4.jar to the classpath to fix the test failures
   * Stop the build on test failures
 
- -- Emmanuel Bourg <ebourg@apache.org>  Wed, 30 Aug 2013 12:19:05 +0200
+  [ tony mancill ]
+  * Bump Standards-Version to 3.9.5.
+
+ -- tony mancill <tmancill@debian.org>  Mon, 02 Dec 2013 22:10:14 -0800
 
 maven-repo-helper (1.8.4) unstable; urgency=low
 
