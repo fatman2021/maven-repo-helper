@@ -66,9 +66,8 @@ public class ListOfPOMs {
      * @return the path of the first pom, or null if not found
      */
     public String getFirstPOM() {
-        if (pomOptions == null) {
-            readPomsFile();
-        }
+        init();
+        
         if (!pomOptions.isEmpty()) {
             return pomOptions.keySet().iterator().next();
         }
@@ -79,9 +78,7 @@ public class ListOfPOMs {
      * Process the pom files with the specified handler.
      */
     public void foreachPoms(POMHandler handler) {
-        if (pomOptions == null) {
-            readPomsFile();
-        }
+        init();
         
         // process the ignored pom files
         for (String pomPath: pomOptions.keySet()) {
@@ -114,8 +111,7 @@ public class ListOfPOMs {
      * Returns the options associated to the specified pom file, or null if none exist.
      */
     public POMOptions getPOMOptions(File pom) {
-        String pomRelPath = relativePath(pom);
-        return getPOMOptions(pomRelPath);
+        return getPOMOptions(relativePath(pom));
     }
 
     /**
@@ -137,8 +133,7 @@ public class ListOfPOMs {
      * The file is added to the list if not already present.
      */
     public POMOptions getOrCreatePOMOptions(File pom) {
-        String pomRelPath = relativePath(pom);
-        return getOrCreatePOMOptions(pomRelPath);
+        return getOrCreatePOMOptions(relativePath(pom));
     }
 
     /**
@@ -154,9 +149,8 @@ public class ListOfPOMs {
     }
 
     public Map<String, POMOptions> getPomOptions() {
-        if (pomOptions == null) {
-            readPomsFile();
-        }
+        init();
+        
         return pomOptions;
     }
 
@@ -167,8 +161,7 @@ public class ListOfPOMs {
      * @return the default options associated to the pom
      */
     public POMOptions addPOM(File pom) {
-        String pomRelPath = relativePath(pom);
-        return addPOM(pomRelPath);
+        return addPOM(relativePath(pom));
     }
 
     /**
@@ -178,9 +171,7 @@ public class ListOfPOMs {
      * @return the default options associated to the pom
      */
     public POMOptions addPOM(String pomPath) {
-        if (pomOptions == null) {
-            readPomsFile();
-        }
+        init();
         
         POMOptions options = new POMOptions();
         pomOptions.put(pomPath, options);
@@ -197,70 +188,42 @@ public class ListOfPOMs {
     /**
      * Parses the file containing the list of pom files.
      */
-    private void readPomsFile() {
-        if (pomOptions == null) {
-            pomOptions = new LinkedHashMap<String, POMOptions>();
+    private void init() {
+        if (pomOptions != null) {
+            // the list is already initialized
+            return;
         }
+        
+        pomOptions = new LinkedHashMap<String, POMOptions>();
 
         if (poms == null || !poms.exists()) {
             return;
         }
-
+        
+        if (verbose) {
+            System.out.println("Loading the list of poms from " + poms.getAbsolutePath() + "...");
+        }
+        
         try {
-            if (verbose) {
-                System.out.println("Read list of poms from " + poms.getAbsolutePath());
-            }
             BufferedReader reader = new BufferedReader(new FileReader(poms));
             String line;
             while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                StringTokenizer st = new StringTokenizer(line, " \t");
-                if (!st.hasMoreTokens() || line.startsWith("#")) {
+                line = line.trim().replaceAll("\\s", " ");
+                if (line.startsWith("#") || line.length() == 0) {
+                    // skip comments and empty lines
                     continue;
                 }
                 
-                String pomPath = st.nextToken();
-                POMOptions options = addPOM(pomPath);
+                String pomPath = line.contains(" ") ? line.substring(0, line.indexOf(" ")) : line;
+                POMOptions options = POMOptions.parse(line.substring(pomPath.length()));
                 
-                // parse the options
-                while (st.hasMoreTokens()) {
-                    String option = st.nextToken().trim();
-                    if ("--ignore".equals(option)) {
-                        options.setIgnore(true);
-                        break;
-                    } else if ("--no-parent".equals(option)) {
-                        options.setNoParent(true);
-                    } else if (option.startsWith("--package=")) {
-                        options.setDestPackage(option.substring("--package=".length()));
-                    } else if ("--has-package-version".equals(option)) {
-                        options.setHasPackageVersion(true);
-                    } else if (option.startsWith("--keep-elements=")) {
-                        options.setKeepElements(option.substring("--keep-elements=".length()));
-                    } else if (option.startsWith("--artifact=")) {
-                        options.setArtifact(option.substring("--artifact=".length()));
-                    } else if ("--java-lib".equals(option)) {
-                        options.setJavaLib(true);
-                    } else if (option.startsWith("--usj-name=")) {
-                        options.setUsjName(option.substring("--usj-name=".length()));
-                    } else if (option.startsWith("--usj-version=")) {
-                        options.setUsjVersion(option.substring("--usj-version=".length()));
-                    } else if ("--no-usj-versionless".equals(option)) {
-                        options.setNoUsjVersionless(true);
-                    } else if (option.startsWith("--dest-jar=")) {
-                        options.setDestJar(option.substring("--dest-jar=".length()));
-                    } else if (option.startsWith("--classifier=")) {
-                        options.setClassifier(option.substring("--classifier=".length()));
-                    } else if (option.startsWith("--site-xml=")) {
-                        options.setSiteXml(option.substring("--site-xml=".length()));
-                    } else if ("--ignore-pom".equals(option)) {
-                        options.setIgnorePOM(true);
-                    }
-                }
+                pomOptions.put(pomPath, options);
                 
                 if (verbose) {
                     System.out.println(pomPath + options);
                 }
             }
+            
             reader.close();
         } catch (IOException e) {
             log.log(Level.SEVERE, "Unable to read the list of poms from " + poms, e);
@@ -273,9 +236,8 @@ public class ListOfPOMs {
     public void save() {
         if (poms != null) {
             try {
-                if (pomOptions == null) {
-                    readPomsFile();
-                }
+                init();
+                
                 PrintWriter out = new PrintWriter(new FileWriter(poms));
                 out.println("# List of POM files for the package");
                 out.println("# Format of this file is:");
@@ -312,185 +274,6 @@ public class ListOfPOMs {
             } catch (Exception e) {
                 log.log(Level.SEVERE, "Unable to write the list of poms " + poms, e);
             }
-        }
-    }
-
-    /**
-     * The options associated to a pom file.
-     */
-    public static class POMOptions {
-        private boolean ignore;
-        private boolean ignorePOM;
-        private boolean noParent;
-        private boolean hasPackageVersion;
-        private String destPackage;
-        private String keepElements;
-        private String artifact;
-        private boolean javaLib;
-        private String usjName;
-        private String usjVersion;
-        private String destJar;
-        private boolean noUsjVersionless;
-        private String classifier;
-        private String siteXml;
-
-        public boolean isIgnore() {
-            return ignore;
-        }
-
-        public void setIgnore(boolean ignore) {
-            this.ignore = ignore;
-        }
-
-        public boolean isIgnorePOM() {
-            return ignorePOM;
-        }
-
-        public void setIgnorePOM(boolean ignorePOM) {
-            this.ignorePOM = ignorePOM;
-        }
-
-        public boolean isNoParent() {
-            return noParent;
-        }
-
-        public void setNoParent(boolean noParent) {
-            this.noParent = noParent;
-        }
-
-        public String getDestPackage() {
-            return destPackage;
-        }
-
-        public void setDestPackage(String destPackage) {
-            this.destPackage = destPackage;
-        }
-
-        public boolean getHasPackageVersion() {
-            return hasPackageVersion;
-        }
-
-        public void setHasPackageVersion(boolean hasPackageVersion) {
-            this.hasPackageVersion = hasPackageVersion;
-        }
-
-        public String getKeepElements() {
-            return keepElements;
-        }
-
-        public void setKeepElements(String keepElements) {
-            this.keepElements = keepElements;
-        }
-
-        public String getArtifact() {
-            return artifact;
-        }
-
-        public void setArtifact(String artifact) {
-            this.artifact = artifact;
-        }
-
-        public boolean isJavaLib() {
-            return javaLib;
-        }
-
-        public void setJavaLib(boolean javaLib) {
-            this.javaLib = javaLib;
-        }
-
-        public String getUsjName() {
-            return usjName;
-        }
-
-        public void setUsjName(String usjName) {
-            this.usjName = usjName;
-        }
-
-        public String getUsjVersion() {
-            return usjVersion;
-        }
-
-        public void setUsjVersion(String usjVersion) {
-            this.usjVersion = usjVersion;
-        }
-
-        public String getDestJar() {
-            return destJar;
-        }
-
-        public void setDestJar(String destJar) {
-            this.destJar = destJar;
-        }
-
-        public boolean isNoUsjVersionless() {
-            return noUsjVersionless;
-        }
-
-        public void setNoUsjVersionless(boolean noUsjVersionless) {
-            this.noUsjVersionless = noUsjVersionless;
-        }
-
-        public String getClassifier() {
-            return classifier;
-        }
-
-        public void setClassifier(String classifier) {
-            this.classifier = classifier;
-        }
-
-        public String getSiteXml() {
-            return siteXml;
-        }
-
-        public void setSiteXml(String siteXml) {
-            this.siteXml = siteXml;
-        }
-
-        public String toString() {
-            if (ignore) {
-               return " --ignore";
-            }
-            String options = "";
-            if (noParent) {
-                options += " --no-parent";
-            }
-            if (hasPackageVersion) {
-                options += " --has-package-version";
-            }
-            if (destPackage != null) {
-                options += " --package=" + destPackage;
-            }
-            if (keepElements != null) {
-                options += " --keep-elements=" + keepElements;
-            }
-            if (artifact != null) {
-                options += " --artifact=" + artifact;
-            }
-            if (javaLib) {
-                options += " --java-lib";
-            }
-            if (usjName != null) {
-                options += " --usj-name=" + usjName;
-            }
-            if (usjVersion != null) {
-                options += " --usj-version=" + usjVersion;
-            }
-            if (destJar != null) {
-                options += " --dest-jar=" + destJar;
-            }
-            if (noUsjVersionless) {
-                options += " --no-usj-versionless";
-            }
-            if (classifier != null) {
-                options += " --classifier=" + classifier;
-            }
-            if (siteXml != null) {
-                options += " --site-xml=" + siteXml;
-            }
-            if (ignorePOM) {
-                options += " --ignore-pom";
-            }
-            return options;
         }
     }
 }

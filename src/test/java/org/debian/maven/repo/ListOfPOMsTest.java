@@ -53,7 +53,7 @@ public class ListOfPOMsTest {
     public void testAddPom() {
         File pom = new File("pom.xml");
         ListOfPOMs poms = new ListOfPOMs();
-        ListOfPOMs.POMOptions options = poms.getPOMOptions(pom);
+        POMOptions options = poms.getPOMOptions(pom);
         assertNull(options);
 
         poms.addPOM(pom);
@@ -64,11 +64,11 @@ public class ListOfPOMsTest {
     @Test
     public void testGetOrCreatePOMOptions() {
         ListOfPOMs poms = new ListOfPOMs();
-        ListOfPOMs.POMOptions options = poms.getOrCreatePOMOptions(new File("pom.xml"));
+        POMOptions options = poms.getOrCreatePOMOptions(new File("pom.xml"));
         assertNotNull(options);
         assertNotNull(poms.getFirstPOM());
         
-        ListOfPOMs.POMOptions options2 = poms.getOrCreatePOMOptions(new File("pom.xml"));
+        POMOptions options2 = poms.getOrCreatePOMOptions(new File("pom.xml"));
         assertTrue(options == options2);
     }
 
@@ -103,19 +103,5 @@ public class ListOfPOMsTest {
         
         assertFalse(pomFiles.isEmpty());
         assertFalse(ignoredPomFiles.isEmpty());
-    }
-
-    @Test
-    public void testOptionsToString() {
-        ListOfPOMs.POMOptions options = new ListOfPOMs.POMOptions();
-        options.setIgnore(true);
-        options.setNoParent(true);
-        
-        assertEquals(" --ignore", options.toString());
-        
-        options.setIgnore(false);
-        options.setHasPackageVersion(true);
-        
-        assertEquals(" --no-parent --has-package-version", options.toString());
     }
 }
