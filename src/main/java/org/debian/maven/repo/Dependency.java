@@ -46,6 +46,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
     private String classifier;
     private String relativePath;
     private boolean superPom;
+    private String systemPath;
 
     public Dependency(String groupId, String artifactId, String type, String version) {
         this.groupId = groupId;
@@ -76,6 +77,7 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
         this.optional = dependency.optional;
         this.classifier = dependency.classifier;
         this.relativePath = dependency.relativePath;
+        this.systemPath = dependency.systemPath;
         this.superPom = dependency.superPom;
     }
 
@@ -165,6 +167,15 @@ public class Dependency implements Comparable<Dependency>, Cloneable {
     @Deprecated
     public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
+    }
+
+    public String getSystemPath() {
+        return systemPath;
+    }
+
+    @Deprecated
+    public void setSystemPath(String systemPath) {
+        this.systemPath = systemPath;
     }
 
     @Deprecated

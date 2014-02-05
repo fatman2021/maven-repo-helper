@@ -121,6 +121,8 @@ public class POMReader {
                             currentDependency.setScope(value);
                         } else if ("classifier".equals(element)) {
                             currentDependency.setClassifier(value);
+                        } else if ("systemPath".equals(element)) {
+                            parent.setSystemPath(value);
                         }
                     } else if (path.size() == 3 && "modules".equals(path.parent(1))) {
                         // we're not interested in the modules section inside a profiles section
