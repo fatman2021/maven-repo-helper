@@ -1,8 +1,8 @@
-maven-repo-helper (1.8.6) UNRELEASED; urgency=medium
+maven-repo-helper (1.8.6) unstable; urgency=medium
 
   * Internal refactoring
 
- -- Emmanuel Bourg <ebourg@apache.org>  Wed, 05 Feb 2014 13:46:10 +0100
+ -- Emmanuel Bourg <ebourg@apache.org>  Thu, 06 Feb 2014 14:27:52 +0100
 
 maven-repo-helper (1.8.5) unstable; urgency=low
 
