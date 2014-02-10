@@ -16,7 +16,7 @@ Architecture: all
 Depends: ${misc:Depends}, default-jre-headless | java2-runtime-headless, libstax-java
 Recommends: debhelper
 Suggests: maven-debian-helper
-Breaks: maven-debian-helper (<= 1.6.5)
+Breaks: maven-debian-helper (<= 1.6.6)
 Description: Helper tools for including Maven metadata in Debian packages
  This package enables Debian packages which are not using Maven in their
  build process to provide and install Maven POMs and libraries in the
