@@ -1,3 +1,9 @@
+maven-repo-helper (1.8.7) unstable; urgency=medium
+
+  * Fixed the parsing of the systemPath element (Closes: #740000)
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Wed, 26 Feb 2014 00:44:34 +0100
+
 maven-repo-helper (1.8.6) unstable; urgency=medium
 
   * Internal refactoring
