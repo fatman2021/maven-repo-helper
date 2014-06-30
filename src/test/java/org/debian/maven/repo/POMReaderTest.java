@@ -404,4 +404,26 @@ public class POMReaderTest {
         assertFalse(path.matches("/c/d"));
         assertFalse(path.matches("/d"));
     }
+
+    /**
+     * Ensures all modules are properly parsed, including those defined in a profile.
+     */
+    @Test
+    public void testReadModules() throws Exception {
+        POMReader reader = new POMReader();
+        POMInfo info = reader.readPom(tmpDir.usePom("tika.pom"));
+        
+        assertNotNull(info);
+        assertTrue("Module tika-parent not found", info.getModules().contains("tika-parent"));
+        assertTrue("Module tika-core not found", info.getModules().contains("tika-core"));
+        assertTrue("Module tika-parsers not found", info.getModules().contains("tika-parsers"));
+        assertTrue("Module tika-xmp not found", info.getModules().contains("tika-xmp"));
+        assertTrue("Module tika-serialization not found", info.getModules().contains("tika-serialization"));
+        assertTrue("Module tika-app not found", info.getModules().contains("tika-app"));
+        assertTrue("Module tika-bundle not found", info.getModules().contains("tika-bundle"));
+        assertTrue("Module tika-server not found", info.getModules().contains("tika-server"));
+        assertTrue("Module tika-translate not found", info.getModules().contains("tika-translate"));
+        assertTrue("Module tika-java7 not found", info.getModules().contains("tika-java7"));
+        assertEquals("Number of modules", 10, info.getModules().size());
+    }
 }

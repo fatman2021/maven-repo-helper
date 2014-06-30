@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.custommonkey.xmlunit.XMLUnit;
 
 import org.debian.maven.TemporaryPomFolder;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -284,5 +285,22 @@ public class POMTransformerTest {
 
     private void assertCleanedXMLEqual() throws SAXException, IOException {
         assertXMLEqual(tmpDir.read(basename(tmpDir.pomInUse)+".transformed"), tmpDir.read(tmpDir.updatedPom()));
+    }
+
+    @Test
+    public void testTransformModules() throws Exception {
+        File pom = tmpDir.usePom("tika.pom");
+        instance.addIgnoreModule(pom, "tika-xmp");
+        instance.addIgnoreModule(pom, "tika-server");
+        instance.addIgnoreModule(pom, "tika-java7");
+        instance.getRulesFiles().addDefaultRules();
+        instance.transformPom(pom, tmpDir.updatedPom(), true, true, false, false, null, null);
+
+        POMReader reader = new POMReader();
+        POMInfo info = reader.readPom(tmpDir.read(tmpDir.updatedPom()));
+        Assert.assertFalse("Module tika-xmp hasn't been filtered", info.getModules().contains("tika-xmp"));
+        Assert.assertFalse("Module tika-server hasn't been filtered", info.getModules().contains("tika-server"));
+        Assert.assertFalse("Module tika-java7 hasn't been filtered", info.getModules().contains("tika-java7"));
+        assertEquals("Number of modules", 7, info.getModules().size());
     }
 }

@@ -124,8 +124,7 @@ public class POMReader {
                         } else if ("systemPath".equals(element)) {
                             currentDependency.setSystemPath(value);
                         }
-                    } else if (path.size() == 3 && "modules".equals(path.parent(1))) {
-                        // we're not interested in the modules section inside a profiles section
+                    } else if ("modules".equals(path.parent(1)) && "module".equals(element)) {
                         modules.add(value);
                     } else if (path.size() == 3 && "parent".equals(path.parent(1))) {
                         if ("groupId".equals(element)) {
