@@ -24,7 +24,13 @@ import java.util.regex.Pattern;
  * @author Ludovic Claude <ludovicc@users.sourceforge.net>
  */
 public class Rule {
+
+    /** Regexp looking for characters found in regular expressions like '[', '?', '*', '+', '|' */
+    private static final Pattern GENERIC_PATTERN = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.)"); // ([\[\?\+\*\|])|([^\\]\.)
     private static Pattern generic = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.)");
+
+    /** Regexp matching a substitution expression like s/foo/bar/ */
+    private static final Pattern SUBSTITUTION_PATTERN = Pattern.compile("s/([^/]*)/([^/]*)/?");
 
     private final Pattern pattern;
     private final String replace;
@@ -38,11 +44,11 @@ public class Rule {
     public Rule(String rule, String description) {
         this.rule = rule;
         this.description = description;
-        if (rule.startsWith("s/")) {
-            StringTokenizer st = new StringTokenizer(rule, "/");
-            st.nextToken();
-            pattern = Pattern.compile(st.nextToken());
-            replace = st.nextToken();
+        
+        Matcher matcher;
+        if ((matcher = SUBSTITUTION_PATTERN.matcher(rule)).matches()) {
+            pattern = Pattern.compile(matcher.group(1));
+            replace = matcher.group(2);
         } else {
             String pat = escapeParameters(rule.replace(".", "\\.").replace("*", "(.*)"));
             pattern = Pattern.compile(pat);
@@ -77,7 +83,7 @@ public class Rule {
     }
 
     public boolean isGeneric() {
-        return matchesNull() || generic.matcher(pattern.pattern()).find();
+        return matchesNull() || GENERIC_PATTERN.matcher(pattern.pattern()).find();
     }
 
     public boolean matchesNull() {

@@ -1,3 +1,9 @@
+maven-repo-helper (1.8.9) UNRELEASED; urgency=medium
+
+  * Allow rules like s/foo// to remove an element of the Maven coordinates
+
+ -- Emmanuel Bourg <ebourg@apache.org>  Wed, 03 Sep 2014 12:46:24 +0200
+
 maven-repo-helper (1.8.8) unstable; urgency=medium
 
   * Parse and transform the module elements declared in profiles

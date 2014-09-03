@@ -72,6 +72,12 @@ public class RuleTest {
         Rule simpleReplace = new Rule("s/test/foo/");
         assertEquals("foo", simpleReplace.apply("test"));
 
+        Rule simpleReplace2 = new Rule("s/test/foo");
+        assertEquals("foo", simpleReplace2.apply("test"));
+        
+        Rule erase = new Rule("s/test//");
+        assertEquals("", erase.apply("test"));
+
         Rule complexReplace = new Rule("s/test(.*)/foo$1/");
         assertEquals("foo", complexReplace.apply("test"));
         assertEquals("foo2", complexReplace.apply("test2"));
