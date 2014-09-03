@@ -1,6 +1,7 @@
 maven-repo-helper (1.8.9) UNRELEASED; urgency=medium
 
   * Allow rules like s/foo// to remove an element of the Maven coordinates
+  * Fixed the transformation of the classifier in the Maven coordinates
 
  -- Emmanuel Bourg <ebourg@apache.org>  Wed, 03 Sep 2014 12:46:24 +0200
 

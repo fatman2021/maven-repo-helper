@@ -55,6 +55,10 @@ public class DependencyRuleTest {
         DependencyRule servlet23 = new DependencyRule("javax.servlet * * 2.3");
         assertEquals(new Dependency("javax.servlet", "servlet-api", "jar", "debian"), generic.apply(dependency));
         assertEquals(new Dependency("javax.servlet", "servlet-api", "jar", "2.3"), servlet23.apply(dependency));
+        
+        dependency = new Dependency("com.google.inject", "guice", "jar", "3.0", null, false, "no_aop", null);
+        DependencyRule rule = new DependencyRule("com.google.inject guice * s/.*/debian/ s/no_aop// *");
+        assertEquals(new Dependency("com.google.inject", "guice", "jar", "debian", null, false, "", null), rule.apply(dependency));
     }
 
     /**

@@ -472,6 +472,9 @@ public class POMTransformer extends POMReader {
                                 } else if ("version".equals(element)) {
                                     value = dependency.getVersion();
                                     sawVersion = true;
+                                    //break;
+                                } else if ("classifier".equals(element)) {
+                                    value = dependency.getClassifier();
                                 }
                             } else if (inPlugin > 0 && path.matches("configuration/resourceBundles/resourceBundle")) {
                                 Dependency embeddedDependency = Dependency.fromCompactNotation(value);

@@ -18,6 +18,7 @@ package org.debian.maven.repo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.custommonkey.xmlunit.XMLUnit;
 
@@ -302,5 +303,28 @@ public class POMTransformerTest {
         Assert.assertFalse("Module tika-server hasn't been filtered", info.getModules().contains("tika-server"));
         Assert.assertFalse("Module tika-java7 hasn't been filtered", info.getModules().contains("tika-java7"));
         assertEquals("Number of modules", 7, info.getModules().size());
+    }
+
+    @Test
+    public void testTransformClassifier() throws Exception {
+        File pom = tmpDir.usePom("jenkins.pom");
+        instance.getRulesFiles().addDefaultRules();
+        instance.getRulesFiles().get(RULES).add(new DependencyRule("com.google.inject guice * s/.*/debianx/ s/no_aop// *"));
+        instance.transformPom(pom, tmpDir.updatedPom(), true, true, false, false, null, null);
+        
+        POMReader reader = new POMReader();
+        POMInfo info = reader.readPom(tmpDir.read(tmpDir.updatedPom()));
+
+        List<Dependency> dependencies = info.getDependencies().get(DEPENDENCY_MANAGEMENT_LIST);
+
+        boolean guiceFound = false;
+        for (Dependency dependency : dependencies) {
+            if (dependency.toString().contains("guice")) {
+                guiceFound = true;
+                assertEquals("com.google.inject:guice classifier", "", dependency.getClassifier());
+            }
+        }
+        
+        assertTrue("Guice is missing from the dependencies", guiceFound);
     }
 }
