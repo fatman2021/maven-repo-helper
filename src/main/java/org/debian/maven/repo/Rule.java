@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class Rule {
 
     /** Regexp looking for characters found in regular expressions like '[', '?', '*', '+', '|' */
-    private static final Pattern GENERIC_PATTERN = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.)"); // ([\[\?\+\*\|])|([^\\]\.)
+    private static final Pattern GENERIC_PATTERN = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.[\\*\\+])"); // ([\[\?\+\*\|])|([^\\]\.[\*\+])
     private static Pattern generic = Pattern.compile("([\\[\\?\\+\\*\\|])|([^\\\\]\\.)");
 
     /** Regexp matching a substitution expression like s/foo/bar/ */

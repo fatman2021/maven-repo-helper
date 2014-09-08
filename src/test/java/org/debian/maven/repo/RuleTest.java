@@ -112,6 +112,9 @@ public class RuleTest {
         Rule simpleReplace = new Rule("s/test/foo/");
         assertFalse(simpleReplace.isGeneric());
 
+        Rule simpleReplaceWithDot = new Rule("s/org.apache/org.debian/");
+        assertFalse(simpleReplaceWithDot.isGeneric());
+        
         Rule complexReplace = new Rule("s/test(.*)/foo$1/");
         assertTrue(complexReplace.isGeneric());
 
