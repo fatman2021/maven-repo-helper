@@ -58,7 +58,6 @@ public class RuleTest {
         assertFalse(generic2.match("xxx"));
         assertTrue(generic2.match("test"));
         assertTrue(generic2.match("test2"));
-
     }
 
     /**
@@ -95,7 +94,6 @@ public class RuleTest {
         Rule generic2 = new Rule("test*");
         assertEquals("test", generic2.apply("test"));
         assertEquals("test2", generic2.apply("test2"));
-
     }
 
     /**
@@ -126,7 +124,13 @@ public class RuleTest {
 
         Rule generic2 = new Rule("test*");
         assertTrue(generic2.isGeneric());
-
     }
 
+    @Test
+    public void testIsSubstitution() {
+        assertFalse(new Rule("*").isSubstitution());
+        assertFalse(new Rule("jar").isSubstitution());
+        assertTrue(new Rule("s/foo/bar/").isSubstitution());
+        assertTrue(new Rule("s/.*/debian/").isSubstitution());
+    }
 }

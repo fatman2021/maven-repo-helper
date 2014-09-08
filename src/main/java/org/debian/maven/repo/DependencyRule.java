@@ -102,6 +102,10 @@ public class DependencyRule implements Comparable<DependencyRule> {
         return classifierRule;
     }
 
+    public Rule[] getRules() {
+        return new Rule[] { groupRule, artifactRule, typeRule, versionRule, classifierRule, scopeRule };
+    }
+
     public boolean matches(Dependency dependency) {
         return groupRule.match(dependency.getGroupId())
                 && artifactRule.match(dependency.getArtifactId())
@@ -146,42 +150,30 @@ public class DependencyRule implements Comparable<DependencyRule> {
      * sorting of the pattern strings.
      */
     public int compareTo(DependencyRule other) {
-        if (groupRule.isGeneric() && !other.groupRule.isGeneric()) {
-            return 1;
+        Rule[] rules = getRules();
+        Rule[] otherRules = other.getRules();
+        
+        for (int i = 0; i < rules.length; i++) {
+            if (rules[i].isGeneric() && !otherRules[i].isGeneric()) {
+                return 1;
+            }
+            if (!rules[i].isGeneric() &&otherRules[i].isGeneric()) {
+                return -1;
+            }
         }
-        if (!groupRule.isGeneric() && other.groupRule.isGeneric()) {
-            return -1;
+        
+        // if all rules are generic, rank substitution rules before star rules
+        if (groupRule.isGeneric()) {
+            for (int i = 0; i < rules.length; i++) {
+                if (rules[i].isSubstitution() && !otherRules[i].isSubstitution()) {
+                    return -1;
+                }
+                if (!rules[i].isSubstitution() && otherRules[i].isSubstitution()) {
+                    return 1;
+                }
+            }
         }
-        if (artifactRule.isGeneric() && !other.artifactRule.isGeneric()) {
-            return 1;
-        }
-        if (!artifactRule.isGeneric() && other.artifactRule.isGeneric()) {
-            return -1;
-        }
-        if (typeRule.isGeneric() && !other.typeRule.isGeneric()) {
-            return 1;
-        }
-        if (!typeRule.isGeneric() && other.typeRule.isGeneric()) {
-            return -1;
-        }
-        if (versionRule.isGeneric() && !other.versionRule.isGeneric()) {
-            return 1;
-        }
-        if (!versionRule.isGeneric() && other.versionRule.isGeneric()) {
-            return -1;
-        }
-        if (classifierRule.isGeneric() && !other.classifierRule.isGeneric()) {
-            return 1;
-        }
-        if (!classifierRule.isGeneric() && other.classifierRule.isGeneric()) {
-            return -1;
-        }
-        if (scopeRule.isGeneric() && !other.scopeRule.isGeneric()) {
-            return 1;
-        }
-        if (!scopeRule.isGeneric() && other.scopeRule.isGeneric()) {
-            return -1;
-        }
+        
         return this.toPatternString().compareTo(other.toPatternString());
     }
 

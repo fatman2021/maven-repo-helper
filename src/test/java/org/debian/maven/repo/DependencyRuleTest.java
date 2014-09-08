@@ -75,6 +75,17 @@ public class DependencyRuleTest {
         assertTrue(servlet23.compareTo(generic) < 0);
         assertTrue(log4j12.compareTo(servlet23) < 0);
         assertEquals(0, servlet23.compareTo(servlet23));
+        
+        DependencyRule rule1 = new DependencyRule("* * * s/.*/debian/ * *");
+        DependencyRule rule2 = new DependencyRule("s/org.eclipse.jetty.orbit/javax.servlet/ s/javax.servlet/servlet-api/ * s/.*/3.0/ * *");
+        assertTrue(rule2.compareTo(rule1) < 0);
+    }
+
+    @Test
+    public void testCompareGenericRules() {       
+        DependencyRule rule1 = new DependencyRule("* * * s/.*/debian/ * *");
+        DependencyRule rule2 = new DependencyRule("s/foo-(.*)/org.foo.$1/ * * s/.*/debian/ * *");
+        assertTrue(rule2.compareTo(rule1) < 0);
     }
 
     @Test
