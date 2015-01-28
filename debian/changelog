@@ -1,9 +1,9 @@
-maven-repo-helper (1.8.10) UNRELEASED; urgency=medium
+maven-repo-helper (1.8.10) experimental; urgency=medium
 
   * Fixed a bug preventing rules like 's/org.foo/org.bar/ * * s/.*/debian/ * *'
     from working properly.
 
- -- Emmanuel Bourg <ebourg@apache.org>  Mon, 08 Sep 2014 17:13:45 +0200
+ -- Emmanuel Bourg <ebourg@apache.org>  Wed, 28 Jan 2015 22:52:17 +0100
 
 maven-repo-helper (1.8.9) unstable; urgency=medium
 
