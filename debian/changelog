@@ -4,6 +4,7 @@ maven-repo-helper (1.8.11) UNRELEASED; urgency=medium
     the jars are always installed before running dh_strip_nondeterminism,
     jh_classpath and jh_manifest. This fixes a build failure with libjdom2-java
     and javahelper >= 0.49.
+  * Standards-Version updated to 3.9.6 (no changes)
 
  -- Emmanuel Bourg <ebourg@apache.org>  Wed, 10 Jun 2015 12:45:22 +0200
 
